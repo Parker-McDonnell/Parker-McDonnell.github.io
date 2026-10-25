@@ -31,19 +31,46 @@ body { background: var(--paper); color: var(--ink); font: 400 1rem/1.8 var(--bod
 :root[data-ocean="on"] .floor { display: block; position: relative; height: 13rem; margin-top: -2rem; overflow: hidden; pointer-events: none; color: var(--mute); }
 :root[data-ocean="on"] .wrap { position: relative; z-index: 1; }
 .sea svg, .floor svg { position: absolute; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
-.swell { top: .3rem; left: 0; width: 200%; height: 1.6rem; animation: drift 140s linear infinite; }
-:root[data-ocean="on"] header { padding-top: 3rem; }
+.swell { top: 2.6rem; left: 0; width: 200%; height: 1.6rem; animation: drift 140s linear infinite; }
+:root[data-ocean="on"] header { padding-top: 5.2rem; }
 .life { opacity: .5; }
 .sand { left: 0; bottom: 0; width: 100%; height: 100%; }
-:root { --ray: color-mix(in oklab, var(--shu) 6%, transparent); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ray: color-mix(in oklab, var(--ink) 6%, transparent); } }
-:root[data-theme="dark"] { --ray: color-mix(in oklab, var(--ink) 6%, transparent); }
+:root { --ray: color-mix(in oklab, var(--shu) 3.5%, transparent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ray: color-mix(in oklab, var(--ink) 4%, transparent); } }
+:root[data-theme="dark"] { --ray: color-mix(in oklab, var(--ink) 4%, transparent); }
 .sea .rays { position: fixed; inset: 0 0 auto 0; height: 100vh; }
 :root[data-rays="off"] .rays { display: none; }
 .rays svg { inset: 0; width: 100%; height: 100%; }
 .rays path { fill: url(#ray); stroke: none; animation: shimmer 17s ease-in-out infinite alternate; }
-@keyframes shimmer { from { opacity: .3; } to { opacity: 1; } }
-.floor .life { bottom: 1.6rem; }
+@keyframes shimmer { from { opacity: .25; } to { opacity: .7; } }
+.floor .critter { bottom: 1.6rem; }
+/* a drawing that can be placed (Arrange, in the footer): the box is moved, sized and turned; the drawing moves inside it */
+.critter { position: absolute; pointer-events: none; }
+.critter svg { inset: 0; width: 100%; height: 100%; }
+.critter .life, .sail .boat { opacity: 1; }
+.critter.gone, .critter.crowded { display: none; }
+:root[data-arrange="on"] .sea, :root[data-arrange="on"] .floor { z-index: 2; }
+:root[data-arrange="on"] .critter { display: block; pointer-events: auto; cursor: grab; touch-action: none; outline: 1px dashed color-mix(in oklab, var(--shu) 45%, transparent); outline-offset: 4px; }
+:root[data-arrange="on"] .critter.gone, :root[data-arrange="on"] .critter.crowded { opacity: .2 !important; }
+:root[data-arrange="on"] .critter.sel { outline: 1px solid var(--shu); }
+:root[data-arrange="on"] .critter *, :root[data-arrange="on"] .rays path { animation: none !important; }
+.handle { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--paper); border: 1px solid var(--shu); color: var(--shu); font: normal 11px/12px var(--body); text-align: center; }
+.handle.turn { left: calc(50% - 7px); top: -30px; cursor: grab; }
+.handle.size { right: -12px; bottom: -12px; border-radius: 2px; cursor: nwse-resize; }
+.handle.hide { right: -12px; top: -12px; cursor: pointer; }
+.arrange-bar { position: fixed; left: 50%; bottom: 1rem; transform: translateX(-50%); z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; box-sizing: border-box; width: max-content; max-width: calc(100vw - 32px); padding: .6rem 1rem; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 6px 24px rgba(0, 0, 0, .12); font-size: .75rem; color: var(--mute); }
+.arrange-bar button, .arrange-open { font: inherit; font-size: .75rem; color: var(--shu); background: none; border: 1px solid var(--rule); border-radius: 4px; padding: .3rem .7rem; cursor: pointer; }
+.arrange-open { justify-self: start; }
+.arrange-bar .said { color: var(--shu); }
+/* sailboats crossing the swell now and then, rocking as they go */
+.sail { position: absolute; left: 0; top: calc(3.4rem - .84 * var(--boat)); width: var(--boat); height: var(--boat); transform: translateX(-80px); animation: sail 150s linear infinite; }
+.sail svg { left: 0; top: 0; width: 100%; height: 100%; transform-origin: 50% 85%; animation: rock 7s ease-in-out infinite alternate; }
+.boat path:first-child { fill: var(--paper); }
+@keyframes sail { from { transform: translateX(-80px); } 65%, to { transform: translateX(calc(100vw + 20px)); } }
+@keyframes rock { from { transform: rotate(-4deg) translateY(-1px); } to { transform: rotate(4deg) translateY(2px); } }
+/* bubbles that rise to the surface and vanish there (--rise, set by the page, is the distance up to the swell) */
+@keyframes surface { 0% { transform: translateY(0); opacity: 0; } 15%, 80% { opacity: 1; } 100% { transform: translateY(var(--rise, -3rem)); opacity: 0; } }
+.surface { animation: surface 12s ease-in infinite; }
 @keyframes drift { to { transform: translateX(-50%); } }
 @keyframes swim { 50% { transform: translateX(1.6rem) translateY(-.3rem); } }
 @keyframes bob { 50% { transform: translateY(-.8rem); } }
@@ -96,7 +123,7 @@ h2::before { content: ""; display: none; background: var(--shu); margin-bottom: 
 /* small line icons, one per kind of work, shared by the timeline and the list */
 .ico { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
 /* home */
-.intro { padding-block: 6rem 5rem; }
+.intro { padding-block: 3rem 5rem; }
 .intro h1 { font: 400 clamp(2rem, 6vw, 3.1rem)/1.25 var(--display); margin: 0 0 1.5rem; text-wrap: balance; }
 .intro p { color: var(--mute); max-width: 32rem; margin: 0; }
 /* slideshow: swipe (or wait) to move through featured works, each snaps into place */
@@ -172,7 +199,9 @@ button:hover { color: var(--shu); }
 .qr { display: flex; align-items: center; gap: 1rem; margin: 2.5rem 0 0; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); --qbg: var(--paper); --qfg: var(--ink); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .qr { --qbg: var(--ink); --qfg: var(--paper); } }
 :root[data-theme="dark"] .qr { --qbg: var(--ink); --qfg: var(--paper); }
-.qr svg { width: 6rem; height: 6rem; flex: none; padding: .55rem; background: var(--qbg); color: var(--qfg); border: 1px solid var(--rule); border-radius: 4px; }
+/* sunk into the page: an inner shadow round the tile, with the code kept clear of it */
+.qr svg { width: 6.5rem; height: 6.5rem; flex: none; padding: .8rem; background: var(--qbg); color: var(--qfg); border-radius: 6px;
+  box-shadow: inset 0 2px 7px rgba(0, 0, 0, .28), inset 0 0 0 1px rgba(0, 0, 0, .08); }
 footer .qr { margin: 0; }
 .code { background: var(--well); padding: 1.25rem 1.5rem; font: .8rem/1.6 var(--mono); overflow-x: auto; white-space: pre; }
 .related { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
@@ -503,12 +532,16 @@ site.use(cfg => {
   tag.textContent = rules.join('\n');
 });
 
-// Ocean: the sea is in the page itself. Creatures swim in the reading column, each finding open water between the
-// words and pictures; light shafts fall from the surface and fade as the reader sinks; the sea floor closes every page.
-// A SEA entry: [drawing, where, size in px, motion, delay in s, nearness]. "where" is x, a share of the column's width,
-// and y, a share of the page's height or a fixed distance from the top (such as '3rem'). Nearness runs from 0 (far
-// off, faint) to 1 (close, clearer): give far creatures small sizes and near ones large, so the water has depth.
-// FLOOR and PERCH entries are placed as they are written. To add a robot, draw it into ART and give it a line in SEA.
+// Ocean: the sea is in the page itself. Creatures swim in the reading column, light shafts fall from the surface and
+// fade as the reader sinks, and the sea floor closes every page.
+// A SEA entry: [drawing, where, size in px, motion, delay in s, nearness, turn in degrees]. "where" is x, a share of the
+// column's width, and y, a share of the page's height or a fixed distance from the top (such as '3rem'); the page
+// moves each creature to the nearest open water clear of the words, and hides one that finds none. Nearness runs from
+// 0 (far off, faint) to 1 (close, clearer). FLOOR entries are [drawing, place, size, motion, delay, nearness].
+// Placed by hand: Arrange (in the footer) lets an editor drag, resize, turn and hide each drawing. A placement is kept
+// per page and per screen size (wide or narrow), pinned to the piece of the page above it, so it survives edits to the
+// text; it overrides the place written here. Placements come from placements.yml beside this page, then from the
+// Artifact's own store (where Arrange saves when the page is an Artifact) or this browser (when it is not).
 (() => {
   const urchin = () => {
     let s = '<path d="M14 28 a8 8 0 0 1 16 0"/>';
@@ -518,12 +551,13 @@ site.use(cfg => {
     }
     return s;
   };
-  // a moon jellyfish (Aurelia): a wide, shallow bell, its four horseshoe gonads showing through,
-  // and a fringe of fine short tentacles round the rim
+  // a moon jellyfish (Aurelia): a wide, shallow bell, its four horseshoe stomachs in a ring at the top of the bell,
+  // and a fringe of short wavy tentacles round the rim
   const moon = () => {
-    let s = '<path d="M4 20 Q6 5 30 4 Q54 5 56 20 Q30 25 4 20 Z"/>';
-    for (const x of [15, 23, 31, 39]) s += `<path d="M${x} 16 a3.2 3.4 0 1 1 6.4 0"/>`;
-    for (let x = 6; x <= 54; x += 3) s += `<path stroke-width=".7" d="M${x} ${21 + (x - 30) ** 2 / 900} q1.2 4 0 8"/>`;
+    let s = '<path d="M4 20 Q6 5 30 4 Q54 5 56 20 Q30 25 4 20 Z"/><g transform="translate(30 10.5) scale(1 .6)" stroke-width=".8">';
+    for (const a of [45, 135, 225, 315]) s += `<path transform="rotate(${a})" d="M-2.2 -3.4 A2.4 2.4 0 1 1 2.2 -3.4"/>`;
+    s += '</g>';
+    for (let x = 6; x <= 54; x += 3) s += `<path stroke-width=".7" d="M${x} ${21 + (x - 30) ** 2 / 900} q1.4 1.8 0 3.6 t0 3.6"/>`;
     return s;
   };
   const fish = '<path d="M4 10 Q14 1 26 10 Q14 19 4 10 Z M26 10 L36 4 L34 10 L36 16 Z"/><circle cx="9" cy="9" r=".8"/>';
@@ -542,23 +576,24 @@ site.use(cfg => {
     rock: [40, 22, '<path d="M2 22 Q3 9 15 6 Q28 3 34 12 Q38 17 37 22 M12 12 q5 -3 10 -1"/>'],
   };
   const SEA = [
-    // just under the surface, round the name
-    ['fish', { x: 40, y: '2.4rem' }, 48, 'swim', -3, .75],
-    ['bubbles', { x: 22, y: '2.6rem' }, 18, 'rise', -1, .6],
-    ['school', { x: 66, y: '2.2rem' }, 64, 'swim', -10, .3],
-    ['jelly', { x: 88, y: '7.5rem' }, 56, 'bob', -4, .5],
+    // just under the surface, round the name; "surface" bubbles rise through the swell and vanish at it
+    ['fish', { x: 40, y: '4.6rem' }, 48, 'swim', -3, .75],
+    ['bubbles', { x: 22, y: '5rem' }, 18, 'surface', -1, .6],
+    ['bubbles', { x: 56, y: '5.4rem' }, 13, 'surface', -7, .45],
+    ['school', { x: 66, y: '4.5rem' }, 64, 'swim', -10, .3],
+    ['jelly', { x: 88, y: '7.5rem' }, 56, 'bob', -4, .5, 35],
     // the water column
     ['fishBack', { x: 85, y: .1 }, 64, 'swim', -6, .9],
-    ['jelly', { x: 12, y: .16 }, 88, 'bob', 0, .8],
+    ['jelly', { x: 12, y: .16 }, 88, 'bob', 0, .8, 35],
     ['school', { x: 75, y: .23 }, 96, 'swim', -14, .5],
     ['bubbles', { x: 50, y: .29 }, 20, 'rise', -7, .6],
     ['fish', { x: 22, y: .35 }, 32, 'swim', -9, .25],
     ['robot', { x: 82, y: .43 }, 120, 'turn', 0, .7],
-    ['jelly', { x: 30, y: .51 }, 42, 'bob', -5, .3],
+    ['jelly', { x: 30, y: .51 }, 42, 'bob', -5, .3, 35],
     ['fish', { x: 68, y: .59 }, 72, 'swim', -18, .9],
     ['bubbles', { x: 15, y: .65 }, 16, 'rise', -3, .45],
     ['school', { x: 25, y: .73 }, 78, 'swim', -4, .45],
-    ['jelly', { x: 78, y: .8 }, 72, 'bob', -9, .7],
+    ['jelly', { x: 78, y: .8 }, 72, 'bob', -9, .7, 35],
     ['fishBack', { x: 40, y: .88 }, 38, 'swim', -12, .3],
   ];
   // far ones sit a little higher up the sand, near ones on the front edge
@@ -584,6 +619,11 @@ site.use(cfg => {
     const style = Object.entries(at).map(([k, v]) => `${k}:${v}`).join(';') + `;width:${size}px;height:${size * h / w}px;animation-delay:${delay}s` + fade(near);
     return `<svg class="life ${cls} ${motion}" viewBox="0 0 ${w} ${h}" style="${style}">${art}</svg>`;
   };
+  // a drawing that can be placed: a box that is moved, sized and turned, holding the drawing that moves within it
+  const critter = (id, [name, , , motion, delay, near]) => {
+    const [w, h, art] = ART[name];
+    return `<div class="critter" data-id="${id}" style="${fade(near).slice(1)}"><svg class="life ${motion}" viewBox="0 0 ${w} ${h}" style="animation-delay:${delay}s">${art}</svg></div>`;
+  };
   // the surface: one swell drifting slowly; it is two identical halves, so the loop is seamless
   const swell = (amp, half) => {
     let d = `M0 20`;
@@ -598,11 +638,17 @@ site.use(cfg => {
     return '<div class="rays"><svg viewBox="0 0 1600 900" preserveAspectRatio="none"><defs><linearGradient id="ray" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="900">' +
       `<stop offset="0" style="stop-color:var(--ray)"/><stop offset="1" style="stop-color:var(--ray);stop-opacity:0"/></linearGradient></defs>${s}</svg></div>`;
   };
+  // sailboats on the swell, crossing left to right now and then and rocking as they go: [size in px, seconds for one
+  // crossing and the wait after it, delay in s, nearness]
+  const BOATS = [[40, 150, -40, .8], [24, 230, -170, .35]];
+  const boat = '<path d="M4 30 L36 30 L31 36 L9 36 Z M20 30 V4"/><path d="M21 5 Q31 17 33 28 L21 28 Z M19 9 Q12 19 9 28 L19 28 Z"/>';
+  const boats = () => BOATS.map(([size, secs, delay, near]) =>
+    `<div class="sail" style="--boat:${size}px;animation-duration:${secs}s;animation-delay:${delay}s${fade(near)}"><svg class="boat" viewBox="0 0 40 40" style="animation-delay:${delay / 7}s">${boat}</svg></div>`).join('');
   const sea = document.getElementById('sea'), floor = document.getElementById('floor');
-  sea.innerHTML = rays() + swell(16, 50) + SEA.map(([name, , ...rest]) => draw([name, {}, ...rest], 'swimmer')).join('');
+  sea.innerHTML = rays() + swell(16, 50) + boats() + SEA.map((e, i) => critter(`sea-${i}`, e)).join('');
   floor.innerHTML =
     '<svg class="sand" viewBox="0 0 1600 160" preserveAspectRatio="none"><path vector-effect="non-scaling-stroke" d="M0 122 Q200 108 400 118 T800 114 T1200 121 T1600 112"/></svg>' +
-    FLOOR.map(e => draw(e, '')).join('');
+    FLOOR.map((e, i) => critter(`floor-${i}`, e)).join('');
   // the page as part of the sea: drawings perched on the page itself, in front of it and never in the way of a click
   const PERCH = [
     ['footer', ['crab', { bottom: '100%', right: '14%' }, 54, 'scuttle', -8]],
@@ -611,36 +657,76 @@ site.use(cfg => {
   ];
   for (const [where, e] of PERCH) document.querySelector(where)?.insertAdjacentHTML('beforeend', draw(e, 'perch'));
 
-  // each creature takes the open water nearest its place: clear of every word, picture and control on the page
-  // shown, with room for its slow swim. One that finds none within reach of its place stays out of sight.
-  const swimmers = [...sea.querySelectorAll('.swimmer')];
+  const critters = new Map([...document.querySelectorAll('.critter')].map(el => {
+    const [kind, i] = el.dataset.id.split('-');
+    return [el.dataset.id, { el, kind, e: (kind === 'sea' ? SEA : FLOOR)[i] }];
+  }));
   const wrap = document.querySelector('.wrap');
-  function settle() {
-    if (document.documentElement.dataset.ocean !== 'on') return;
+  const rem = () => parseFloat(getComputedStyle(document.documentElement).fontSize);
+  let placements = {}, arranging = false;
+
+  // the page as it is now: the reading column, the page shown, and whether the screen is wide or narrow
+  function frame() {
     const page = sea.getBoundingClientRect(), box = wrap.getBoundingClientRect(), cs = getComputedStyle(wrap);
     const colL = box.left - page.left + parseFloat(cs.paddingLeft), colW = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize), scale = colW < 500 ? .7 : 1;
-    const H = sea.clientHeight - floor.offsetHeight;
+    const view = document.querySelector('.view:not([hidden])')?.dataset.page || 'home', size = colW < 500 ? 'narrow' : 'wide';
+    return { page, colL, colW, H: sea.clientHeight - floor.offsetHeight, key: `${view}~${size}`, floorKey: `floor~${size}`, scale: size === 'narrow' ? .7 : 1 };
+  }
+  // the pieces of the page a placement is pinned to, each named so the name survives edits elsewhere on the page
+  function landmarks(f) {
+    const v = document.querySelector('.view:not([hidden])'), out = [];
+    const add = (key, el) => el?.offsetParent && out.push({ key, top: el.getBoundingClientRect().top - f.page.top });
+    add('header', document.querySelector('header'));
+    v?.querySelectorAll('h1, h2').forEach(h => add(`${h.tagName.toLowerCase()}:${h.textContent.trim().slice(0, 40)}`, h));
+    add('slideshow', v?.querySelector('.show'));
+    v?.querySelectorAll('.feed > li').forEach(li => add(`work:${li.dataset.date}:${li.dataset.kind}`, li));
+    add('footer', document.querySelector('footer'));
+    return out.sort((a, b) => a.top - b.top);
+  }
+  const put = (el, l, t, w, h, r) => Object.assign(el.style, { left: l + 'px', top: t + 'px', width: w + 'px', height: h + 'px', transform: r ? `rotate(${r}deg)` : '' });
+
+  function settle() {
+    if (document.documentElement.dataset.ocean !== 'on') return;
+    const f = frame(), marks = landmarks(f), mine = placements[f.key] || {}, floorMine = placements[f.floorKey] || {};
     const busy = [...wrap.querySelectorAll('*')].filter(el => el.offsetParent && !el.closest('svg') && (
       [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) || el.matches('img, video, button, input') ||
       getComputedStyle(el).backgroundColor !== 'rgba(0, 0, 0, 0)'))
       .map(el => el.getBoundingClientRect()).filter(r => r.width && r.height)
-      .map(r => ({ l: r.left - page.left, t: r.top - page.top, r: r.right - page.left, b: r.bottom - page.top }));
+      .map(r => ({ l: r.left - f.page.left, t: r.top - f.page.top, r: r.right - f.page.left, b: r.bottom - f.page.top }));
     // and the accent bar under the header
     const bar = document.querySelector('header').getBoundingClientRect();
-    busy.push({ l: bar.left - page.left, t: bar.bottom - page.top - 14, r: bar.right - page.left, b: bar.bottom - page.top + 14 });
+    busy.push({ l: bar.left - f.page.left, t: bar.bottom - f.page.top - 14, r: bar.right - f.page.left, b: bar.bottom - f.page.top + 14 });
     const free = (l, t, r, b) => !busy.some(o => l < o.r && r > o.l && t < o.b && b > o.t);
-    swimmers.forEach((el, i) => {
-      const [name, where, size] = SEA[i], [aw, ah] = ART[name], w = size * scale, h = w * ah / aw;
-      const y0 = typeof where.y === 'string' ? parseFloat(where.y) * rem : where.y * H, x0 = colL + where.x / 100 * (colW - w);
-      let spot = null;
-      search: for (const dy of [0, 30, -30, 70, -70, 120, -120]) for (const dx of [0, .12, -.12, .25, -.25, .45, -.45, .7, -.7, 1, -1]) {
-        const x = Math.min(colL + colW - w, Math.max(colL, x0 + dx * colW)), y = y0 + dy;
-        if (y > 0 && y + h < H && free(x - 12, y - 12, x + w + 40, y + h + 12)) { spot = [x, y]; break search; }
+    const surface = 3.4 * rem(); // the middle of the swell
+    for (const [id, c] of critters) {
+      const [name, where, size, motion, , , turn = 0] = c.e, [aw, ah] = ART[name];
+      const p = (c.kind === 'sea' ? mine : floorMine)[id];
+      c.el.classList.toggle('gone', !!p?.hide);
+      c.el.classList.toggle('crowded', false);
+      if (c.kind === 'floor') {
+        const w = p?.w ?? size, h = w * ah / aw;
+        Object.assign(c.el.style, { left: p ? p.x * 100 + '%' : where.left, bottom: p ? p.b + 'px' : (where.bottom || ''), top: '', width: w + 'px', height: h + 'px', transform: (p?.r ?? 0) ? `rotate(${p.r}deg)` : '' });
+        continue;
       }
-      el.style.display = spot ? '' : 'none';
-      if (spot) Object.assign(el.style, { left: spot[0] + 'px', top: spot[1] + 'px', width: w + 'px', height: h + 'px' });
-    });
+      const anchor = p && marks.find(m => m.key === p.a);
+      if (anchor) {
+        const w = p.w, h = w * ah / aw;
+        put(c.el, f.colL + p.x * f.colW, anchor.top + p.dy, w, h, p.r);
+      } else {
+        // not placed by hand on this page: the nearest open water to its written place
+        const w = size * f.scale, h = w * ah / aw;
+        const y0 = typeof where.y === 'string' ? parseFloat(where.y) * rem() : where.y * f.H, x0 = f.colL + where.x / 100 * (f.colW - w);
+        let spot = null;
+        search: for (const dy of [0, 30, -30, 70, -70, 120, -120]) for (const dx of [0, .12, -.12, .25, -.25, .45, -.45, .7, -.7, 1, -1]) {
+          const x = Math.min(f.colL + f.colW - w, Math.max(f.colL, x0 + dx * f.colW)), y = y0 + dy;
+          if (y > 0 && y + h < f.H && free(x - 12, y - 12, x + w + 40, y + h + 12)) { spot = [x, y]; break search; }
+        }
+        // while arranging, one with no room is shown at its written place so it can be moved
+        if (!spot) c.el.classList.toggle('crowded', true);
+        put(c.el, ...(spot || [x0, y0]), w, h, turn);
+      }
+      if (motion === 'surface') c.el.style.setProperty('--rise', `${surface - parseFloat(c.el.style.top) - 4}px`);
+    }
   }
   let later = 0;
   const resettle = () => { clearTimeout(later); later = setTimeout(settle, 120); };
@@ -648,9 +734,9 @@ site.use(cfg => {
   addEventListener('hashchange', resettle);
   document.fonts.ready.then(resettle);
 
-  // the light fades as the reader sinks, gone a screen and a bit down
+  // the light fades as the reader sinks, gone a little under a screen down
   const light = sea.querySelector('.rays');
-  const dim = () => { light.style.opacity = Math.max(0, 1 - scrollY / (innerHeight * 1.2)).toFixed(3); };
+  const dim = () => { light.style.opacity = Math.max(0, 1 - scrollY / (innerHeight * .9)).toFixed(3); };
   addEventListener('scroll', dim, { passive: true });
   dim();
 
@@ -659,6 +745,160 @@ site.use(cfg => {
     document.documentElement.dataset.oceanMotion = cfg.ocean?.motion === false ? 'off' : 'on';
     document.documentElement.dataset.rays = cfg.ocean?.light_shafts === false ? 'off' : 'on';
     resettle();
+  });
+
+  // Placements: the file first, then the Artifact's store or this browser on top
+  let store = null;
+  const merge = more => { for (const [k, v] of Object.entries(more || {})) placements[k] = { ...placements[k], ...v }; };
+  fetch('placements.yml').then(r => r.ok ? r.text() : '').then(t => { if (t && window.jsyaml) { merge(jsyaml.load(t)); resettle(); } }).catch(() => {});
+  (async () => {
+    const db = window.claude?.use ? await claude.use('db') : null;
+    if (db) {
+      const user = await claude.use('user');
+      store = db.collection('placements');
+      store.onSnapshot(snap => {
+        if (arranging) return; // this editor's own moves are already on screen
+        for (const d of snap.docs) placements[d.id] = { ...d.data().items };
+        resettle();
+      }, () => {});
+      if (await user?.canEdit()) offerArrange();
+    } else if (!window.claude) {
+      try { merge(JSON.parse(localStorage.getItem('placements') || '{}')); } catch {}
+      resettle();
+      offerArrange();
+    }
+  })();
+
+  // Arrange: drag a drawing to move it, its corner to size it, its knob to turn it (Shift snaps to 15 degrees), and
+  // the cross to hide it on this page. Each change is saved as it is made.
+  let bar = null, sel = null, saving = 0;
+  function offerArrange() {
+    const b = document.createElement('button');
+    b.className = 'arrange-open';
+    b.textContent = 'Arrange the sea';
+    b.onclick = () => arrange(true);
+    document.querySelector('footer').append(b);
+  }
+  function arrange(on) {
+    arranging = on;
+    document.documentElement.dataset.arrange = on ? 'on' : 'off';
+    if (on && !bar) {
+      bar = document.createElement('div');
+      bar.className = 'arrange-bar';
+      bar.innerHTML = '<span class="where"></span><span class="said" aria-live="polite"></span>' +
+        '<button data-act="reset">Undo all on this page</button>' + (store ? '' : '<button data-act="file">Download placements.yml</button>') + '<button data-act="done">Done</button>';
+      bar.onclick = e => {
+        const act = e.target.dataset.act;
+        if (act === 'done') arrange(false);
+        if (act === 'reset') { const f = frame(); delete placements[f.key]; delete placements[f.floorKey]; save(f.key); save(f.floorKey); settle(); }
+        if (act === 'file') download();
+      };
+      document.body.append(bar);
+    }
+    if (bar) bar.hidden = !on;
+    if (!on) select(null);
+    tell();
+    settle();
+  }
+  function tell(said = '') {
+    if (!bar) return;
+    const f = frame();
+    bar.querySelector('.where').textContent = `Arranging this page, ${f.key.split('~')[1]} screens. Drag, size from the corner, turn by the knob.`;
+    bar.querySelector('.said').textContent = said;
+  }
+  function select(el) {
+    sel?.querySelectorAll('.handle').forEach(h => h.remove());
+    sel?.classList.remove('sel');
+    sel = el;
+    if (!el) return;
+    el.classList.add('sel');
+    el.insertAdjacentHTML('beforeend', '<i class="handle turn" title="Turn"></i><i class="handle size" title="Size"></i><i class="handle hide" title="Hide or show on this page">×</i>');
+  }
+  // the record kept for a drawing: where it is now, pinned to the piece of the page above it
+  function record(c) {
+    const f = frame(), s = c.el.style, w = parseFloat(s.width), r = Math.round(parseFloat((s.transform.match(/-?[\d.]+/) || [0])[0]));
+    const hide = c.el.classList.contains('gone');
+    if (c.kind === 'floor') {
+      const fw = floor.clientWidth, box = c.el.getBoundingClientRect(), fl = floor.getBoundingClientRect();
+      const left = s.left.endsWith('%') ? parseFloat(s.left) / 100 * fw : parseFloat(s.left);
+      return [f.floorKey, { x: +(left / fw).toFixed(4), b: Math.round(fl.bottom - box.bottom + (box.height - parseFloat(s.height)) / 2), w: Math.round(w), r, hide }];
+    }
+    const top = parseFloat(s.top), marks = landmarks(f);
+    const a = marks.filter(m => m.top <= top).pop() || marks[0];
+    return [f.key, { a: a.key, x: +((parseFloat(s.left) - f.colL) / f.colW).toFixed(4), dy: Math.round(top - a.top), w: Math.round(w), r, hide }];
+  }
+  function keep(c) {
+    const [key, rec] = record(c);
+    (placements[key] ||= {})[c.el.dataset.id] = rec;
+    save(key);
+  }
+  const pending = new Set();
+  function save(key) {
+    pending.add(key);
+    clearTimeout(saving);
+    saving = setTimeout(async () => {
+      const keys = [...pending];
+      pending.clear();
+      try {
+        if (store) for (const k of keys) {
+          if (placements[k]) await store.doc(k).set({ items: placements[k] });
+          else await store.doc(k).delete();
+        }
+        else localStorage.setItem('placements', JSON.stringify(placements));
+        tell('Saved');
+      } catch (e) { tell(`Not saved (${e.code || e.message})`); }
+    }, 400);
+  }
+  function download() {
+    const text = '# Where the sea creatures sit, placed by hand with Arrange. Keyed by page~screen (wide or narrow), then drawing.\n' + jsyaml.dump(placements);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'text/yaml' }));
+    a.download = 'placements.yml';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  // dragging: one pointer at a time, on the drawing (move), its corner (size) or its knob (turn)
+  addEventListener('pointerdown', e => {
+    if (!arranging) return;
+    const el = e.target.closest('.critter');
+    if (!el) { if (!e.target.closest('.arrange-bar')) select(null); return; }
+    e.preventDefault();
+    const c = critters.get(el.dataset.id);
+    if (el !== sel) select(el);
+    const how = e.target.classList.contains('turn') ? 'turn' : e.target.classList.contains('size') ? 'size' : e.target.classList.contains('hide') ? 'hide' : 'move';
+    if (how === 'hide') { el.classList.toggle('gone'); keep(c); return; }
+    const s = el.style, box = el.getBoundingClientRect(), cx = box.left + box.width / 2, cy = box.top + box.height / 2;
+    const start = { x: e.clientX, y: e.clientY, w: parseFloat(s.width), h: parseFloat(s.height), l: el.offsetLeft, t: el.offsetTop };
+    const isFloor = c.kind === 'floor', ratio = start.h / start.w;
+    if (isFloor) Object.assign(s, { left: start.l + 'px', top: start.t + 'px', bottom: '' });
+    el.setPointerCapture(e.pointerId);
+    const move = m => {
+      const dx = m.clientX - start.x, dy = m.clientY - start.y;
+      if (how === 'move') Object.assign(s, { left: start.l + dx + 'px', top: start.t + dy + 'px' });
+      if (how === 'size') {
+        const w = Math.max(10, start.w + (dx + dy) / 2);
+        Object.assign(s, { width: w + 'px', height: w * ratio + 'px' });
+      }
+      if (how === 'turn') {
+        let r = Math.atan2(m.clientY - cy, m.clientX - cx) * 180 / Math.PI + 90;
+        if (m.shiftKey) r = Math.round(r / 15) * 15;
+        s.transform = `rotate(${Math.round(r)}deg)`;
+      }
+    };
+    const up = () => {
+      el.removeEventListener('pointermove', move);
+      el.removeEventListener('pointerup', up);
+      el.removeEventListener('pointercancel', up);
+      if (isFloor) {
+        // back to a place on the sand: a share of the floor's width, and a height above its foot
+        const fw = floor.clientWidth, b = floor.clientHeight - parseFloat(s.top) - parseFloat(s.height);
+        Object.assign(s, { left: parseFloat(s.left) / fw * 100 + '%', top: '', bottom: b + 'px' });
+      }
+      keep(c);
+    };
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', up);
   });
 })();
 

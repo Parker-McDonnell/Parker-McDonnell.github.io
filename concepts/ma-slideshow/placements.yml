@@ -1,0 +1,12 @@
+# Where the sea creatures sit, placed by hand with "Arrange the sea" (in the footer). The page reads this file first;
+# placements saved in the Artifact's store, or in this browser, sit on top of it.
+#
+# Keyed by page~screen, then by drawing (sea-N is the Nth line of SEA in the page script, floor-N of FLOOR):
+#   home~wide:                 # a page (home, paper, talk, tool, about) on a wide screen; ~narrow for phones
+#     sea-4: { a: "h2:Selected work", x: 0.62, dy: 140, w: 70, r: 35, hide: false }
+#                              # a: the piece of the page it is pinned under; x: across the column (0 left, 1 right);
+#                              # dy: pixels below that piece; w: width in pixels; r: turn in degrees
+#   floor~wide:                # the sea floor, the same on every page
+#     floor-4: { x: 0.4, b: 26, w: 72, r: 0, hide: false }
+#                              # x: across the floor; b: pixels above its foot
+{}

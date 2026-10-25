@@ -63,15 +63,16 @@ Fonts, the colour palette, column width, slideshow speed, the timeline's style a
 
 - **QR codes** (Parker, 2026-10-25): the footer has one for the site, and the paper, talk and tool pages each have one for that page, so a visitor at a poster or talk can open it on a phone. They're drawn in the page (qrcode-generator 1.4.4 from cdnjs) as dark squares on a light tile in both themes. They point at `qr.site_url` in `theme.yml`, or at the page's own address while that is empty; set it to `https://parker-mcdonnell.github.io/` for the real site. In the Artifact the codes point at the Artifact's inner frame, which won't open on a phone, so judge them there by look only.
 
-## Paused 2026-10-25, until Parker's usage resets
+## Parker's notes of 2026-10-25, all done the same day
 
-Parker: "the site is looking awesome". His notes for next time:
+Parker: "the site is looking awesome". Then:
 
-1. **Moon jellyfish:** wavy tentacles; the four stomachs (gonads) centred at the top of the bell; each jellyfish turned about 35 degrees so it swims diagonally.
-2. **Light shafts:** tone them down; they're a bit distracting.
-3. **Bubbles:** they should rise up through the wave at the top and vanish at the surface.
-4. **Placing by hand:** he wants to drag, rotate and resize the animals himself, save their places, and leave the animating to the agent. Proposed (not built): an arrange mode, switched on from the footer, that pauses motion and gives each drawing a drag, a resize corner and a rotate handle. Each place is stored against the page piece it sits by (for example "right of the paper's key findings"), so it survives content changes, with a separate phone placement or "hide on phones". Saving (decided 2026-10-25; Parker left it to the agent): Parker arranges them in the Artifact, which saves to its own shared store, so he can do it on any device with no files to move. The agent reads the store and writes it into `placements.yml` in the repository, which the page reads, and the real site uses that file. A download button is kept as a fallback.
-5. **QR codes:** make them look sunken into the page, with an inner shadow on the tile. Keep enough light margin round the code that phones still read it.
+1. **Moon jellyfish:** wavy tentacles, the four stomachs in a ring at the top of the bell, each turned 35 degrees so it swims diagonally (its bob runs along its own axis).
+2. **Light shafts:** toned down, and gone a little under a screen down.
+3. **Bubbles:** the ones by the name rise through the swell and vanish at it (motion `surface`).
+4. **Sailboats:** two (one near, one far and faint) cross the swell left to right now and then, rocking. The water line was lowered so they fit, and the headline brought up.
+5. **QR codes:** sunk into the page with an inner shadow, the code kept clear of it.
+6. **Arrange mode (placing by hand):** "Arrange the sea" in the footer, shown only to editors of the Artifact (and always when served locally). Motion stops; drag a drawing to move it, its corner to size it, the knob above it to turn it (Shift snaps to 15 degrees), the cross to hide it on this page. Each placement is kept per page and per screen size (wide or narrow), pinned to the heading, work or other piece of the page above it, so it survives text changes; the sea floor is one placement for every page. **Where it's saved:** in the Artifact, its own store (collection `placements`, one document per `page~screen`, `{items: {...}}`; only editors can write). Served locally, this browser, with a "Download placements.yml" button. **To bring Parker's placements into the repository:** read the store (`ArtifactData list placements`) and write it into `concepts/ma-slideshow/placements.yml` (the format is described at its top), which the page reads first. Not tested by hand inside the Artifact yet; tested locally (move, size, turn, hide, saving, reloading).
 
 ## Next steps
 
