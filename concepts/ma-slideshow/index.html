@@ -48,6 +48,22 @@ h2 { font: 400 .78rem var(--body); letter-spacing: .2em; text-transform: upperca
 .index { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
 .index li a { display: grid; grid-template-columns: 4.5rem 1fr auto; gap: 1rem; padding-block: 1.15rem; border-bottom: 1px solid var(--rule); align-items: baseline; transition: padding .4s ease; }
 .index li a:hover { padding-left: .6rem; }
+.index li a.on { padding-left: .6rem; }
+.index li a.on .t { color: var(--shu); }
+/* timeline: one lane per kind of work, marks placed by date; drawn from the list below, so the two never disagree */
+.tl { margin: 0 0 2.5rem; }
+.lane { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 1rem; align-items: center; height: 2.4rem; }
+.track { position: relative; height: 100%; background: linear-gradient(var(--rule), var(--rule)) center / 100% 1px no-repeat; }
+.rail { position: absolute; inset: 0 7px; }
+.dot { position: absolute; top: 50%; width: 11px; height: 11px; border-radius: 50%; border: 1px solid var(--ink); background: var(--paper); transform: translate(-50%, -50%); transition: transform .3s ease, background .3s ease, border-color .3s ease; }
+.dot::before { content: ""; position: absolute; inset: -10px; }
+.dot:hover, .dot:focus-visible, .dot.on { background: var(--shu); border-color: var(--shu); transform: translate(-50%, -50%) scale(1.35); outline: none; }
+.axis { height: 1.6rem; }
+.axis .track { background: none; border-top: 1px solid var(--ink); align-self: start; }
+.tick { position: absolute; top: 0; transform: translateX(-50%); font-size: .72rem; color: var(--mute); font-variant-numeric: tabular-nums; padding-top: .35rem; }
+.tick::before { content: ""; position: absolute; top: 0; left: 50%; height: 5px; border-left: 1px solid var(--ink); }
+.readout { margin: 1rem 0 0; min-height: 1.6rem; font-size: .85rem; color: var(--mute); }
+.readout b { font: 400 1rem var(--display); color: var(--ink); }
 .yr { font-variant-numeric: tabular-nums; color: var(--mute); font-size: .85rem; }
 .t { font: 400 1.12rem/1.45 var(--display); min-width: 0; }
 .kind { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); }
@@ -93,11 +109,19 @@ footer { margin-top: 6rem; font-size: .75rem; color: var(--mute); }
   </section>
 
   <h2 id="works">Selected work</h2>
-  <ul class="index">
-    <li><a href="#paper"><span class="yr">2026</span><span class="t">Science Advances paper, title to come</span><span class="kind">Paper</span></a></li>
-    <li><a href="#"><span class="yr">2025</span><span class="t">Invited talk on jellyfish-inspired propulsion</span><span class="kind">Talk</span></a></li>
-    <li><a href="#"><span class="yr">2025</span><span class="t">SignalShepherd, a tool for syncing sensor and video data</span><span class="kind">Tool</span></a></li>
-    <li><a href="#"><span class="yr">2024</span><span class="t">A low-cost method for marker tracking in water tanks</span><span class="kind">Method</span></a></li>
+  <figure class="tl" id="tl" aria-label="Timeline of selected work">
+    <div id="lanes"></div>
+    <div class="lane axis"><span></span><div class="track"><div class="rail" id="axis"></div></div></div>
+    <figcaption class="readout" id="readout">Point to a mark to see the work. Select it to open.</figcaption>
+  </figure>
+
+  <ul class="index" id="index">
+    <li><a href="#paper" data-date="2026.2"><span class="yr">2026</span><span class="t">Science Advances paper, title to come</span><span class="kind">Paper</span></a></li>
+    <li><a href="#" data-date="2025.75"><span class="yr">2025</span><span class="t">Invited talk on jellyfish-inspired propulsion</span><span class="kind">Talk</span></a></li>
+    <li><a href="#" data-date="2025.3"><span class="yr">2025</span><span class="t">SignalShepherd, a tool for syncing sensor and video data</span><span class="kind">Tool</span></a></li>
+    <li><a href="#" data-date="2024.6"><span class="yr">2024</span><span class="t">A low-cost method for marker tracking in water tanks</span><span class="kind">Method</span></a></li>
+    <li><a href="#" data-date="2023.9"><span class="yr">2023</span><span class="t">Conference talk, fluid dynamics meeting (placeholder)</span><span class="kind">Talk</span></a></li>
+    <li><a href="#" data-date="2023.4"><span class="yr">2023</span><span class="t">Earlier paper or preprint (placeholder)</span><span class="kind">Paper</span></a></li>
   </ul>
 
   <p class="divider" id="paper">Paper page</p>
@@ -185,5 +209,41 @@ footer { margin-top: 6rem; font-size: .75rem; color: var(--mute); }
   box.addEventListener('dragstart', e => e.preventDefault());
   addEventListener('resize', () => box.scrollTo({ left: i * box.clientWidth, behavior: 'instant' }));
   restart();
+})();
+
+(() => {
+  const rows = [...document.querySelectorAll('#index a')];
+  const readout = document.getElementById('readout'), rest = readout.innerHTML;
+  const dates = rows.map(a => +a.dataset.date);
+  const y0 = Math.floor(Math.min(...dates)), y1 = Math.ceil(Math.max(...dates) + 0.01);
+  const pos = d => ((d - y0) / (y1 - y0) * 100) + '%';
+  const kinds = ['Paper', 'Talk', 'Tool', 'Method'];
+  const lanes = document.getElementById('lanes');
+  const rails = {};
+  for (const k of kinds) {
+    if (!rows.some(a => a.querySelector('.kind').textContent === k)) continue;
+    const lane = document.createElement('div');
+    lane.className = 'lane';
+    lane.innerHTML = `<span class="kind">${k}</span><div class="track"><div class="rail"></div></div>`;
+    lanes.append(lane);
+    rails[k] = lane.querySelector('.rail');
+  }
+  const axis = document.getElementById('axis');
+  for (let y = y0; y < y1; y++) axis.insertAdjacentHTML('beforeend', `<span class="tick" style="left:${pos(y)}">${y}</span>`);
+  rows.forEach(a => {
+    const k = a.querySelector('.kind').textContent, t = a.querySelector('.t').textContent;
+    const dot = document.createElement('a');
+    dot.className = 'dot';
+    dot.href = a.getAttribute('href');
+    dot.style.left = pos(+a.dataset.date);
+    dot.setAttribute('aria-label', `${a.querySelector('.yr').textContent}, ${k}: ${t}`);
+    rails[k].append(dot);
+    const on = () => { dot.classList.add('on'); a.classList.add('on'); readout.innerHTML = `${a.querySelector('.yr').textContent} · ${k} &nbsp;<b></b>`; readout.querySelector('b').textContent = t; };
+    const off = () => { dot.classList.remove('on'); a.classList.remove('on'); readout.innerHTML = rest; };
+    for (const el of [dot, a]) {
+      el.addEventListener('mouseenter', on); el.addEventListener('mouseleave', off);
+      el.addEventListener('focus', on); el.addEventListener('blur', off);
+    }
+  });
 })();
 </script>
