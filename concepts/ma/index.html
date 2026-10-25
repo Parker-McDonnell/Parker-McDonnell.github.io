@@ -26,19 +26,16 @@ a:focus-visible { outline: 1px solid var(--shu); outline-offset: 3px; }
 .plate svg { width: 38%; opacity: .55 }
 .caption { font-size: .75rem; color: var(--mute); padding-block: .75rem 0; display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
 .caption .t { font: 400 .95rem/1.4 var(--display); color: var(--ink); }
-/* showcase: breaks out of the reading column, like a hanging wall above the catalogue */
-.showcase { width: min(68rem, calc(100vw - 2 * max(16px, env(safe-area-inset-left, 0px)))); margin-left: 50%; transform: translateX(-50%); display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: auto auto; gap: 2.5rem 1.5rem; }
+/* showcase: one lead piece across the column, three smaller ones beneath, all on the column's edges */
+.showcase { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5rem 1.25rem; }
 .piece { display: flex; flex-direction: column; min-width: 0; }
 .piece .plate { transition: opacity .6s ease; }
 .piece:hover .plate { opacity: .82; }
 .piece:hover .t { color: var(--shu); }
-.lead { grid-row: span 2; }
-.lead .plate { aspect-ratio: auto; flex: 1; min-height: 18rem; }
-.showcase > .piece:nth-child(2) { grid-row: span 2; }
-.showcase > .piece:nth-child(2) .plate { aspect-ratio: auto; flex: 1; }
-.showcase > .piece:nth-child(3), .showcase > .piece:nth-child(4) { grid-column: 3; }
-@media (max-width: 760px) { .showcase { grid-template-columns: 1fr 1fr; } .lead { grid-column: 1 / -1; grid-row: auto; } .lead .plate { min-height: 14rem; } .showcase > .piece:nth-child(n+2) { grid-column: auto; grid-row: auto; } .showcase > .piece:nth-child(2) .plate { aspect-ratio: 3/2; } }
-@media (max-width: 440px) { .showcase { grid-template-columns: 1fr; } }
+.lead { grid-column: 1 / -1; }
+.showcase > .piece:not(.lead) .plate { aspect-ratio: 1; }
+.showcase > .piece:not(.lead) .caption { flex-direction: column; gap: .15rem; }
+@media (max-width: 520px) { .showcase { grid-template-columns: 1fr 1fr; } .showcase > .piece:last-child { display: none; } }
 h2 { font: 400 .78rem var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--mute); margin: 6rem 0 1.25rem; }
 .index { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
 .index li a { display: grid; grid-template-columns: 4.5rem 1fr auto; gap: 1rem; padding-block: 1.15rem; border-bottom: 1px solid var(--rule); align-items: baseline; transition: padding .4s ease; }
@@ -79,7 +76,7 @@ footer { margin-top: 6rem; font-size: .75rem; color: var(--mute); }
       <div class="caption"><span class="t">Science Advances paper</span><span class="kind">Paper · 2026</span></div>
     </a>
     <a class="piece" href="#">
-      <div class="plate tall"><span>Talk still</span></div>
+      <div class="plate"><span>Talk still</span></div>
       <div class="caption"><span class="t">Jellyfish propulsion</span><span class="kind">Talk</span></div>
     </a>
     <a class="piece" href="#">
