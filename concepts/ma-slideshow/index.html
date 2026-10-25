@@ -2,54 +2,70 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap">
 <style>
-/* Concept A, "Ma": a quiet catalogue. One narrow column, lots of air, works listed like a museum's object index. Built on al-folio (Jekyll). */
+/* Concept A, "Ma": a quiet catalogue. One narrow column, lots of air, works listed like a museum's object index. Built on al-folio (Jekyll).
+   This mock-up holds five pages (home, paper, talk, tool, about); the address's #name picks which one shows. */
 :root {
   --paper: #f6f5f1; --ink: #1d1e1f; --mute: #74757a; --rule: #d9d8d2; --shu: #a8432f; --well: #e9e7e0;
   --display: "Shippori Mincho", "Hiragino Mincho ProN", Georgia, serif;
   --body: "Zen Kaku Gothic New", "Hiragino Sans", system-ui, sans-serif;
+  --mono: ui-monospace, Menlo, Consolas, monospace;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper:#151617; --ink:#e7e5df; --mute:#94959a; --rule:#2c2d2f; --shu:#d0705a; --well:#202123; color-scheme: dark } }
+:root[data-accent="ai"] { --shu: #2f5079; }
+:root[data-accent="koke"] { --shu: #5b6b3a; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --paper:#151617; --ink:#e7e5df; --mute:#94959a; --rule:#2c2d2f; --shu:#d0705a; --well:#202123; color-scheme: dark }
+  :root[data-accent="ai"]:not([data-theme="light"]) { --shu: #8eaad3; }
+  :root[data-accent="koke"]:not([data-theme="light"]) { --shu: #a3b37a; }
+}
 :root[data-theme="dark"] { --paper:#151617; --ink:#e7e5df; --mute:#94959a; --rule:#2c2d2f; --shu:#d0705a; --well:#202123; color-scheme: dark }
+:root[data-theme="dark"][data-accent="ai"] { --shu: #8eaad3; }
+:root[data-theme="dark"][data-accent="koke"] { --shu: #a3b37a; }
 body { background: var(--paper); color: var(--ink); font: 400 16px/1.8 var(--body); }
 .wrap { max-width: 44rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 6rem; }
-header { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding-block: 2.5rem; flex-wrap: wrap; }
-.mark { font: 600 1.05rem var(--display); letter-spacing: .06em; }
-.mark span { color: var(--shu); }
-nav { display: flex; gap: 1.5rem; font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; }
 a { color: inherit; text-decoration: none; }
 a:hover, a:focus-visible { color: var(--shu); }
-a:focus-visible { outline: 1px solid var(--shu); outline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 1px solid var(--shu); outline-offset: 3px; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 2.5rem; flex-wrap: wrap; }
+.mark { display: flex; align-items: center; gap: .7rem; font: 600 1.05rem var(--display); letter-spacing: .06em; }
+.seal { width: 1.7rem; height: 1.7rem; flex: none; }
+.seal rect { fill: var(--shu); } .seal text { fill: var(--paper); font: 600 15px var(--display); }
+nav { display: flex; gap: 1.5rem; font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; }
+nav a[aria-current] { color: var(--shu); }
+/* vertical name, only where the screen is wide enough to leave a margin for it */
+.spine { display: none; }
+@media (min-width: 1180px) { .spine { display: block; position: fixed; left: max(2.5rem, env(safe-area-inset-left, 0px)); top: 50%; transform: translateY(-50%); writing-mode: vertical-rl; font: 400 .72rem var(--body); letter-spacing: .5em; color: var(--mute); } .spine b { color: var(--shu); font-weight: 400; } }
+h2 { font: 400 .78rem var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--mute); margin: 6rem 0 1.25rem; }
+.eyebrow { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--shu); margin: 0; }
+.page-title { font: 400 clamp(1.8rem, 5vw, 2.6rem)/1.3 var(--display); margin: 1rem 0 1.25rem; text-wrap: balance; }
+.byline { color: var(--mute); font-size: .9rem; margin: 0 0 4rem; }
+.lede { font: 400 1.25rem/1.75 var(--display); margin: 4rem 0; }
+.plate { aspect-ratio: 3/2; max-width: 100%; background: var(--well); display: grid; place-items: center; color: var(--mute); font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; position: relative; }
+.plate svg { width: 38%; opacity: .55 }
+.plate.wide { aspect-ratio: 16/9; }
+.badge { position: absolute; left: 1rem; bottom: .9rem; font-size: .65rem; letter-spacing: .16em; display: flex; align-items: center; gap: .45rem; }
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--shu); animation: blink 2.4s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .25 } }
+.caption { font-size: .75rem; color: var(--mute); padding-block: .75rem 0; display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.caption .t { font: 400 .95rem/1.4 var(--display); color: var(--ink); }
+.t { font: 400 1.12rem/1.45 var(--display); min-width: 0; }
+.kind { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); }
+.yr { font-variant-numeric: tabular-nums; color: var(--mute); font-size: .85rem; }
+/* home */
 .intro { padding-block: 6rem 5rem; }
 .intro h1 { font: 400 clamp(2rem, 6vw, 3.1rem)/1.25 var(--display); margin: 0 0 1.5rem; text-wrap: balance; }
 .intro p { color: var(--mute); max-width: 32rem; margin: 0; }
-.plate { aspect-ratio: 3/2; max-width: 100%; background: var(--well); display: grid; place-items: center; color: var(--mute); font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; }
-.plate svg { width: 38%; opacity: .55 }
-.caption { font-size: .75rem; color: var(--mute); padding-block: .75rem 0; display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
-.caption .t { font: 400 .95rem/1.4 var(--display); color: var(--ink); }
-/* slideshow: one plate the width of the column; swipe (or wait) to move through featured works, each snaps into place */
-.show { position: relative; }
-.frames { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; overscroll-behavior-x: contain; scrollbar-width: none; max-width: 100%; }
+/* slideshow: swipe (or wait) to move through featured works, each snaps into place */
+.frames { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; overscroll-behavior-x: contain; scrollbar-width: none; max-width: 100%; cursor: grab; }
 .frames::-webkit-scrollbar { display: none; }
 .frame { flex: 0 0 100%; scroll-snap-align: start; scroll-snap-stop: always; }
-.frame .plate { aspect-ratio: 3/2; }
-.frames { cursor: grab; }
 .show .caption { align-items: center; }
-.show .caption a:hover .t { color: var(--shu); }
 .ctl { display: flex; align-items: center; gap: 1rem; font-variant-numeric: tabular-nums; flex-shrink: 0; }
-.ctl button { background: none; border: 0; color: var(--mute); font: inherit; cursor: pointer; padding: .25rem; }
-.ctl button:hover, .ctl button:focus-visible { color: var(--shu); }
-.ctl button:focus-visible { outline: 1px solid var(--shu); }
+button { background: none; border: 0; color: var(--mute); font: inherit; cursor: pointer; padding: .25rem; }
+button:hover { color: var(--shu); }
 .bar { height: 1px; background: var(--rule); margin-top: .75rem; }
 .bar i { display: block; height: 100%; width: 0; background: var(--shu); }
-.bar i.run { animation: fill var(--dwell) linear forwards; }
+.bar i.run { animation: fill 6s linear forwards; }
 @keyframes fill { to { width: 100% } }
-@media (prefers-reduced-motion: reduce) { .frames { scroll-behavior: auto } .bar { display: none } }
-h2 { font: 400 .78rem var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--mute); margin: 6rem 0 1.25rem; }
-.index { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
-.index li a { display: grid; grid-template-columns: 4.5rem 1fr auto; gap: 1rem; padding-block: 1.15rem; border-bottom: 1px solid var(--rule); align-items: baseline; transition: padding .4s ease; }
-.index li a:hover { padding-left: .6rem; }
-.index li a.on { padding-left: .6rem; }
-.index li a.on .t { color: var(--shu); }
 /* timeline: one lane per kind of work, marks placed by date; drawn from the list below, so the two never disagree */
 .tl { margin: 0 0 2.5rem; }
 .lane { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 1rem; align-items: center; height: 2.4rem; }
@@ -64,76 +80,95 @@ h2 { font: 400 .78rem var(--body); letter-spacing: .2em; text-transform: upperca
 .tick::before { content: ""; position: absolute; top: 0; left: 50%; height: 5px; border-left: 1px solid var(--ink); }
 .readout { margin: 1rem 0 0; min-height: 1.6rem; font-size: .85rem; color: var(--mute); }
 .readout b { font: 400 1rem var(--display); color: var(--ink); }
-.yr { font-variant-numeric: tabular-nums; color: var(--mute); font-size: .85rem; }
-.t { font: 400 1.12rem/1.45 var(--display); min-width: 0; }
-.kind { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); }
-.divider { margin: 8rem 0 0; padding-block: 1rem; border-top: 1px solid var(--shu); color: var(--shu); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; }
-/* paper page */
-.eyebrow { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--shu); }
-.paper h1 { font: 400 clamp(1.8rem, 5vw, 2.6rem)/1.3 var(--display); margin: 1rem 0 1.25rem; text-wrap: balance; }
-.byline { color: var(--mute); font-size: .9rem; margin: 0 0 4rem; }
-.lede { font: 400 1.25rem/1.75 var(--display); margin: 4rem 0; }
+.index { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.index li a { display: grid; grid-template-columns: 4.5rem 1fr auto; gap: 1rem; padding-block: 1.15rem; border-bottom: 1px solid var(--rule); align-items: baseline; transition: padding .4s ease; }
+.index li a:hover, .index li a.on { padding-left: .6rem; }
+.index li a.on .t { color: var(--shu); }
+/* work pages */
+.facts { display: grid; grid-template-columns: 7rem 1fr; gap: .5rem 1.5rem; margin: 0; font-size: .9rem; }
+.facts dt { font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--mute); padding-top: .2rem; }
+.facts dd { margin: 0; min-width: 0; }
 .findings { list-style: none; padding: 0; margin: 0; display: grid; gap: 2rem; }
 .findings li { display: grid; grid-template-columns: 2.5rem 1fr; gap: 1rem; }
-.findings b { font: 400 1.4rem var(--display); color: var(--shu); font-weight: 400; }
+.findings b { font: 400 1.4rem var(--display); color: var(--shu); }
 .links { display: flex; flex-wrap: wrap; gap: .75rem 2rem; font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; }
 .links a { border-bottom: 1px solid var(--rule); padding-bottom: .2rem; }
-.cite { background: var(--well); padding: 1.5rem; font: .8rem/1.6 ui-monospace, Menlo, monospace; overflow-x: auto; white-space: pre; }
-footer { margin-top: 6rem; font-size: .75rem; color: var(--mute); }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+.code { background: var(--well); padding: 1.25rem 1.5rem; font: .8rem/1.6 var(--mono); overflow-x: auto; white-space: pre; }
+.related { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+.related a { display: grid; gap: .6rem; min-width: 0; }
+.related .plate { aspect-ratio: 1; }
+.related a:hover .t { color: var(--shu); }
+@media (max-width: 520px) { .related { grid-template-columns: 1fr 1fr; } .related a:last-child { display: none; } }
+.mentions { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.mentions li { display: grid; grid-template-columns: 4.5rem 1fr auto; gap: 1rem; padding-block: .9rem; border-bottom: 1px solid var(--rule); align-items: baseline; font-size: .92rem; }
+/* about */
+.about { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: 2.5rem; align-items: start; padding-block: 3rem 0; }
+.about .plate { aspect-ratio: 4/5; }
+@media (max-width: 560px) { .about { grid-template-columns: 1fr; } .about .plate { max-width: 13rem; } }
+.contact { font-size: .95rem; }
+.contact dd { font-family: var(--mono); font-size: .85rem; user-select: all; }
+footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); font-size: .75rem; color: var(--mute); display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.accents { display: flex; gap: .25rem; align-items: center; }
+.accents button { font-size: .75rem; display: flex; align-items: center; gap: .35rem; }
+.accents button::before { content: ""; width: 9px; height: 9px; border-radius: 1px; background: var(--sw); }
+.accents button[aria-pressed="true"] { color: var(--ink); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } .frames { scroll-behavior: auto } .bar { display: none } }
 </style>
+
+<p class="spine" aria-hidden="true">Parker McDonnell <b>·</b> Boulder, Colorado</p>
 
 <div class="wrap">
   <header>
-    <a class="mark" href="#top">Parker McDonnell<span>.</span></a>
-    <nav><a href="#works">Work</a><a href="#paper">Paper</a><a href="#">About</a></nav>
+    <a class="mark" href="#home"><svg class="seal" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="3"/><text x="14" y="19.5" text-anchor="middle">間</text></svg>Parker McDonnell</a>
+    <nav><a href="#home" data-view="home">Work</a><a href="#about" data-view="about">About</a></nav>
   </header>
 
-  <section class="intro" id="top">
-    <h1>Soft robots that swim the way jellyfish do.</h1>
-    <p>PhD researcher in the Xu Lab, University of Colorado Boulder. I study the fluid mechanics of jellyfish and build bio-inspired machines that borrow from them.</p>
+  <!-- HOME -->
+  <section class="view" id="home">
+    <div class="intro">
+      <h1>Soft robots that swim the way sea animals do.</h1>
+      <p>PhD researcher in the Xu Lab, University of Colorado Boulder. I study how jellyfish and other swimmers move water, and build soft machines that borrow from them.</p>
+    </div>
+
+    <section class="show" aria-label="Featured work" aria-roledescription="slideshow">
+      <div class="frames" id="frames">
+        <a class="frame" href="#paper" data-t="A multimodal feather star robot" data-k="Paper · 2026"><div class="plate"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1"><circle cx="50" cy="50" r="6"/><path d="M50 44 Q48 25 40 10 M56 50 Q75 48 90 40 M50 56 Q52 75 60 90 M44 50 Q25 52 10 60 M54 46 Q68 32 80 18"/></svg><span class="badge">Loop · 0:08</span></div></a>
+        <a class="frame" href="#talk" data-t="How jellyfish move water" data-k="Talk · 2025"><div class="plate"><span>Talk still</span></div></a>
+        <a class="frame" href="#tool" data-t="SignalShepherd" data-k="Tool · 2025"><div class="plate"><span>Screenshot</span></div></a>
+        <a class="frame" href="#" data-t="Tank marker tracking" data-k="Method · 2024"><div class="plate"><span>Diagram</span></div></a>
+      </div>
+      <div class="bar"><i id="bar"></i></div>
+      <div class="caption" aria-live="polite">
+        <a id="cap" href="#paper"><span class="t" id="capT">A multimodal feather star robot</span> <span class="kind" id="capK">Paper · 2026</span></a>
+        <span class="ctl"><button id="prev" aria-label="Previous work">←</button><span id="count">1 / 4</span><button id="next" aria-label="Next work">→</button></span>
+      </div>
+    </section>
+
+    <h2 id="works">Selected work</h2>
+    <figure class="tl" style="margin-inline:0" aria-label="Timeline of selected work">
+      <div id="lanes"></div>
+      <div class="lane axis"><span></span><div class="track"><div class="rail" id="axis"></div></div></div>
+      <figcaption class="readout" id="readout">Point to a mark to see the work. Select it to open.</figcaption>
+    </figure>
+    <ul class="index" id="index">
+      <li><a href="#paper" data-date="2026.77"><span class="yr">2026</span><span class="t">Plenty of fish in the sea, but only one multimodal feather star robot</span><span class="kind">Paper</span></a></li>
+      <li><a href="#talk" data-date="2025.75"><span class="yr">2025</span><span class="t">How jellyfish move water, and what robots can borrow (placeholder)</span><span class="kind">Talk</span></a></li>
+      <li><a href="#tool" data-date="2025.3"><span class="yr">2025</span><span class="t">SignalShepherd, a tool for syncing sensor and video data</span><span class="kind">Tool</span></a></li>
+      <li><a href="#" data-date="2024.6"><span class="yr">2024</span><span class="t">A low-cost method for marker tracking in water tanks</span><span class="kind">Method</span></a></li>
+      <li><a href="#" data-date="2023.9"><span class="yr">2023</span><span class="t">Conference talk, fluid dynamics meeting (placeholder)</span><span class="kind">Talk</span></a></li>
+      <li><a href="#" data-date="2023.4"><span class="yr">2023</span><span class="t">Earlier paper or preprint (placeholder)</span><span class="kind">Paper</span></a></li>
+    </ul>
   </section>
 
-  <section class="show" aria-label="Featured work" aria-roledescription="slideshow" style="--dwell: 6s">
-    <div class="frames" id="frames">
-      <a class="frame" href="#paper" data-t="Science Advances paper" data-k="Paper · 2026"><div class="plate"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1"><path d="M15 50 Q15 15 50 15 Q85 15 85 50 Q70 46 50 50 Q30 46 15 50Z"/><path d="M30 50 q-3 18 2 34 M42 51 q-2 20 1 36 M58 51 q2 20-1 36 M70 50 q3 18-2 34"/></svg></div></a>
-      <a class="frame" href="#" data-t="Jellyfish propulsion" data-k="Talk · 2025"><div class="plate"><span>Talk still</span></div></a>
-      <a class="frame" href="#" data-t="SignalShepherd" data-k="Tool · 2025"><div class="plate"><span>Screenshot</span></div></a>
-      <a class="frame" href="#" data-t="Tank marker tracking" data-k="Method · 2024"><div class="plate"><span>Diagram</span></div></a>
-    </div>
-    <div class="bar"><i id="bar"></i></div>
-    <div class="caption" aria-live="polite">
-      <a id="cap" href="#paper"><span class="t" id="capT">Science Advances paper</span> <span class="kind" id="capK">Paper · 2026</span></a>
-      <span class="ctl"><button id="prev" aria-label="Previous work">←</button><span id="count">1 / 4</span><button id="next" aria-label="Next work">→</button></span>
-    </div>
-  </section>
+  <!-- PAPER -->
+  <article class="view" id="paper" hidden>
+    <p class="eyebrow">Paper · Science Advances · October 2026</p>
+    <h1 class="page-title">Plenty of fish in the sea, but only one multimodal feather star robot</h1>
+    <p class="byline">Parker McDonnell, Nicole W. Xu &nbsp;·&nbsp; Sci. Adv. 12(41), eaem0495</p>
 
-  <h2 id="works">Selected work</h2>
-  <figure class="tl" id="tl" aria-label="Timeline of selected work">
-    <div id="lanes"></div>
-    <div class="lane axis"><span></span><div class="track"><div class="rail" id="axis"></div></div></div>
-    <figcaption class="readout" id="readout">Point to a mark to see the work. Select it to open.</figcaption>
-  </figure>
+    <div class="plate wide" aria-label="Placeholder for a silent video loop"><span>Silent video loop · licence to check</span><span class="badge">Loop · 0:08</span></div>
 
-  <ul class="index" id="index">
-    <li><a href="#paper" data-date="2026.2"><span class="yr">2026</span><span class="t">Science Advances paper, title to come</span><span class="kind">Paper</span></a></li>
-    <li><a href="#" data-date="2025.75"><span class="yr">2025</span><span class="t">Invited talk on jellyfish-inspired propulsion</span><span class="kind">Talk</span></a></li>
-    <li><a href="#" data-date="2025.3"><span class="yr">2025</span><span class="t">SignalShepherd, a tool for syncing sensor and video data</span><span class="kind">Tool</span></a></li>
-    <li><a href="#" data-date="2024.6"><span class="yr">2024</span><span class="t">A low-cost method for marker tracking in water tanks</span><span class="kind">Method</span></a></li>
-    <li><a href="#" data-date="2023.9"><span class="yr">2023</span><span class="t">Conference talk, fluid dynamics meeting (placeholder)</span><span class="kind">Talk</span></a></li>
-    <li><a href="#" data-date="2023.4"><span class="yr">2023</span><span class="t">Earlier paper or preprint (placeholder)</span><span class="kind">Paper</span></a></li>
-  </ul>
-
-  <p class="divider" id="paper">Paper page</p>
-
-  <article class="paper">
-    <p class="eyebrow">Science Advances · 2026</p>
-    <h1>Title of the Science Advances paper goes here</h1>
-    <p class="byline">P. McDonnell, co-authors, senior author &nbsp;·&nbsp; doi 10.1126/sciadv.aem0495</p>
-
-    <figure class="plate" style="margin:0" aria-label="Placeholder for key figure"><span>Key figure · licence to check</span></figure>
-
-    <p class="lede">A two-or-three-sentence summary for someone with no background: what the jellyfish does, what we built or measured, and why it matters outside the lab.</p>
+    <p class="lede">Feather stars swim by sweeping their many arms. We built a soft robot shaped like one that can climb, turn and glide in three dimensions with very few motors, because the shape of its body does much of the work. (Placeholder summary, to be written by Parker.)</p>
 
     <h2>What we found</h2>
     <ol class="findings">
@@ -143,33 +178,174 @@ footer { margin-top: 6rem; font-size: .75rem; color: var(--mute); }
     </ol>
 
     <h2>Read and reuse</h2>
-    <div class="links"><a href="https://doi.org/10.1126/sciadv.aem0495">Paper</a><a href="#">PDF</a><a href="#">Code</a><a href="#">Data</a><a href="#">Supplementary video</a></div>
+    <div class="links"><a href="https://doi.org/10.1126/sciadv.aem0495">Paper</a><a href="#">PDF</a><a href="#">Code</a><a href="#">Data</a><a href="#">Supplementary videos</a></div>
+
+    <h2>Related</h2>
+    <div class="related">
+      <a href="#talk"><div class="plate"><span>Talk</span></div><span class="kind">Talk · 2025</span><span class="t">How jellyfish move water</span></a>
+      <a href="#tool"><div class="plate"><span>Tool</span></div><span class="kind">Tool</span><span class="t">SignalShepherd</span></a>
+      <a href="#"><div class="plate"><span>Data</span></div><span class="kind">Dataset</span><span class="t">Swimming trials</span></a>
+    </div>
+
+    <h2>In the media</h2>
+    <ul class="mentions">
+      <li><span class="yr">Oct 2026</span><span>University news story (placeholder)</span><span class="kind">Press</span></li>
+      <li><span class="yr">Oct 2026</span><span>Science magazine coverage (placeholder)</span><span class="kind">Article</span></li>
+    </ul>
 
     <h2>Cite this</h2>
-    <div class="cite">@article{mcdonnell2026,
-  title   = {Title of the paper},
-  author  = {McDonnell, Parker and others},
+    <div class="code">@article{mcdonnell2026featherstar,
+  title   = {Plenty of fish in the sea, but only one
+             multimodal feather star robot},
+  author  = {McDonnell, Parker and Xu, Nicole W.},
   journal = {Science Advances},
+  volume  = {12},
+  number  = {41},
+  pages   = {eaem0495},
   year    = {2026},
   doi     = {10.1126/sciadv.aem0495}
 }</div>
   </article>
 
-  <footer>Concept A, slideshow variant · built on al-folio (MIT) · placeholder content</footer>
+  <!-- TALK -->
+  <article class="view" id="talk" hidden>
+    <p class="eyebrow">Talk · 2025</p>
+    <h1 class="page-title">How jellyfish move water, and what robots can borrow</h1>
+    <p class="byline">Invited seminar (placeholder title, venue and date)</p>
+
+    <div class="plate wide"><span>Recording · 42 min</span></div>
+
+    <p class="lede">A short paragraph saying who the talk was for and the one idea to take away, written so someone who missed it knows whether to watch.</p>
+
+    <h2>Details</h2>
+    <dl class="facts">
+      <dt>Where</dt><dd>Department seminar, university name</dd>
+      <dt>When</dt><dd>Month 2025</dd>
+      <dt>Length</dt><dd>42 minutes plus questions</dd>
+      <dt>Audience</dt><dd>Engineers and biologists, no fluid mechanics assumed</dd>
+    </dl>
+
+    <h2>Watch and download</h2>
+    <div class="links"><a href="#">Recording</a><a href="#">Slides (PDF)</a><a href="#">Figures</a></div>
+
+    <h2>Based on</h2>
+    <div class="related">
+      <a href="#paper"><div class="plate"><span>Paper</span></div><span class="kind">Paper · 2026</span><span class="t">Feather star robot</span></a>
+      <a href="#"><div class="plate"><span>Paper</span></div><span class="kind">Paper · 2023</span><span class="t">Earlier paper</span></a>
+      <a href="#tool"><div class="plate"><span>Tool</span></div><span class="kind">Tool</span><span class="t">SignalShepherd</span></a>
+    </div>
+  </article>
+
+  <!-- TOOL -->
+  <article class="view" id="tool" hidden>
+    <p class="eyebrow">Tool · Python · 2025</p>
+    <h1 class="page-title">SignalShepherd</h1>
+    <p class="byline">Import, clean, synchronise, cut, plot and export sensor and video data from an experiment</p>
+
+    <div class="plate wide"><span>Screenshot or short screen recording</span></div>
+
+    <p class="lede">If you record force, pressure or position alongside video, lining the two up by hand takes hours. SignalShepherd does it in a few clicks and exports figures and clips ready for a paper or talk.</p>
+
+    <h2>What it does</h2>
+    <ol class="findings">
+      <li><b>一</b><span>Opens common sensor files and video side by side.</span></li>
+      <li><b>二</b><span>Lines them up on one clock, then lets you cut out the parts you need.</span></li>
+      <li><b>三</b><span>Exports plots, synced video and clean data files.</span></li>
+    </ol>
+
+    <h2>Get started</h2>
+    <div class="code">pip install git+https://github.com/&lt;owner&gt;/Tool-SignalMaster
+sigshep</div>
+
+    <h2>Details</h2>
+    <dl class="facts">
+      <dt>Licence</dt><dd>To confirm</dd>
+      <dt>Runs on</dt><dd>Windows, macOS, Linux · Python 3.11+</dd>
+      <dt>Used in</dt><dd><a href="#paper">Feather star robot (2026)</a></dd>
+    </dl>
+
+    <h2>Links</h2>
+    <div class="links"><a href="#">Code</a><a href="#">Documentation</a><a href="#">Report a problem</a></div>
+  </article>
+
+  <!-- ABOUT -->
+  <section class="view" id="about" hidden>
+    <p class="eyebrow">About</p>
+    <div class="about">
+      <div class="plate"><span>Portrait</span></div>
+      <div>
+        <p style="margin-top:0">I'm a PhD researcher in the Xu Lab at the University of Colorado Boulder. I study the fluid mechanics of jellyfish and other swimming animals, and build soft robots that use what they do. (Placeholder bio, two or three short paragraphs.)</p>
+        <p>Before Boulder, a line about earlier study or work. Outside the lab, a line about you.</p>
+      </div>
+    </div>
+
+    <h2>Contact</h2>
+    <dl class="facts contact">
+      <dt>Email</dt><dd>name@colorado.edu</dd>
+      <dt>ORCID</dt><dd>0000-0000-0000-0000</dd>
+    </dl>
+
+    <h2>Elsewhere</h2>
+    <div class="links"><a href="#">CV (PDF)</a><a href="#">Google Scholar</a><a href="https://github.com/Parker-McDonnell">GitHub</a><a href="#">Xu Lab</a></div>
+
+    <h2>Education</h2>
+    <ul class="mentions">
+      <li><span class="yr">20XX–</span><span>PhD, University of Colorado Boulder</span><span class="kind">Current</span></li>
+      <li><span class="yr">20XX</span><span>Previous degree, institution</span><span class="kind">Degree</span></li>
+    </ul>
+  </section>
+
+  <footer>
+    <span>Concept A · built on al-folio (MIT) · placeholder content</span>
+    <span class="accents" role="group" aria-label="Try an accent colour">
+      <button data-accent="shu" style="--sw:#a8432f" aria-pressed="true">朱 Vermilion</button>
+      <button data-accent="ai" style="--sw:#2f5079" aria-pressed="false">藍 Indigo</button>
+      <button data-accent="koke" style="--sw:#5b6b3a" aria-pressed="false">苔 Moss</button>
+    </span>
+  </footer>
 </div>
 
 <script>
+// Pages: show the one named in the address (#paper, #talk, ...), home otherwise.
 (() => {
-  // Touch swiping is native scrolling with snap points; this script only keeps the caption in step,
-  // advances slowly on its own, and adds mouse dragging and arrow buttons for desktop.
+  const views = [...document.querySelectorAll('.view')];
+  const navs = [...document.querySelectorAll('nav a')];
+  function route() {
+    const id = location.hash.slice(1);
+    const view = views.find(v => v.id === id) || views[0];
+    views.forEach(v => v.hidden = v !== view);
+    navs.forEach(a => a.toggleAttribute('aria-current', a.dataset.view === view.id || (view.id !== 'about' && a.dataset.view === 'home')));
+    if (id === 'works') document.getElementById('works').scrollIntoView(); else scrollTo(0, 0);
+    dispatchEvent(new Event('resize'));
+  }
+  addEventListener('hashchange', route);
+  route();
+})();
+
+// Accent colour: a viewer's choice is remembered in this browser only.
+(() => {
+  const btns = [...document.querySelectorAll('.accents button')];
+  const set = a => {
+    document.documentElement.dataset.accent = a;
+    btns.forEach(b => b.setAttribute('aria-pressed', b.dataset.accent === a));
+    try { localStorage.setItem('accent', a); } catch (e) {}
+  };
+  btns.forEach(b => b.onclick = () => set(b.dataset.accent));
+  let saved = null; try { saved = localStorage.getItem('accent'); } catch (e) {}
+  if (saved) set(saved);
+})();
+
+// Slideshow: touch swiping is native scrolling with snap points; this keeps the caption in step,
+// advances slowly on its own, and adds mouse dragging and arrow buttons for desktop.
+(() => {
   const show = document.querySelector('.show'), box = document.getElementById('frames');
   const frames = [...box.querySelectorAll('.frame')];
   const bar = document.getElementById('bar'), cap = document.getElementById('cap');
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const dwell = 6000;
   let i = 0, timer = null, paused = false;
   const go = n => box.scrollTo({ left: ((n + frames.length) % frames.length) * box.clientWidth });
   function settle() {
+    if (!box.clientWidth) return;
     const n = Math.round(box.scrollLeft / box.clientWidth);
     if (n === i) return;
     i = n;
@@ -185,7 +361,7 @@ footer { margin-top: 6rem; font-size: .75rem; color: var(--mute); }
     bar.classList.remove('run'); void bar.offsetWidth;
     if (still || paused) return;
     bar.classList.add('run');
-    timer = setTimeout(() => go(i + 1), dwell);
+    timer = setTimeout(() => { if (box.clientWidth) go(i + 1); else restart(); }, 6000);
   }
   let t; box.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(settle, 80); });
   document.getElementById('prev').onclick = () => go(i - 1);
@@ -197,7 +373,6 @@ footer { margin-top: 6rem; font-size: .75rem; color: var(--mute); }
   show.addEventListener('focusout', hold(false));
   box.addEventListener('touchstart', hold(true), { passive: true });
   box.addEventListener('touchend', () => setTimeout(hold(false), 4000), { passive: true });
-  // mouse drag on desktop; a drag never counts as a click on the work
   let x0 = null, dragged = false;
   box.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') { x0 = e.clientX; dragged = false; } });
   addEventListener('pointerup', e => {
@@ -211,16 +386,15 @@ footer { margin-top: 6rem; font-size: .75rem; color: var(--mute); }
   restart();
 })();
 
+// Timeline: drawn from the list of works, and linked to it both ways.
 (() => {
   const rows = [...document.querySelectorAll('#index a')];
   const readout = document.getElementById('readout'), rest = readout.innerHTML;
   const dates = rows.map(a => +a.dataset.date);
   const y0 = Math.floor(Math.min(...dates)), y1 = Math.ceil(Math.max(...dates) + 0.01);
   const pos = d => ((d - y0) / (y1 - y0) * 100) + '%';
-  const kinds = ['Paper', 'Talk', 'Tool', 'Method'];
-  const lanes = document.getElementById('lanes');
-  const rails = {};
-  for (const k of kinds) {
+  const lanes = document.getElementById('lanes'), rails = {};
+  for (const k of ['Paper', 'Talk', 'Tool', 'Method']) {
     if (!rows.some(a => a.querySelector('.kind').textContent === k)) continue;
     const lane = document.createElement('div');
     lane.className = 'lane';
@@ -231,14 +405,14 @@ footer { margin-top: 6rem; font-size: .75rem; color: var(--mute); }
   const axis = document.getElementById('axis');
   for (let y = y0; y < y1; y++) axis.insertAdjacentHTML('beforeend', `<span class="tick" style="left:${pos(y)}">${y}</span>`);
   rows.forEach(a => {
-    const k = a.querySelector('.kind').textContent, t = a.querySelector('.t').textContent;
+    const k = a.querySelector('.kind').textContent, t = a.querySelector('.t').textContent, yr = a.querySelector('.yr').textContent;
     const dot = document.createElement('a');
     dot.className = 'dot';
     dot.href = a.getAttribute('href');
     dot.style.left = pos(+a.dataset.date);
-    dot.setAttribute('aria-label', `${a.querySelector('.yr').textContent}, ${k}: ${t}`);
+    dot.setAttribute('aria-label', `${yr}, ${k}: ${t}`);
     rails[k].append(dot);
-    const on = () => { dot.classList.add('on'); a.classList.add('on'); readout.innerHTML = `${a.querySelector('.yr').textContent} · ${k} &nbsp;<b></b>`; readout.querySelector('b').textContent = t; };
+    const on = () => { dot.classList.add('on'); a.classList.add('on'); readout.innerHTML = `${yr} · ${k} &nbsp;<b></b>`; readout.querySelector('b').textContent = t; };
     const off = () => { dot.classList.remove('on'); a.classList.remove('on'); readout.innerHTML = rest; };
     for (const el of [dot, a]) {
       el.addEventListener('mouseenter', on); el.addEventListener('mouseleave', off);
