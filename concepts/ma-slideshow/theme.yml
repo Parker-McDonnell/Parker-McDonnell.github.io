@@ -43,8 +43,12 @@ layout:
   column_width: 44rem                 # width of the reading column; 44rem is about 700 pixels
 
 ocean:                                # scrolling down the page sinks through the water to the sea floor
-  enabled: true                       # the deepening shade, the line drawings in the margins and the sea floor
+  enabled: true                       # the deepening shade, the creatures in the page and the sea floor
   motion: true                        # very slow drifting; always still for viewers who ask their device for less motion
+  light_shafts: true                  # sun rays at the top that fade as the reader scrolls down
+
+qr:                                   # QR codes to open the site, or a paper, talk or tool, on a phone
+  site_url: ""                        # the address they point to; empty: this page's own. The real site: https://parker-mcdonnell.github.io/
 
 accent_bars:                          # lines in the accent colour that break the page into sections
   header: thin                        # under the name and menu: none, thin, thick, or band (the full window width)
