@@ -24,11 +24,14 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
    light shafts fall from the surface and fade on the way down, creatures swim in the reading column between the words
    (fish, moon jellyfish, bubbles, the robot), larger when near and fainter when far, and the sea floor closes every page. Drawn in the muted ink, thin like the feather star sketch; everything moves very slowly, and not at
    all for viewers who ask for less motion. */
+/* the drawings' colour (theme.yml, ocean.line_color); white ones carry a faint dark edge so they still show on white */
+:root { --line: var(--mute); }
+:root[data-line="white"] :is(.sea, .floor, .perch) svg { filter: drop-shadow(0 0 .6px rgba(0, 0, 0, .35)); }
 :root { --deep: color-mix(in oklab, var(--paper), var(--shu) 11%); }
 :root[data-ocean="on"] body { position: relative; background: linear-gradient(var(--paper) 0, var(--paper) 12%, var(--deep) 100%); }
 .sea, .floor { display: none; }
-:root[data-ocean="on"] .sea { display: block; position: absolute; inset: 0; overflow: hidden; pointer-events: none; color: var(--mute); }
-:root[data-ocean="on"] .floor { display: block; position: relative; height: 13rem; margin-top: -2rem; overflow: hidden; pointer-events: none; color: var(--mute); }
+:root[data-ocean="on"] .sea { display: block; position: absolute; inset: 0; overflow: hidden; pointer-events: none; color: var(--line); }
+:root[data-ocean="on"] .floor { display: block; position: relative; height: 13rem; margin-top: -2rem; overflow: hidden; pointer-events: none; color: var(--line); }
 :root[data-ocean="on"] .wrap { position: relative; z-index: 1; }
 .sea svg, .floor svg { position: absolute; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
 .swell { top: 2.6rem; left: 0; width: 200%; height: 1.6rem; animation: drift 140s linear infinite; }
@@ -96,7 +99,7 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 .turn { animation: turn 120s linear infinite; }
 :root[data-ocean-motion="off"] .sea *, :root[data-ocean-motion="off"] .floor *, :root[data-ocean-motion="off"] .perch * { animation: none !important; }
 .perch { display: none; }
-:root[data-ocean="on"] .perch { display: block; position: absolute; z-index: 2; pointer-events: none; fill: none; stroke: var(--mute); stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; overflow: visible; opacity: .6; }
+:root[data-ocean="on"] .perch { display: block; position: absolute; z-index: 2; pointer-events: none; fill: none; stroke: var(--line); stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; overflow: visible; opacity: .6; }
 :root[data-ocean="on"] footer, :root[data-ocean="on"] .show { position: relative; }
 /* the page in front of the sea (theme.yml, ocean.blocks): each block of words stands on a soft, frosted ground the
    colour of the page, its edge fading out, so a creature behind it is hidden or only glimpsed. Translucent, so it still
@@ -493,7 +496,7 @@ const site = (() => {
     slideshow: { seconds_per_slide: 6, autoplay: true, resume_after_touch_seconds: 4 },
     timeline: { spine: 'kelp', space_per_year: '16rem', marks: 'icon' },
     citation_map: { demo: true },
-    ocean: { enabled: true, motion: true, light_shafts: true, blocks: 'soft' },
+    ocean: { enabled: true, motion: true, light_shafts: true, blocks: 'soft', line_color: 'muted' },
     qr: { site_url: '' },
     accent_bars: { header: 'thin', sections: 'short' },
     playground: true,
@@ -792,6 +795,9 @@ site.use(cfg => {
     document.documentElement.dataset.oceanMotion = cfg.ocean?.motion === false ? 'off' : 'on';
     document.documentElement.dataset.rays = cfg.ocean?.light_shafts === false ? 'off' : 'on';
     document.documentElement.dataset.blocks = cfg.ocean?.blocks || 'soft';
+    const line = cfg.ocean?.line_color || 'muted';
+    document.documentElement.dataset.line = line;
+    document.documentElement.style.setProperty('--line', { muted: 'var(--mute)', accent: 'var(--shu)', white: '#fff', ink: 'var(--ink)' }[line] || line);
     resettle();
   });
 
@@ -1324,6 +1330,7 @@ site.use(cfg => {
     play.append(
       group('Ocean', [['On', true], ['Still', 'still'], ['Off', false]], cfg.ocean.enabled === false ? false : cfg.ocean.motion === false ? 'still' : true,
         v => site.set({ ocean: { enabled: v !== false, motion: v === true } })),
+      group('Line colour', [['Muted', 'muted'], ['White', 'white'], ['Accent', 'accent'], ['Ink', 'ink']], cfg.ocean.line_color, v => site.set({ ocean: { line_color: v } })),
       group('Blocks', [['Soft', 'soft'], ['None', 'none']], cfg.ocean.blocks, v => site.set({ ocean: { blocks: v } })),
       group('Light shafts', [['On', true], ['Off', false]], cfg.ocean.light_shafts !== false, v => site.set({ ocean: { light_shafts: v } })),
       group('Header bar', [['None', 'none'], ['Thin', 'thin'], ['Thick', 'thick'], ['Full width', 'band']], cfg.accent_bars.header, v => site.set({ accent_bars: { header: v } })),
