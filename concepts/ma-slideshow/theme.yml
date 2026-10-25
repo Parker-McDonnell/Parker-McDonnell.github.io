@@ -42,6 +42,10 @@ palettes:
 layout:
   column_width: 44rem                 # width of the reading column; 44rem is about 700 pixels
 
+ocean:                                # scrolling down the page sinks through the water to the sea floor
+  enabled: true                       # the deepening shade, the line drawings in the margins and the sea floor
+  motion: true                        # very slow drifting; always still for viewers who ask their device for less motion
+
 accent_bars:                          # lines in the accent colour that break the page into sections
   header: thin                        # under the name and menu: none, thin, thick, or band (the full window width)
   sections: short                     # above each section heading: none, short (a short dash) or full (across the column)
