@@ -60,7 +60,8 @@ timeline:
                                       # projects: a main line with a branch per project (2+ works), each shown by its headline until opened
                                       # kinds: one lane per kind of work (papers, talks, ...), each can be folded away
                                       # side: a list, with a timeline beside it that follows as you scroll
-  space_per_year: 16rem               # center layout: the height one year takes, so gaps in time show as gaps on the page
+  spine: kelp                         # center layout: kelp (a swaying stalk with leaves, rising from the sea floor) or straight
+  space_per_year: 16rem              # center layout: the height one year takes, so gaps in time show as gaps on the page
   side: right                         # side layout: left or right of the list (phones always use a thin rail on the right)
   marks: icon                        # dot, number (like a reference list) or icon (one per kind of work)
   dates: true                         # show the month and year beside each mark

@@ -165,6 +165,9 @@ button:hover { color: var(--shu); }
 .works.graph .ct-year { left: 0; transform: translateY(-50%); padding: 0; background: none; writing-mode: horizontal-tb; }
 .ct-lines .lanes path { fill: none; stroke: var(--mute); stroke-width: 1.25; opacity: .55; }
 .ct-lines .lanes path.main { stroke: var(--ink); opacity: .45; }
+.works.stem .ct::before { display: none; }
+.ct-lines .lanes path.stem { stroke-width: 1.4; opacity: .6; }
+.ct-lines .lanes path.leaf { stroke-width: 1; opacity: .45; }
 .ct-lines .lanes path.shut { stroke-dasharray: 2 4; opacity: .4; }
 .ct-name { position: absolute; transform: translate(-50%, -50%) rotate(180deg); writing-mode: vertical-rl; padding-block: .6rem; background: var(--paper); font-size: .58rem; letter-spacing: .16em; text-transform: uppercase; color: var(--mute); white-space: nowrap; }
 .ct-head { position: absolute; transform: translateX(-50%); padding: .2rem; pointer-events: auto; color: var(--mute); }
@@ -491,7 +494,7 @@ sigshep</div>
 const site = (() => {
   const defaults = {
     slideshow: { seconds_per_slide: 6, autoplay: true, resume_after_touch_seconds: 4 },
-    timeline: { layout: 'center', space_per_year: '16rem', marks: 'icon', dates: true, side: 'right' },
+    timeline: { layout: 'center', spine: 'kelp', space_per_year: '16rem', marks: 'icon', dates: true, side: 'right' },
     citation_map: { demo: true },
     ocean: { enabled: true, motion: true },
     accent_bars: { header: 'thin', sections: 'short' },
@@ -570,12 +573,21 @@ site.use(cfg => {
     }
     return s;
   };
+  // a moon jellyfish (Aurelia): a wide, shallow bell, its four horseshoe gonads showing through, a fringe of fine
+  // short tentacles round the rim, and four short frilly oral arms
+  const moon = () => {
+    let s = '<path d="M4 20 Q6 5 30 4 Q54 5 56 20 Q30 25 4 20 Z"/>';
+    for (const x of [15, 23, 31, 39]) s += `<path d="M${x} 16 a3.2 3.4 0 1 1 6.4 0"/>`;
+    for (let x = 6; x <= 54; x += 3.5) s += `<path stroke-width=".6" d="M${x} ${21 + (x - 30) ** 2 / 900} q1 4 0 7"/>`;
+    s += '<path d="M25 23 q-4 7 0 13 q3 5 -1 11 M29 23 q2 8 -1 14 q-2 4 1 9 M33 23 q4 7 0 13 q-3 5 1 10 M36 22 q4 6 1 11"/>';
+    return s;
+  };
   const fish = '<path d="M4 10 Q14 1 26 10 Q14 19 4 10 Z M26 10 L36 4 L34 10 L36 16 Z"/><circle cx="9" cy="9" r=".8"/>';
   const ART = {
     fish: [40, 20, fish],
     fishBack: [40, 20, `<g transform="translate(40 0) scale(-1 1)">${fish}</g>`],
     school: [80, 40, [[0, 8, .7], [26, 0, .55], [30, 22, .6]].map(([x, y, s]) => `<g transform="translate(${x} ${y}) scale(${s})">${fish}</g>`).join('')],
-    jelly: [40, 66, '<path d="M6 20 Q6 4 20 4 Q34 4 34 20 Q27 17 20 20 Q13 17 6 20 Z M12 21 q-3 10 1 20 q3 10 -1 18 M20 21 q3 12 -1 22 q-3 10 1 18 M28 21 q3 10 -1 20 q-3 8 1 16"/>'],
+    jelly: [60, 52, moon()],
     robot: [100, 100, '<circle cx="50" cy="50" r="6"/><path d="M50 44 Q48 25 40 10 M56 50 Q75 48 90 40 M50 56 Q52 75 60 90 M44 50 Q25 52 10 60 M54 46 Q68 32 80 18"/>'],
     bubbles: [16, 30, '<circle cx="8" cy="26" r="2.4"/><circle cx="4" cy="16" r="1.6"/><circle cx="10" cy="7" r="1.2"/>'],
     kelp: [30, 120, '<path d="M15 120 C6 100 24 84 14 62 S22 26 15 2"/><path d="M14 92 q-9 -3 -11 -11 M17 70 q9 -2 11 -10 M14 46 q-8 -2 -10 -10 M17 24 q8 -2 9 -9"/>'],
@@ -589,13 +601,12 @@ site.use(cfg => {
     ['bubbles', { top: '9%', left: '6%' }, 16, 'rise', -2],
     ['fish', { top: '15%', right: '7%' }, 44, 'swim', -6],
     ['school', { top: '27%', left: '4%' }, 72, 'swim', -14],
-    ['jelly', { top: '37%', right: '5%' }, 46, 'bob', 0],
+    ['jelly', { top: '37%', right: '5%' }, 64, 'bob', 0],
     ['bubbles', { top: '45%', right: '10%' }, 14, 'rise', -7],
     ['robot', { top: '52%', left: '5%' }, 84, 'turn', 0],
     ['fishBack', { top: '63%', right: '4%' }, 38, 'swim', -9],
-    ['jelly', { top: '71%', left: '7%' }, 32, 'bob', -5],
-    ['kelp', { top: '82%', right: '6%' }, 34, 'sway', -3],
-    ['kelp', { top: '85%', left: '3%' }, 40, 'sway', 0],
+    ['jelly', { top: '71%', left: '7%' }, 46, 'bob', -5],
+    ['fish', { top: '84%', right: '8%' }, 34, 'swim', -18],
   ];
   const FLOOR = [
     ['grass', { left: '5%' }, 46, 'sway', -2],
@@ -629,8 +640,6 @@ site.use(cfg => {
   // the page as part of the sea: drawings perched on the page itself, in front of it and never in the way of a click
   const PERCH = [
     ['footer', ['crab', { bottom: '100%', right: '14%' }, 44, 'scuttle', -8]],
-    ['#feed > li:last-child .plate', ['kelp', { bottom: '-2px', left: '-10px' }, 18, 'sway', -3]],
-    ['#feed > li:last-child .plate', ['grass', { bottom: '-2px', right: '-8px' }, 22, 'sway', -7]],
     ['.show', ['bubbles', { top: '40%', right: '-1.4rem' }, 14, 'rise', 0]],
     ['.show', ['bubbles', { top: '75%', right: '-.6rem' }, 10, 'rise', -6]],
   ];
@@ -808,6 +817,7 @@ site.use(cfg => {
     document.documentElement.dataset.vtSide = cfg.timeline?.side === 'left' ? 'left' : 'right';
     mode = ['center', 'projects', 'kinds', 'side'].includes(cfg.timeline?.layout) ? cfg.timeline.layout : 'center';
     perYear = parseFloat(cfg.timeline?.space_per_year) || 16;
+    stem = cfg.timeline?.spine !== 'straight';
     document.documentElement.dataset.vtLayout = mode === 'side' ? 'side' : 'center';
     marks.concat(labels).forEach(e => e.remove());
     marks = []; labels = [];
@@ -887,7 +897,7 @@ site.use(cfg => {
   // it on the same side, and a curve joins it to the node at its exact date on the spine.
   const wrap = document.getElementById('worksWrap'), ct = document.getElementById('ct'), ctSvg = ct.querySelector('.ct-lines');
   const narrow = matchMedia('(max-width: 720px)');
-  let mode = 'center', perYear = 16;
+  let mode = 'center', perYear = 16, stem = true;
   // Projects layout: a project with two or more works is a branch off the main line; its headline (its paper, or
   // its newest work) shows while it is collapsed. Kinds layout: one lane per kind of work, each can be folded away.
   const projects = [...new Set(works.map(w => w.li.dataset.project).filter(Boolean))].map(name => {
@@ -987,6 +997,9 @@ site.use(cfg => {
     const stacked = shown.reduce((sum, w) => sum + w.li.offsetHeight + gap, 0);
     const S = single ? Math.max(perYear * rem * (one ? .6 : 1), stacked / (y1 - y0)) : perYear * rem;
     const at = d => pad + (y1 - d) * S;
+    // centre layout as kelp: the spine sways gently, and each work's node sits on the stalk
+    const spineX = one ? .9 * rem : ct.clientWidth / 2;
+    const wob = y => mode === 'center' && stem ? 7 * Math.sin(y / 240 * 2 * Math.PI) : 0;
     const below = { l: 0, r: 0 }, lastY = {};
     let prev = -Infinity, end = 0;
     works.forEach((w, i) => {
@@ -1002,7 +1015,7 @@ site.use(cfg => {
       const y = Math.max(at(w.d), (lastY[lane] ?? -Infinity) + 14);
       lastY[lane] = y;
       ctNodes[i].style.top = y + 'px';
-      ctNodes[i].style.left = graph ? laneX(lane) + 'px' : '';
+      ctNodes[i].style.left = graph ? laneX(lane) + 'px' : stem ? spineX + wob(y) + 'px' : '';
     });
     const height = Math.max(end, at(y0)) + pad;
     feed.style.height = height + 'px';
@@ -1014,7 +1027,8 @@ site.use(cfg => {
       p.label.style.top = (top + bottom) / 2 + 'px';
     }
     heads.forEach((b, k) => { b.style.left = laneX(k) + 'px'; b.style.top = .5 * rem + 'px'; });
-    geo = { laneX, at, height, top: pad * .75, k: 1.1 * rem };
+    geo = { laneX, at, height, top: pad * .75, k: 1.1 * rem, spineX, wob, nodes: works.filter(visible).map(w => at(w.d)) };
+    wrap.classList.toggle('stem', mode === 'center' && stem);
     draw();
   }
   function draw() {
@@ -1028,6 +1042,21 @@ site.use(cfg => {
       for (const p of projects) {
         const x1 = geo.laneX(p.lane), ys = geo.at(p.start), ye = geo.at(p.end);
         lines += `<path class="${p.open ? '' : 'shut'}" d="M${x0} ${ys} C${x0} ${ys - k} ${x1} ${ys - k} ${x1} ${ys - 2 * k} V${ye + 2 * k} C${x1} ${ye + k} ${x0} ${ye + k} ${x0} ${ye}"/>`;
+      }
+    } else if (geo && mode === 'center' && stem) {
+      // the stalk, from a holdfast at the bottom to its tip above the newest work, with a leaf every so often
+      // on alternating sides, kept clear of the works' nodes
+      const { spineX: x, wob, height: h, nodes } = geo, tip = Math.max(0, Math.min(...nodes) - 30);
+      let d = `M${x + wob(h)} ${h}`;
+      for (let y = h - 8; y > tip; y -= 8) d += ` L${(x + wob(y)).toFixed(1)} ${y}`;
+      lines += `<path class="stem" d="${d}"/>`;
+      lines += `<path class="leaf" d="M${x + wob(h)} ${h} q-10 2 -16 9 M${x + wob(h)} ${h} q9 3 14 10 M${x + wob(h)} ${h} q1 6 -2 11"/>`;
+      let side = 1;
+      for (let y = h - 70; y > tip + 40; y -= 95) {
+        if (nodes.some(n => Math.abs(n - y) < 26)) continue;
+        const sx = x + wob(y), s = side;
+        lines += `<path class="leaf" d="M${sx} ${y} q${14 * s} -4 ${24 * s} -18 q${-12 * s} 2 ${-24 * s} 18"/>`;
+        side = -side;
       }
     } else if (geo && mode === 'kinds') {
       kinds.forEach((kd, k) => { lines += `<path class="${folded.has(kd) ? 'shut' : ''}" d="M${geo.laneX(k)} ${geo.top + 20} V${geo.height}"/>`; });
@@ -1121,6 +1150,7 @@ site.use(cfg => {
       group('Header bar', [['None', 'none'], ['Thin', 'thin'], ['Thick', 'thick'], ['Full width', 'band']], cfg.accent_bars.header, v => site.set({ accent_bars: { header: v } })),
       group('Section bars', [['None', 'none'], ['Short', 'short'], ['Full', 'full']], cfg.accent_bars.sections, v => site.set({ accent_bars: { sections: v } })),
       group('Timeline', [['Centre', 'center'], ['Projects', 'projects'], ['Kinds', 'kinds'], ['Side', 'side']], cfg.timeline.layout, v => site.set({ timeline: { layout: v } })),
+      group('Spine', [['Kelp', 'kelp'], ['Straight', 'straight']], cfg.timeline.spine, v => site.set({ timeline: { spine: v } })),
       group('Side', [['Left', 'left'], ['Right', 'right']], cfg.timeline.side, v => site.set({ timeline: { side: v } })),
       group('Timeline marks', [['Dots', 'dot'], ['Numbers', 'number'], ['Icons', 'icon']], cfg.timeline.marks, v => site.set({ timeline: { marks: v } })),
       group('Dates', [['On', true], ['Off', false]], cfg.timeline.dates, v => site.set({ timeline: { dates: v } })),
