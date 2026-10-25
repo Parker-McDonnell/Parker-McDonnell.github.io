@@ -223,14 +223,14 @@ button:hover { color: var(--shu); }
   background: linear-gradient(to bottom, rgba(0, 0, 0, .16), transparent 46%, rgba(255, 255, 255, .5) 49.5%, rgba(0, 0, 0, .14) 50.5%, transparent 70%);
   opacity: calc(1 - var(--u, 1)); }
 /* Light: a submarine travels down beside the spine to the work being read and lights it with its lamp; the others wait
-   in the dark. It waits just below the work, toward the spine, tilted nose-up 45 degrees so its lamp shines straight into the work. */
+   in the dark. It rides the kelp line just below the work's node, clear of the nodes, and turns to shine straight at the work. */
 :root { --beam: color-mix(in oklab, #ffd36a 34%, transparent); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --beam: color-mix(in oklab, #ffe6a0 20%, transparent); } }
 :root[data-theme="dark"] { --beam: color-mix(in oklab, #ffe6a0 20%, transparent); }
 .sub { display: none; }
 .works.light .sub { display: block; position: absolute; width: 60px; height: 32px; z-index: 3; pointer-events: none; color: var(--line);
-  transform: translate(-50%, -50%) rotate(-45deg); transition: top .9s ease, left .9s ease; }
-.works.light .sub.west { transform: translate(-50%, -50%) scaleX(-1) rotate(-45deg); }
+  transform: translate(-50%, -50%) rotate(var(--tilt, 0deg)); transition: top .9s ease, left .9s ease, transform .9s ease; }
+.works.light .sub.west { transform: translate(-50%, -50%) scaleX(-1) rotate(var(--tilt, 0deg)); }
 .works.light .sub { scale: .8; }
 .works.light .sub.small { scale: .6; }
 .sub .hull { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.2;
@@ -240,6 +240,9 @@ button:hover { color: var(--shu); }
 @keyframes hover { 50% { transform: translateY(-3px); } }
 .works.light .feed li { opacity: .14; transition: opacity .7s ease; }
 .works.light .feed li.on { opacity: 1; }
+/* shadows cast by the lamp, away from the submarine (--sx, --sy: the way the light travels) */
+.works.light .feed li.on > a { text-shadow: var(--sx, 0) var(--sy, 0) 3px rgba(0, 0, 0, .2); }
+.works.light .feed li.on .plate { box-shadow: calc(var(--sx, 0px) * 3) calc(var(--sy, 0px) * 3) 10px rgba(0, 0, 0, .2); }
 /* Fade: each work fades in slowly as it comes up the screen, rising a little; the stalk's leaves fade in as it's passed */
 .works.fade .feed li > a { opacity: var(--u, 1); transform: translateY(calc((1 - var(--u, 1)) * 16px)); }
 .works.fade .ct-lines .lanes path.leaf { transition: opacity 1.6s ease; }
@@ -1357,17 +1360,32 @@ site.use(cfg => {
     wrap.classList.toggle('fade', on && folding === 'fade');
     wrap.classList.toggle('grow', on && folding === 'grow');
     if (on && folding === 'light') {
-      // the submarine goes to the work being read and waits just below it, on a 45 degree line from the work's middle,
-      // toward the spine: tilted nose-up along that line, its lamp shines straight out of its nose onto the work
-      const n = Math.max(active, 0), west = works[n].li.classList.contains('l');
+      // the submarine rides the kelp line: it goes to the clear spot nearest the node of the work being read (clear of
+      // every node and year label), and turns nose and lamp straight at the middle of that work
+      const n = Math.max(active, 0), west = works[n].li.classList.contains('l'), gap = narrow.matches ? 16 : 22;
+      // what it keeps clear of, and by how much: nodes, and the year labels (which are taller)
+      const taken = [...nodes.map(b => [parseFloat(b.style.top), gap]), ...years.map(([, el]) => [parseFloat(el.style.top), gap + 14])].filter(([v]) => !isNaN(v));
+      // the nearest clear spot to its node, below it if that is as near as above
+      const at = parseFloat(nodes[n].style.top) || geo.tops[n], clear = v => !taken.some(([t, r]) => Math.abs(t - v) < r);
+      let y = at + gap + 6;
+      for (let k = 0; k < 30; k++) {
+        if (clear(at + gap + 6 + 8 * k)) { y = at + gap + 6 + 8 * k; break; }
+        if (clear(at - gap - 6 - 8 * k)) { y = at - gap - 6 - 8 * k; break; }
+      }
+      const x = geo.spineX + geo.wob(y);
       const home = ct.getBoundingClientRect(), card = works[n].li.querySelector('a').getBoundingClientRect();
-      const d = card.height / 2 + (narrow.matches ? 18 : 24), cx = card.left + card.width / 2 - home.left, cy = card.top + card.height / 2 - home.top;
-      Object.assign(sub.style, { left: cx + (west ? d : -d) + 'px', top: cy + d + 'px' });
+      const dx = Math.abs(card.left + card.width / 2 - home.left - x), dy = card.top + card.height / 2 - home.top - y;
+      Object.assign(sub.style, { left: x + 'px', top: y + 'px' });
       sub.classList.toggle('west', west);
       sub.classList.toggle('small', narrow.matches);
+      sub.style.setProperty('--tilt', Math.atan2(dy, dx) * 180 / Math.PI + 'deg');
+      // the lit work casts its shadows away from the lamp, the way the light travels
+      const far = Math.hypot(dx, dy) || 1;
+      works[n].li.style.setProperty('--sx', (west ? -dx : dx) / far * 3 + 'px');
+      works[n].li.style.setProperty('--sy', dy / far * 3 + 'px');
       // the light pools on the work: the beam ends a little past its middle and spreads to about its size
-      sub.style.setProperty('--beamw', Math.SQRT2 * d + card.height * .9 + 'px');
-      sub.style.setProperty('--beamh', Math.max(card.width, card.height) * .9 + 'px');
+      sub.style.setProperty('--beamw', Math.hypot(dx, dy) + card.height * .6 + 'px');
+      sub.style.setProperty('--beamh', Math.max(card.width, card.height) * .8 + 'px');
     }
     const shown = on && folding !== 'light';
     const box = ct.getBoundingClientRect(), edge = innerHeight * .92;
