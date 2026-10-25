@@ -1,0 +1,189 @@
+<title>Concept A · Ma Slideshow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap">
+<style>
+/* Concept A, "Ma": a quiet catalogue. One narrow column, lots of air, works listed like a museum's object index. Built on al-folio (Jekyll). */
+:root {
+  --paper: #f6f5f1; --ink: #1d1e1f; --mute: #74757a; --rule: #d9d8d2; --shu: #a8432f; --well: #e9e7e0;
+  --display: "Shippori Mincho", "Hiragino Mincho ProN", Georgia, serif;
+  --body: "Zen Kaku Gothic New", "Hiragino Sans", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper:#151617; --ink:#e7e5df; --mute:#94959a; --rule:#2c2d2f; --shu:#d0705a; --well:#202123; color-scheme: dark } }
+:root[data-theme="dark"] { --paper:#151617; --ink:#e7e5df; --mute:#94959a; --rule:#2c2d2f; --shu:#d0705a; --well:#202123; color-scheme: dark }
+body { background: var(--paper); color: var(--ink); font: 400 16px/1.8 var(--body); }
+.wrap { max-width: 44rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 6rem; }
+header { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding-block: 2.5rem; flex-wrap: wrap; }
+.mark { font: 600 1.05rem var(--display); letter-spacing: .06em; }
+.mark span { color: var(--shu); }
+nav { display: flex; gap: 1.5rem; font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; }
+a { color: inherit; text-decoration: none; }
+a:hover, a:focus-visible { color: var(--shu); }
+a:focus-visible { outline: 1px solid var(--shu); outline-offset: 3px; }
+.intro { padding-block: 6rem 5rem; }
+.intro h1 { font: 400 clamp(2rem, 6vw, 3.1rem)/1.25 var(--display); margin: 0 0 1.5rem; text-wrap: balance; }
+.intro p { color: var(--mute); max-width: 32rem; margin: 0; }
+.plate { aspect-ratio: 3/2; max-width: 100%; background: var(--well); display: grid; place-items: center; color: var(--mute); font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; }
+.plate svg { width: 38%; opacity: .55 }
+.caption { font-size: .75rem; color: var(--mute); padding-block: .75rem 0; display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.caption .t { font: 400 .95rem/1.4 var(--display); color: var(--ink); }
+/* slideshow: one plate the width of the column; swipe (or wait) to move through featured works, each snaps into place */
+.show { position: relative; }
+.frames { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; overscroll-behavior-x: contain; scrollbar-width: none; max-width: 100%; }
+.frames::-webkit-scrollbar { display: none; }
+.frame { flex: 0 0 100%; scroll-snap-align: start; scroll-snap-stop: always; }
+.frame .plate { aspect-ratio: 3/2; }
+.frames { cursor: grab; }
+.show .caption { align-items: center; }
+.show .caption a:hover .t { color: var(--shu); }
+.ctl { display: flex; align-items: center; gap: 1rem; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.ctl button { background: none; border: 0; color: var(--mute); font: inherit; cursor: pointer; padding: .25rem; }
+.ctl button:hover, .ctl button:focus-visible { color: var(--shu); }
+.ctl button:focus-visible { outline: 1px solid var(--shu); }
+.bar { height: 1px; background: var(--rule); margin-top: .75rem; }
+.bar i { display: block; height: 100%; width: 0; background: var(--shu); }
+.bar i.run { animation: fill var(--dwell) linear forwards; }
+@keyframes fill { to { width: 100% } }
+@media (prefers-reduced-motion: reduce) { .frames { scroll-behavior: auto } .bar { display: none } }
+h2 { font: 400 .78rem var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--mute); margin: 6rem 0 1.25rem; }
+.index { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.index li a { display: grid; grid-template-columns: 4.5rem 1fr auto; gap: 1rem; padding-block: 1.15rem; border-bottom: 1px solid var(--rule); align-items: baseline; transition: padding .4s ease; }
+.index li a:hover { padding-left: .6rem; }
+.yr { font-variant-numeric: tabular-nums; color: var(--mute); font-size: .85rem; }
+.t { font: 400 1.12rem/1.45 var(--display); min-width: 0; }
+.kind { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); }
+.divider { margin: 8rem 0 0; padding-block: 1rem; border-top: 1px solid var(--shu); color: var(--shu); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; }
+/* paper page */
+.eyebrow { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--shu); }
+.paper h1 { font: 400 clamp(1.8rem, 5vw, 2.6rem)/1.3 var(--display); margin: 1rem 0 1.25rem; text-wrap: balance; }
+.byline { color: var(--mute); font-size: .9rem; margin: 0 0 4rem; }
+.lede { font: 400 1.25rem/1.75 var(--display); margin: 4rem 0; }
+.findings { list-style: none; padding: 0; margin: 0; display: grid; gap: 2rem; }
+.findings li { display: grid; grid-template-columns: 2.5rem 1fr; gap: 1rem; }
+.findings b { font: 400 1.4rem var(--display); color: var(--shu); font-weight: 400; }
+.links { display: flex; flex-wrap: wrap; gap: .75rem 2rem; font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; }
+.links a { border-bottom: 1px solid var(--rule); padding-bottom: .2rem; }
+.cite { background: var(--well); padding: 1.5rem; font: .8rem/1.6 ui-monospace, Menlo, monospace; overflow-x: auto; white-space: pre; }
+footer { margin-top: 6rem; font-size: .75rem; color: var(--mute); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+
+<div class="wrap">
+  <header>
+    <a class="mark" href="#top">Parker McDonnell<span>.</span></a>
+    <nav><a href="#works">Work</a><a href="#paper">Paper</a><a href="#">About</a></nav>
+  </header>
+
+  <section class="intro" id="top">
+    <h1>Soft robots that swim the way jellyfish do.</h1>
+    <p>PhD researcher in the Xu Lab, University of Colorado Boulder. I study the fluid mechanics of jellyfish and build bio-inspired machines that borrow from them.</p>
+  </section>
+
+  <section class="show" aria-label="Featured work" aria-roledescription="slideshow" style="--dwell: 6s">
+    <div class="frames" id="frames">
+      <a class="frame" href="#paper" data-t="Science Advances paper" data-k="Paper · 2026"><div class="plate"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1"><path d="M15 50 Q15 15 50 15 Q85 15 85 50 Q70 46 50 50 Q30 46 15 50Z"/><path d="M30 50 q-3 18 2 34 M42 51 q-2 20 1 36 M58 51 q2 20-1 36 M70 50 q3 18-2 34"/></svg></div></a>
+      <a class="frame" href="#" data-t="Jellyfish propulsion" data-k="Talk · 2025"><div class="plate"><span>Talk still</span></div></a>
+      <a class="frame" href="#" data-t="SignalShepherd" data-k="Tool · 2025"><div class="plate"><span>Screenshot</span></div></a>
+      <a class="frame" href="#" data-t="Tank marker tracking" data-k="Method · 2024"><div class="plate"><span>Diagram</span></div></a>
+    </div>
+    <div class="bar"><i id="bar"></i></div>
+    <div class="caption" aria-live="polite">
+      <a id="cap" href="#paper"><span class="t" id="capT">Science Advances paper</span> <span class="kind" id="capK">Paper · 2026</span></a>
+      <span class="ctl"><button id="prev" aria-label="Previous work">←</button><span id="count">1 / 4</span><button id="next" aria-label="Next work">→</button></span>
+    </div>
+  </section>
+
+  <h2 id="works">Selected work</h2>
+  <ul class="index">
+    <li><a href="#paper"><span class="yr">2026</span><span class="t">Science Advances paper, title to come</span><span class="kind">Paper</span></a></li>
+    <li><a href="#"><span class="yr">2025</span><span class="t">Invited talk on jellyfish-inspired propulsion</span><span class="kind">Talk</span></a></li>
+    <li><a href="#"><span class="yr">2025</span><span class="t">SignalShepherd, a tool for syncing sensor and video data</span><span class="kind">Tool</span></a></li>
+    <li><a href="#"><span class="yr">2024</span><span class="t">A low-cost method for marker tracking in water tanks</span><span class="kind">Method</span></a></li>
+  </ul>
+
+  <p class="divider" id="paper">Paper page</p>
+
+  <article class="paper">
+    <p class="eyebrow">Science Advances · 2026</p>
+    <h1>Title of the Science Advances paper goes here</h1>
+    <p class="byline">P. McDonnell, co-authors, senior author &nbsp;·&nbsp; doi 10.1126/sciadv.aem0495</p>
+
+    <figure class="plate" style="margin:0" aria-label="Placeholder for key figure"><span>Key figure · licence to check</span></figure>
+
+    <p class="lede">A two-or-three-sentence summary for someone with no background: what the jellyfish does, what we built or measured, and why it matters outside the lab.</p>
+
+    <h2>What we found</h2>
+    <ol class="findings">
+      <li><b>一</b><span>First finding in one plain sentence, with the number that makes it concrete.</span></li>
+      <li><b>二</b><span>Second finding, stated as the reader would say it back.</span></li>
+      <li><b>三</b><span>Third finding, or what it lets someone else now do.</span></li>
+    </ol>
+
+    <h2>Read and reuse</h2>
+    <div class="links"><a href="https://doi.org/10.1126/sciadv.aem0495">Paper</a><a href="#">PDF</a><a href="#">Code</a><a href="#">Data</a><a href="#">Supplementary video</a></div>
+
+    <h2>Cite this</h2>
+    <div class="cite">@article{mcdonnell2026,
+  title   = {Title of the paper},
+  author  = {McDonnell, Parker and others},
+  journal = {Science Advances},
+  year    = {2026},
+  doi     = {10.1126/sciadv.aem0495}
+}</div>
+  </article>
+
+  <footer>Concept A, slideshow variant · built on al-folio (MIT) · placeholder content</footer>
+</div>
+
+<script>
+(() => {
+  // Touch swiping is native scrolling with snap points; this script only keeps the caption in step,
+  // advances slowly on its own, and adds mouse dragging and arrow buttons for desktop.
+  const show = document.querySelector('.show'), box = document.getElementById('frames');
+  const frames = [...box.querySelectorAll('.frame')];
+  const bar = document.getElementById('bar'), cap = document.getElementById('cap');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const dwell = 6000;
+  let i = 0, timer = null, paused = false;
+  const go = n => box.scrollTo({ left: ((n + frames.length) % frames.length) * box.clientWidth });
+  function settle() {
+    const n = Math.round(box.scrollLeft / box.clientWidth);
+    if (n === i) return;
+    i = n;
+    const f = frames[i];
+    cap.href = f.getAttribute('href');
+    document.getElementById('capT').textContent = f.dataset.t;
+    document.getElementById('capK').textContent = f.dataset.k;
+    document.getElementById('count').textContent = (i + 1) + ' / ' + frames.length;
+    restart();
+  }
+  function restart() {
+    clearTimeout(timer);
+    bar.classList.remove('run'); void bar.offsetWidth;
+    if (still || paused) return;
+    bar.classList.add('run');
+    timer = setTimeout(() => go(i + 1), dwell);
+  }
+  let t; box.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(settle, 80); });
+  document.getElementById('prev').onclick = () => go(i - 1);
+  document.getElementById('next').onclick = () => go(i + 1);
+  const hold = on => () => { paused = on; restart(); };
+  show.addEventListener('mouseenter', hold(true));
+  show.addEventListener('mouseleave', hold(false));
+  show.addEventListener('focusin', hold(true));
+  show.addEventListener('focusout', hold(false));
+  box.addEventListener('touchstart', hold(true), { passive: true });
+  box.addEventListener('touchend', () => setTimeout(hold(false), 4000), { passive: true });
+  // mouse drag on desktop; a drag never counts as a click on the work
+  let x0 = null, dragged = false;
+  box.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') { x0 = e.clientX; dragged = false; } });
+  addEventListener('pointerup', e => {
+    if (x0 === null) return;
+    const dx = e.clientX - x0; x0 = null;
+    if (Math.abs(dx) > 30) { dragged = true; go(i + (dx < 0 ? 1 : -1)); }
+  });
+  box.addEventListener('click', e => { if (dragged) { e.preventDefault(); dragged = false; } });
+  box.addEventListener('dragstart', e => e.preventDefault());
+  addEventListener('resize', () => box.scrollTo({ left: i * box.clientWidth, behavior: 'instant' }));
+  restart();
+})();
+</script>
