@@ -41,7 +41,12 @@ The latest commit adds talk, tool and about pages, a richer paper page (video-lo
 1. Final yes on al-folio as the template. The other options were plain HTML or Quarto.
 2. **The paper's figure licence.** Science Advances publishes some articles as CC BY and some as CC BY-NC, and Crossref listed none for this one. Check the article page before putting up any figure.
 3. Real content: summary, key findings, talk details, bio, portrait, email, ORCID, Scholar link, CV, and his list of works. Everything apart from the paper's details is placeholder.
-4. Whether to keep the vertical name in the margin. It contains no Japanese characters, but it came from the same idea.
+4. ~~Whether to keep the vertical name in the margin.~~ Removed 2026-10-25: the vertical timeline now uses that margin.
+
+## Added 2026-10-25 (Parker's ideas)
+
+- **Vertical timeline.** "Selected work" is now a list of entries with thumbnails. While it is on screen, a timeline runs down the side: in the left margin on wide screens (years, a dot per work, the current entry's name), and as a thin rail in the right gutter on phones. It marks the entry being read as you scroll, and a click on a dot or anywhere on the rail scrolls to the nearest entry. It replaces the horizontal timeline.
+- **Citation map** on the paper page: what the paper cites on the left, the paper in the middle, what cites it on the right (stacked on phones). It holds the 9 references Crossref had on 25 October 2026, and nothing cites the paper yet. On the real site, the build should fetch both sides (Crossref references, OpenAlex or OpenCitations for "cited by") and link works that are Parker's own to their pages. A site-wide map joining all his papers is a possible later step.
 
 ## Next steps
 
