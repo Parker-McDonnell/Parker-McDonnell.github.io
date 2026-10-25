@@ -21,7 +21,7 @@
 html { font-size: var(--base); }
 body { background: var(--paper); color: var(--ink); font: 400 1rem/1.8 var(--body); }
 /* ocean (theme.yml, ocean): scrolling down the page sinks through the water. The page deepens a shade toward the bottom,
-   line drawings sit in the outer margins by depth (surface swells, fish, a jellyfish, the robot, kelp), and the sea floor
+   line drawings sit in the outer margins by depth (a surface swell, fish, a jellyfish, the robot, kelp), and the sea floor
    closes every page. Drawn in the muted ink, thin like the feather star sketch; everything moves very slowly, and not at
    all for viewers who ask for less motion. */
 :root { --deep: color-mix(in oklab, var(--paper), var(--shu) 11%); }
@@ -32,9 +32,7 @@ body { background: var(--paper); color: var(--ink); font: 400 1rem/1.8 var(--bod
 :root[data-ocean="on"] .wrap { position: relative; z-index: 1; }
 .sea svg, .floor svg { position: absolute; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
 .swell { top: .3rem; left: 0; width: 200%; height: 1.6rem; animation: drift 140s linear infinite; }
-.swell.b { top: 1.05rem; opacity: .6; animation-duration: 190s; animation-direction: reverse; }
-.swell.c { top: 1.8rem; opacity: .35; animation-duration: 240s; }
-:root[data-ocean="on"] header { padding-top: 4.25rem; }
+:root[data-ocean="on"] header { padding-top: 3rem; }
 .life { opacity: .5; }
 .life.far { display: none; }
 @media (min-width: 1280px) { .life.far { display: block; } }
@@ -119,7 +117,7 @@ button:hover { color: var(--shu); }
 .plate.thumb { aspect-ratio: 1; font-size: .6rem; text-align: center; }
 .plate.thumb svg { width: 60%; }
 @media (max-width: 520px) { .feed a { grid-template-columns: 5rem minmax(0, 1fr); gap: 1rem; } }
-/* centre timeline (theme.yml, timeline.layout: center): the work list becomes the timeline. A spine runs down the middle,
+/* timeline: the work list is the timeline. A spine runs down the middle,
    the works hang off it on alternating sides, and a node on the spine, placed by date, joins each one with a curve.
    Phones: the spine runs down the left and every work sits to its right. */
 .works { position: relative; }
@@ -143,89 +141,18 @@ button:hover { color: var(--shu); }
 .ct-node::before { content: ""; position: absolute; inset: -8px; }
 .ct-node:hover, .ct-node:focus-visible, .ct-node.on { background: var(--shu); border-color: var(--shu); transform: translate(-50%, -50%) scale(1.4); outline: none; }
 .ct-year { position: absolute; left: var(--spine); transform: translate(-50%, -50%); padding: .2rem .45rem; background: var(--paper); font-size: .7rem; color: var(--mute); font-variant-numeric: tabular-nums; letter-spacing: .06em; }
-:root[data-vt-layout="center"] .vt, :root[data-vt-layout="center"] .vt-link { display: none !important; }
 @media (max-width: 720px) {
   .works.center { --spine: .9rem; width: auto; margin-left: 0; transform: none; }
   .works.center .feed li, .works.center .feed li.r { left: 2.75rem; width: calc(100% - 2.75rem); }
   .works.center .feed a { grid-template-columns: 5rem minmax(0, 1fr); gap: 1rem; }
   .ct-year { font-size: .6rem; padding-inline: .15rem; writing-mode: vertical-rl; transform: translate(-50%, -50%) rotate(180deg); }
 }
-/* graph timelines (timeline.layout: projects or kinds): lanes on the left, every work in one column to their right,
-   each placed by date and joined to its node by a curve. Projects: a main line, with each project branching off it and
-   merging back; a project shows its headline work until opened. Kinds: one lane per kind of work, each can be folded. */
 [hidden] { display: none !important; }
-.works.graph { --lanes: 6rem; width: min(52rem, calc(100vw - 2rem)); margin-left: 50%; transform: translateX(-50%); }
-.works.graph .feed { position: relative; border-top: 0; }
-.works.graph .feed li { position: absolute; left: var(--lanes); width: calc(100% - var(--lanes)); }
-.works.graph .feed a { grid-template-columns: 5.5rem minmax(0, 1fr); gap: 1.25rem; padding-block: .5rem; border-bottom: 0; }
-.works.graph .feed a:hover, .works.graph .feed li.on a { padding-left: 0; }
-.feed li.hide { display: none; }
-.works.graph .ct { display: block; position: absolute; inset: 0; pointer-events: none; }
-.works.graph .ct::before { display: none; }
-.works.graph .ct-year { left: 0; transform: translateY(-50%); padding: 0; background: none; writing-mode: horizontal-tb; }
+/* the spine as a kelp stalk (theme.yml, timeline.spine: kelp) replaces the straight line */
 .ct-lines .lanes path { fill: none; stroke: var(--mute); stroke-width: 1.25; opacity: .55; }
-.ct-lines .lanes path.main { stroke: var(--ink); opacity: .45; }
 .works.stem .ct::before { display: none; }
 .ct-lines .lanes path.stem { stroke-width: 1.4; opacity: .6; }
 .ct-lines .lanes path.leaf { stroke-width: 1; opacity: .45; }
-.ct-lines .lanes path.shut { stroke-dasharray: 2 4; opacity: .4; }
-.ct-name { position: absolute; transform: translate(-50%, -50%) rotate(180deg); writing-mode: vertical-rl; padding-block: .6rem; background: var(--paper); font-size: .58rem; letter-spacing: .16em; text-transform: uppercase; color: var(--mute); white-space: nowrap; }
-.ct-head { position: absolute; transform: translateX(-50%); padding: .2rem; pointer-events: auto; color: var(--mute); }
-.ct-head .ico { display: block; width: 15px; height: 15px; }
-.ct-head[aria-pressed="false"] { opacity: .35; }
-.ct-head:hover { color: var(--shu); }
-.more { display: block; margin: -.25rem 0 .5rem calc(5.5rem + 1.25rem); padding: 0; font-size: .66rem; letter-spacing: .12em; text-transform: uppercase; color: var(--shu); text-align: left; }
-@media (max-width: 720px) {
-  .works.graph { width: auto; margin-left: 0; transform: none; }
-  /* lanes take the width a thumbnail would, so the graph layouts drop thumbnails on a phone */
-  .works.graph .feed a { grid-template-columns: minmax(0, 1fr); }
-  .works.graph .feed .plate.thumb { display: none; }
-  .more { margin-left: 0; }
-}
-/* timeline: runs down the side while the work list is on screen, marks the entry being read, and a click scrolls to an entry.
-   Narrow screens: a rail of plain dots in the right gutter. Wide screens: the left margin, with years, a mark per work
-   (dot, number or icon, set in theme.yml), a date beside each, and the title of the entry being read. */
-.vt { --x: 8px; position: fixed; z-index: 5; top: 50%; transform: translateY(-50%); right: env(safe-area-inset-right, 0px); width: 16px; height: min(50vh, 22rem); opacity: 0; visibility: hidden; transition: opacity .5s ease, visibility .5s; }
-.vt.shown { opacity: 1; visibility: visible; }
-.vt-rail { position: absolute; inset: 0; cursor: pointer; }
-.vt-rail::before { content: ""; position: absolute; top: 0; bottom: 0; left: var(--x); border-left: 1px solid var(--rule); }
-.vt-mark { position: absolute; left: var(--x); width: 7px; height: 7px; padding: 0; border-radius: 50%; border: 1px solid var(--ink); background: var(--paper); color: var(--mute); transform: translate(-50%, -50%); transition: transform .3s ease, background .3s ease, border-color .3s ease, color .3s ease; }
-.vt-mark::before { content: ""; position: absolute; inset: -8px; }
-.vt-mark > * { display: none; }
-.vt-mark:hover, .vt-mark:focus-visible, .vt-mark.on { background: var(--shu); border-color: var(--shu); transform: translate(-50%, -50%) scale(1.35); outline: none; }
-.vt-tick, .vt-label, .vt-link { display: none; }
-@media (min-width: 1280px) {
-  /* docked against the reading column: its right edge sits about 4.5rem from the list (room for the connecting curve), wherever the window's edge is */
-  .vt { --x: 3.25rem; --w: min(15rem, calc((100vw - var(--col)) / 2 - 6.5rem)); right: auto; left: max(1rem, env(safe-area-inset-left, 0px), calc((100vw - var(--col)) / 2 - var(--w) - 4.5rem)); width: var(--w); height: min(64vh, 30rem); }
-  .vt-label > * { width: fit-content; max-width: 100%; }
-  .vt-link { display: block; position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 4; pointer-events: none; overflow: visible; }
-  .vt-link g { opacity: .16; transition: opacity .4s ease; }
-  .vt-link g.on { opacity: .7; }
-  .vt-link path { fill: none; stroke: var(--shu); stroke-width: 1; }
-  .vt-link circle { fill: var(--shu); }
-  /* mirrored on the right: list, then labels (right-aligned), the line with its marks, and the years on the outside */
-  :root[data-vt-side="right"] .vt { left: auto; right: max(1rem, env(safe-area-inset-right, 0px), calc((100vw - var(--col)) / 2 - var(--w) - 4.5rem)); }
-  :root[data-vt-side="right"] .vt-rail::before, :root[data-vt-side="right"] .vt-mark { left: calc(100% - var(--x)); }
-  :root[data-vt-side="right"] .vt-tick { left: auto; right: 0; text-align: left; }
-  :root[data-vt-side="right"] .vt-tick::after { left: auto; right: calc(100% + .3rem); }
-  :root[data-vt-side="right"] .vt-label { left: 0; right: calc(var(--x) + 1.2rem); justify-items: end; text-align: right; }
-  .vt-tick { display: block; position: absolute; left: 0; width: 2.4rem; text-align: right; transform: translateY(-50%); font-size: .72rem; color: var(--mute); font-variant-numeric: tabular-nums; pointer-events: none; }
-  .vt-tick::after { content: ""; position: absolute; left: calc(100% + .3rem); top: 50%; width: .4rem; border-top: 1px solid var(--mute); }
-  .vt-mark { display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: var(--paper); }
-  .vt-mark > * { display: block; }
-  .vt-mark:hover, .vt-mark:focus-visible, .vt-mark.on { background: var(--paper); color: var(--shu); transform: translate(-50%, -50%); }
-  .vt-mark i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--ink); transition: background .3s ease, border-color .3s ease, transform .3s ease; }
-  .vt-mark:hover i, .vt-mark.on i { background: var(--shu); border-color: var(--shu); transform: scale(1.3); }
-  .vt-mark .num { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--rule); font: 500 .62rem/1 var(--body); font-variant-numeric: tabular-nums; transition: border-color .3s ease; }
-  .vt-mark.on .num, .vt-mark:hover .num { border-color: var(--shu); }
-  .vt-mark .ico { width: 15px; height: 15px; }
-  .vt-label { display: grid; gap: .15rem; position: absolute; left: calc(var(--x) + 1.2rem); right: 0; font-size: .68rem; line-height: 1.4; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); cursor: pointer; transition: top .35s ease, color .3s ease; }
-  .vt-label:hover { color: var(--ink); }
-  .vt-label.on .vt-meta { color: var(--shu); }
-  .vt-label.bare .vt-meta { display: none; }
-  .vt-title { display: none; }
-  .vt-label.on .vt-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; font: 400 .88rem/1.35 var(--display); letter-spacing: 0; text-transform: none; color: var(--ink); }
-}
 /* work pages */
 .facts { display: grid; grid-template-columns: 7rem 1fr; gap: .5rem 1.5rem; margin: 0; font-size: .9rem; }
 .facts dt { font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--mute); padding-top: .2rem; }
@@ -315,24 +242,21 @@ footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule
 
     <h2 id="works">Selected work</h2>
     <!-- data-date is the year and month the work came out; the timeline is drawn from these.
-         data-project groups works into a branch in the Projects layout; works without one sit on the main line.
-         The project names, and the works marked "placeholder", are made up to show the layouts. -->
-    <div class="works" id="worksWrap">
+         Works marked "placeholder" are made up. -->
+    <div class="works center" id="worksWrap">
     <ol class="feed" id="feed">
-      <li data-date="2026-10" data-kind="Paper" data-project="Feather star robot"><a href="#paper"><div class="plate thumb"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="50" cy="50" r="6"/><path d="M50 44 Q48 25 40 10 M56 50 Q75 48 90 40 M50 56 Q52 75 60 90 M44 50 Q25 52 10 60 M54 46 Q68 32 80 18"/></svg></div><div class="txt"><span class="kind">Paper · 2026</span><span class="t">Plenty of fish in the sea, but only one multimodal feather star robot</span><p>Science Advances, with Nicole W. Xu.</p></div></a></li>
-      <li data-date="2026-10" data-kind="Dataset" data-project="Feather star robot"><a href="#"><div class="plate thumb"><span>Data</span></div><div class="txt"><span class="kind">Dataset · 2026</span><span class="t">Swimming trials of the feather star robot</span><p>Video and tracked positions (placeholder).</p></div></a></li>
-      <li data-date="2026-03" data-kind="Tool" data-project="SignalShepherd"><a href="#tool"><div class="plate thumb"><span>Screen</span></div><div class="txt"><span class="kind">Tool · 2026</span><span class="t">SignalShepherd 2.0, with synced video export</span><p>Placeholder release.</p></div></a></li>
+      <li data-date="2026-10" data-kind="Paper"><a href="#paper"><div class="plate thumb"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="50" cy="50" r="6"/><path d="M50 44 Q48 25 40 10 M56 50 Q75 48 90 40 M50 56 Q52 75 60 90 M44 50 Q25 52 10 60 M54 46 Q68 32 80 18"/></svg></div><div class="txt"><span class="kind">Paper · 2026</span><span class="t">Plenty of fish in the sea, but only one multimodal feather star robot</span><p>Science Advances, with Nicole W. Xu.</p></div></a></li>
+      <li data-date="2026-10" data-kind="Dataset"><a href="#"><div class="plate thumb"><span>Data</span></div><div class="txt"><span class="kind">Dataset · 2026</span><span class="t">Swimming trials of the feather star robot</span><p>Video and tracked positions (placeholder).</p></div></a></li>
+      <li data-date="2026-03" data-kind="Tool"><a href="#tool"><div class="plate thumb"><span>Screen</span></div><div class="txt"><span class="kind">Tool · 2026</span><span class="t">SignalShepherd 2.0, with synced video export</span><p>Placeholder release.</p></div></a></li>
       <li data-date="2025-10" data-kind="Talk"><a href="#talk"><div class="plate thumb"><span>Talk still</span></div><div class="txt"><span class="kind">Talk · 2025</span><span class="t">How jellyfish move water, and what robots can borrow</span><p>Invited seminar (placeholder).</p></div></a></li>
-      <li data-date="2025-04" data-kind="Tool" data-project="SignalShepherd"><a href="#tool"><div class="plate thumb"><span>Screen</span></div><div class="txt"><span class="kind">Tool · 2025</span><span class="t">SignalShepherd</span><p>Lines up sensor data and video on one clock, then exports figures and clips.</p></div></a></li>
-      <li data-date="2024-08" data-kind="Method" data-project="Feather star robot"><a href="#"><div class="plate thumb"><span>Diagram</span></div><div class="txt"><span class="kind">Method · 2024</span><span class="t">A low-cost method for marker tracking in water tanks</span><p>Placeholder description.</p></div></a></li>
-      <li data-date="2023-11" data-kind="Talk" data-project="Jellyfish wakes"><a href="#"><div class="plate thumb"><span>Talk still</span></div><div class="txt"><span class="kind">Talk · 2023</span><span class="t">Conference talk, fluid dynamics meeting</span><p>Placeholder.</p></div></a></li>
-      <li data-date="2023-11" data-kind="Poster" data-project="Jellyfish wakes"><a href="#"><div class="plate thumb"><span>Poster</span></div><div class="txt"><span class="kind">Poster · 2023</span><span class="t">Measuring jellyfish wakes in a tank</span><p>Same meeting as the talk (placeholder).</p></div></a></li>
-      <li data-date="2023-05" data-kind="Paper" data-project="Jellyfish wakes"><a href="#"><div class="plate thumb"><span>Figure</span></div><div class="txt"><span class="kind">Paper · 2023</span><span class="t">Earlier paper or preprint</span><p>Placeholder.</p></div></a></li>
+      <li data-date="2025-04" data-kind="Tool"><a href="#tool"><div class="plate thumb"><span>Screen</span></div><div class="txt"><span class="kind">Tool · 2025</span><span class="t">SignalShepherd</span><p>Lines up sensor data and video on one clock, then exports figures and clips.</p></div></a></li>
+      <li data-date="2024-08" data-kind="Method"><a href="#"><div class="plate thumb"><span>Diagram</span></div><div class="txt"><span class="kind">Method · 2024</span><span class="t">A low-cost method for marker tracking in water tanks</span><p>Placeholder description.</p></div></a></li>
+      <li data-date="2023-11" data-kind="Talk"><a href="#"><div class="plate thumb"><span>Talk still</span></div><div class="txt"><span class="kind">Talk · 2023</span><span class="t">Conference talk, fluid dynamics meeting</span><p>Placeholder.</p></div></a></li>
+      <li data-date="2023-11" data-kind="Poster"><a href="#"><div class="plate thumb"><span>Poster</span></div><div class="txt"><span class="kind">Poster · 2023</span><span class="t">Measuring jellyfish wakes in a tank</span><p>Same meeting as the talk (placeholder).</p></div></a></li>
+      <li data-date="2023-05" data-kind="Paper"><a href="#"><div class="plate thumb"><span>Figure</span></div><div class="txt"><span class="kind">Paper · 2023</span><span class="t">Earlier paper or preprint</span><p>Placeholder.</p></div></a></li>
     </ol>
     <div class="ct" id="ct"><svg class="ct-lines" aria-hidden="true"></svg></div>
     </div>
-    <nav class="vt" id="vt" aria-label="Timeline of selected work"><div class="vt-rail"></div></nav>
-    <svg class="vt-link" id="vtLink" aria-hidden="true"></svg>
   </section>
 
   <!-- PAPER -->
@@ -494,7 +418,7 @@ sigshep</div>
 const site = (() => {
   const defaults = {
     slideshow: { seconds_per_slide: 6, autoplay: true, resume_after_touch_seconds: 4 },
-    timeline: { layout: 'center', spine: 'kelp', space_per_year: '16rem', marks: 'icon', dates: true, side: 'right' },
+    timeline: { spine: 'kelp', space_per_year: '16rem', marks: 'icon' },
     citation_map: { demo: true },
     ocean: { enabled: true, motion: true },
     accent_bars: { header: 'thin', sections: 'short' },
@@ -625,14 +549,13 @@ site.use(cfg => {
     const style = Object.entries(at).map(([k, v]) => `${k}:${v}`).join(';') + `;width:${size}px;height:${size * h / w}px;animation-delay:${delay}s`;
     return `<svg class="life ${cls} ${motion}" viewBox="0 0 ${w} ${h}" style="${style}">${art}</svg>`;
   };
-  // the surface: three long low swells drifting at different speeds; each is two identical halves, so the loop is seamless
-  // each swell has its own wavelength (a whole number of crests per half, so the loop still joins up)
+  // the surface: one swell drifting slowly; it is two identical halves, so the loop is seamless
   const swell = (cls, amp, half) => {
     let d = `M0 20`;
     for (let x = 0; x < 1600; x += half) d += ` Q${x + half / 2} ${20 + (x / half % 2 ? amp : -amp)} ${x + half} 20`;
     return `<svg class="swell ${cls}" viewBox="0 0 1600 40" preserveAspectRatio="none"><path vector-effect="non-scaling-stroke" d="${d}"/></svg>`;
   };
-  document.getElementById('sea').innerHTML = swell('a', 16, 50) + swell('b', 12, 80) + swell('c', 8, 100) + SEA.map(e => draw(e, 'far')).join('');
+  document.getElementById('sea').innerHTML = swell('a', 16, 50) + SEA.map(e => draw(e, 'far')).join('');
   document.getElementById('floor').innerHTML =
     '<svg class="sand" viewBox="0 0 1600 160" preserveAspectRatio="none"><path vector-effect="non-scaling-stroke" d="M0 122 Q200 108 400 118 T800 114 T1200 121 T1600 112"/></svg>' +
     FLOOR.map(e => draw(e, '')).join('');
@@ -794,144 +717,29 @@ site.use(cfg => {
   document.fonts.ready.then(draw);
 })();
 
-// Timeline: drawn from the list of works (newest at the top), marks the entry nearest the middle of the screen
-// as the reader scrolls, and scrolls to the nearest entry when clicked. Marks are dots, numbers or icons (theme.yml);
-// numbers count from the oldest work, like a reference list, so adding a new work never renumbers the others.
+// Timeline: the work list is the timeline. Each work sits at its date on a fixed scale (timeline.space_per_year), so a
+// quiet year leaves a gap and a busy one crowds; a card is pushed down only as far as it must be to clear the one
+// above it on the same side, and a curve joins it to the node at its exact date on the spine. The spine is a kelp
+// stalk or a straight line (timeline.spine). As the reader scrolls, the work nearest the middle of the screen is
+// marked; a node scrolls to its work. Cards carry an icon or a number (timeline.marks); numbers count from the
+// oldest work, like a reference list, so adding a new work never renumbers the others.
 (() => {
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const NS = 'http://www.w3.org/2000/svg';
   const feed = document.getElementById('feed'), items = [...feed.children];
-  const vt = document.getElementById('vt'), rail = vt.querySelector('.vt-rail');
-  const still = matchMedia('(prefers-reduced-motion: reduce)');
+  const wrap = document.getElementById('worksWrap'), ct = document.getElementById('ct'), ctSvg = ct.querySelector('.ct-lines');
+  const narrow = matchMedia('(max-width: 720px)'), still = matchMedia('(prefers-reduced-motion: reduce)');
   const works = items.map((li, i) => {
     const [y, m] = li.dataset.date.split('-').map(Number);
     return { li, n: items.length - i, d: y + (m - .5) / 12, date: `${MONTHS[m - 1]} ${y}`, k: li.dataset.kind, t: li.querySelector('.t').textContent };
   });
   const y0 = Math.floor(Math.min(...works.map(w => w.d))), y1 = Math.ceil(Math.max(...works.map(w => w.d)) + .01);
-  const pos = d => (y1 - d) / (y1 - y0) * 100;
-  for (let y = y0; y < y1; y++) rail.insertAdjacentHTML('beforeend', `<span class="vt-tick" style="top:${pos(y)}%">${y}</span>`);
-  let marks = [], labels = [], active = -1;
+  let perYear = 16, stem = true, active = -1, geo = null;
 
-  function render(cfg) {
-    const style = cfg.timeline?.marks || 'dot', dates = cfg.timeline?.dates !== false;
-    document.documentElement.dataset.vtSide = cfg.timeline?.side === 'left' ? 'left' : 'right';
-    mode = ['center', 'projects', 'kinds', 'side'].includes(cfg.timeline?.layout) ? cfg.timeline.layout : 'center';
-    perYear = parseFloat(cfg.timeline?.space_per_year) || 16;
-    stem = cfg.timeline?.spine !== 'straight';
-    document.documentElement.dataset.vtLayout = mode === 'side' ? 'side' : 'center';
-    marks.concat(labels).forEach(e => e.remove());
-    marks = []; labels = [];
-    for (const w of works) {
-      const m = document.createElement('button');
-      m.className = 'vt-mark';
-      m.style.top = pos(w.d) + '%';
-      m.setAttribute('aria-label', `${w.date}, ${w.k}: ${w.t}. Scroll to it`);
-      m.innerHTML = style === 'number' ? `<span class="num">${w.n}</span>` : style === 'icon' ? icon(w.k) : '<i></i>';
-      const l = document.createElement('span');
-      l.className = 'vt-label';
-      l.setAttribute('aria-hidden', 'true');
-      l.innerHTML = '<span class="vt-meta"></span><span class="vt-title"></span>';
-      const meta = [style !== 'icon' && w.k, dates && w.date].filter(Boolean).join(' · ');
-      l.firstChild.textContent = meta;
-      l.lastChild.textContent = w.t;
-      l.classList.toggle('bare', !meta);
-      rail.append(m, l);
-      marks.push(m); labels.push(l);
-      // the same mark in the list, before "Paper · 2026"
-      w.li.querySelector('.wm')?.remove();
-      if (style !== 'dot') w.li.querySelector('.kind').insertAdjacentHTML('afterbegin', `<span class="wm">${style === 'number' ? `[${w.n}]` : icon(w.k)}</span>`);
-    }
-    place();
-    const n = active; active = -1; mark(n);
-  }
-  // labels sit beside their mark, pushed down where they would overlap the one above
-  function layout() {
-    const h = rail.clientHeight;
-    if (!h || !labels.length || getComputedStyle(labels[0]).display === 'none') return;
-    let below = -Infinity;
-    labels.forEach((l, i) => {
-      const top = Math.max(pos(works[i].d) / 100 * h - 9, below + 6);
-      l.style.top = top + 'px';
-      below = top + l.offsetHeight;
-    });
-  }
-  function mark(n) {
-    if (n === active) return;
-    active = n;
-    works.forEach((w, i) => {
-      for (const el of [w.li, marks[i], labels[i], ctNodes[i], ctCurves[i]]) el.classList.toggle('on', i === n);
-    });
-    layout();
-    follow();
-  }
-  // wide screens: a thin accent curve from every work's label to its entry in the list, the marked one strongest.
-  // On the left the curves meet the thumbnails; on the right, the row's right-hand end.
-  const link = document.getElementById('vtLink'), NS = 'http://www.w3.org/2000/svg';
-  const curves = works.map(() => {
-    const g = document.createElementNS(NS, 'g');
-    g.innerHTML = '<path/><circle r="2.5"/>';
-    link.append(g);
-    return g;
-  });
-  function connect() {
-    const off = !vt.classList.contains('shown') || getComputedStyle(link).display === 'none';
-    const right = document.documentElement.dataset.vtSide === 'right';
-    works.forEach((w, i) => {
-      const g = curves[i];
-      g.classList.toggle('on', i === active);
-      if (off) return g.setAttribute('visibility', 'hidden');
-      const parts = [...labels[i].children].filter(c => getComputedStyle(c).display !== 'none');
-      const from = (parts.length ? parts : [marks[i]]).map(c => c.getBoundingClientRect());
-      const sx = right ? Math.min(...from.map(r => r.left)) - 10 : Math.max(...from.map(r => r.right)) + 10;
-      const sy = from[0].top + from[0].height / 2;
-      const thumb = w.li.querySelector('.plate').getBoundingClientRect(), row = w.li.getBoundingClientRect();
-      const ex = right ? row.right + 10 : thumb.left - 10, ey = thumb.top + thumb.height / 2, mx = (sx + ex) / 2;
-      if (Math.abs(ex - sx) < 24) return g.setAttribute('visibility', 'hidden');
-      g.removeAttribute('visibility');
-      g.firstChild.setAttribute('d', `M${sx} ${sy} C${mx} ${sy} ${mx} ${ey} ${ex} ${ey}`);
-      g.lastChild.setAttribute('cx', ex); g.lastChild.setAttribute('cy', ey);
-    });
-  }
-  // centre layout: each work is placed at its date on a fixed scale (timeline.space_per_year), so a quiet year
-  // leaves a gap and a busy one crowds; a card is pushed down only as far as it must be to clear the one above
-  // it on the same side, and a curve joins it to the node at its exact date on the spine.
-  const wrap = document.getElementById('worksWrap'), ct = document.getElementById('ct'), ctSvg = ct.querySelector('.ct-lines');
-  const narrow = matchMedia('(max-width: 720px)');
-  let mode = 'center', perYear = 16, stem = true;
-  // Projects layout: a project with two or more works is a branch off the main line; its headline (its paper, or
-  // its newest work) shows while it is collapsed. Kinds layout: one lane per kind of work, each can be folded away.
-  const projects = [...new Set(works.map(w => w.li.dataset.project).filter(Boolean))].map(name => {
-    const ws = works.filter(w => w.li.dataset.project === name);
-    return { name, ws, head: ws.find(w => w.k === 'Paper') || ws[0], open: false, start: Math.min(...ws.map(w => w.d)) - .25, end: Math.max(...ws.map(w => w.d)) };
-  }).filter(p => p.ws.length > 1);
-  const branchOf = w => projects.find(p => p.ws.includes(w));
-  const ORDER = ['Paper', 'Talk', 'Poster', 'Tool', 'Method', 'Dataset'];
-  const kinds = [...new Set(works.map(w => w.k))].sort((a, b) => (ORDER.indexOf(a) + 1 || 99) - (ORDER.indexOf(b) + 1 || 99));
-  const folded = new Set();
-  const visible = w => mode === 'projects' ? (!branchOf(w) || branchOf(w).open || branchOf(w).head === w) : mode === 'kinds' ? !folded.has(w.k) : true;
-  for (const p of projects) {
-    p.more = document.createElement('button');
-    p.more.className = 'more';
-    p.more.onclick = () => { p.open = !p.open; place(); update(); };
-    p.head.li.append(p.more);
-    p.label = document.createElement('span');
-    p.label.className = 'ct-name';
-    p.label.textContent = p.name;
-    ct.append(p.label);
-  }
-  const heads = kinds.map(k => {
-    const b = document.createElement('button');
-    b.className = 'ct-head';
-    b.innerHTML = icon(k);
-    b.title = k + 's';
-    b.setAttribute('aria-label', `Show ${k.toLowerCase()}s`);
-    b.onclick = () => { folded.has(k) ? folded.delete(k) : folded.add(k); place(); update(); };
-    ct.append(b);
-    return b;
-  });
   const lanesG = document.createElementNS(NS, 'g');
   lanesG.setAttribute('class', 'lanes');
   ctSvg.append(lanesG);
-  const ctNodes = works.map((w, i) => {
+  const nodes = works.map((w, i) => {
     const b = document.createElement('button');
     b.className = 'ct-node';
     b.setAttribute('aria-label', `${w.date}, ${w.k}: ${w.t}. Scroll to it`);
@@ -939,184 +747,125 @@ site.use(cfg => {
     ct.append(b);
     return b;
   });
-  const ctCurves = works.map(() => {
+  const curves = works.map(() => {
     const g = document.createElementNS(NS, 'g');
     g.innerHTML = '<path/><circle r="2.5"/>';
     ctSvg.append(g);
     return g;
   });
-  const ctYears = [];
+  const years = [];
   for (let yr = y1 - 1; yr >= y0; yr--) {
     const s = document.createElement('span');
     s.className = 'ct-year';
     s.textContent = yr;
     ct.append(s);
-    ctYears.push([yr, s]);
+    years.push([yr, s]);
   }
-  let geo = null;
+
+  function render(cfg) {
+    const style = cfg.timeline?.marks || 'icon';
+    perYear = parseFloat(cfg.timeline?.space_per_year) || 16;
+    stem = cfg.timeline?.spine !== 'straight';
+    for (const w of works) {
+      // the work's mark in its card, before "Paper · 2026"
+      w.li.querySelector('.wm')?.remove();
+      if (style !== 'dot') w.li.querySelector('.kind').insertAdjacentHTML('afterbegin', `<span class="wm">${style === 'number' ? `[${w.n}]` : icon(w.k)}</span>`);
+    }
+    place();
+    const n = active; active = -1; mark(n);
+  }
+
   function place() {
-    const graph = mode === 'projects' || mode === 'kinds';
-    wrap.classList.toggle('center', mode === 'center');
-    wrap.classList.toggle('graph', graph);
-    for (const p of projects) {
-      p.more.hidden = mode !== 'projects';
-      p.more.textContent = p.open ? `Fold ${p.name} away` : `${p.name} · ${p.ws.length - 1} more`;
-      p.more.setAttribute('aria-expanded', p.open);
-      p.label.hidden = mode !== 'projects';
-    }
-    heads.forEach((b, k) => { b.hidden = mode !== 'kinds'; b.setAttribute('aria-pressed', !folded.has(kinds[k])); });
-    works.forEach(w => w.li.classList.toggle('hide', !visible(w)));
-    if (mode === 'side') {
-      items.forEach(li => { li.style.top = ''; li.classList.remove('l', 'r'); });
-      feed.style.height = '';
-      return;
-    }
+    wrap.classList.toggle('stem', stem);
     if (!feed.clientWidth) return;
-    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize), one = narrow.matches, single = one || graph;
-    const shown = works.filter(w => visible(w));
-    shown.forEach((w, i) => { const r = single || i % 2 === 1; w.li.classList.toggle('r', r); w.li.classList.toggle('l', !r); });
-    // lanes to the left of the cards: the main line and its branches, or one lane per kind
-    const yearsW = (one ? 2 : 3.25) * rem, laneW = (one ? 1.2 : 2.4) * rem;
-    let lanes = 1;
-    if (mode === 'projects') {
-      const ends = [];
-      for (const p of [...projects].sort((a, b) => a.start - b.start)) {
-        let k = 1;
-        while (ends[k] !== undefined && ends[k] > p.start - .1) k++;
-        p.lane = k; ends[k] = p.end;
-        lanes = Math.max(lanes, k + 1);
-      }
-    }
-    if (mode === 'kinds') lanes = kinds.length;
-    const laneX = k => yearsW + laneW * (k + .5);
-    const laneOf = w => mode === 'projects' ? (branchOf(w)?.lane || 0) : kinds.indexOf(w.k);
-    if (graph) wrap.style.setProperty('--lanes', yearsW + laneW * lanes + (one ? 1 : 2.5) * rem + 'px');
-    const pad = (mode === 'kinds' ? 4 : 2.5) * rem, gap = rem;
-    // one column of cards: stretch the scale until they fit it, so each date stays beside its work
-    const stacked = shown.reduce((sum, w) => sum + w.li.offsetHeight + gap, 0);
-    const S = single ? Math.max(perYear * rem * (one ? .6 : 1), stacked / (y1 - y0)) : perYear * rem;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize), one = narrow.matches;
+    works.forEach((w, i) => { const r = one || i % 2 === 1; w.li.classList.toggle('r', r); w.li.classList.toggle('l', !r); });
+    const pad = 2.5 * rem, gap = rem;
+    // one column on a phone: stretch the scale until the stacked works fit it, so each date stays beside its work
+    const stacked = works.reduce((sum, w) => sum + w.li.offsetHeight + gap, 0);
+    const S = one ? Math.max(perYear * rem * .6, stacked / (y1 - y0)) : perYear * rem;
     const at = d => pad + (y1 - d) * S;
-    // centre layout as kelp: the spine sways gently, and each work's node sits on the stalk
+    // the kelp stalk sways gently, and each work's node sits on it
     const spineX = one ? .9 * rem : ct.clientWidth / 2;
-    const wob = y => mode === 'center' && stem ? 7 * Math.sin(y / 240 * 2 * Math.PI) : 0;
-    const below = { l: 0, r: 0 }, lastY = {};
-    let prev = -Infinity, end = 0;
+    const wob = y => stem ? 7 * Math.sin(y / 240 * 2 * Math.PI) : 0;
+    const below = { l: 0, r: 0 };
+    let prev = -Infinity, end = 0, lastY = -Infinity;
     works.forEach((w, i) => {
-      const on = visible(w);
-      ctNodes[i].hidden = !on;
-      if (!on) return;
       const side = w.li.classList.contains('l') ? 'l' : 'r', h = w.li.offsetHeight;
-      const top = Math.max(at(w.d) - h / 2, below[side] + gap, prev + (single ? 0 : 2 * gap), 0);
+      const top = Math.max(at(w.d) - h / 2, below[side] + gap, prev + (one ? 0 : 2 * gap), 0);
       w.li.style.top = top + 'px';
       below[side] = top + h; prev = top; end = Math.max(end, top + h);
-      // two works on one date in one lane: the second node sits just below the first
-      const lane = graph ? laneOf(w) : 0;
-      const y = Math.max(at(w.d), (lastY[lane] ?? -Infinity) + 14);
-      lastY[lane] = y;
-      ctNodes[i].style.top = y + 'px';
-      ctNodes[i].style.left = graph ? laneX(lane) + 'px' : stem ? spineX + wob(y) + 'px' : '';
+      // two works on one date: the second node sits just below the first
+      const y = Math.max(at(w.d), lastY + 14);
+      lastY = y;
+      nodes[i].style.top = y + 'px';
+      nodes[i].style.left = stem ? spineX + wob(y) + 'px' : '';
     });
     const height = Math.max(end, at(y0)) + pad;
     feed.style.height = height + 'px';
-    ctYears.forEach(([yr, s]) => s.style.top = at(yr + 1) + 'px');
-    for (const p of projects) {
-      const top = at(p.end), bottom = at(p.start);
-      p.label.hidden = mode !== 'projects' || one || bottom - top < 7 * rem;
-      p.label.style.left = laneX(p.lane) + 'px';
-      p.label.style.top = (top + bottom) / 2 + 'px';
-    }
-    heads.forEach((b, k) => { b.style.left = laneX(k) + 'px'; b.style.top = .5 * rem + 'px'; });
-    geo = { laneX, at, height, top: pad * .75, k: 1.1 * rem, spineX, wob, nodes: works.filter(visible).map(w => at(w.d)) };
-    wrap.classList.toggle('stem', mode === 'center' && stem);
+    years.forEach(([yr, s]) => s.style.top = at(yr + 1) + 'px');
+    geo = { height, spineX, wob, tops: works.map(w => at(w.d)) };
     draw();
   }
+
   function draw() {
-    if (mode === 'side') return;
-    const box = ct.getBoundingClientRect();
-    // the lines: in Projects, the main line with each branch curving off it and back; in Kinds, straight lanes
+    // the stalk, from a holdfast at the bottom to its tip above the newest work, with a leaf every so often on
+    // alternating sides, kept clear of the works' nodes
     let lines = '';
-    if (geo && mode === 'projects') {
-      const x0 = geo.laneX(0), k = geo.k;
-      lines += `<path class="main" d="M${x0} 0 V${geo.height}"/>`;
-      for (const p of projects) {
-        const x1 = geo.laneX(p.lane), ys = geo.at(p.start), ye = geo.at(p.end);
-        lines += `<path class="${p.open ? '' : 'shut'}" d="M${x0} ${ys} C${x0} ${ys - k} ${x1} ${ys - k} ${x1} ${ys - 2 * k} V${ye + 2 * k} C${x1} ${ye + k} ${x0} ${ye + k} ${x0} ${ye}"/>`;
-      }
-    } else if (geo && mode === 'center' && stem) {
-      // the stalk, from a holdfast at the bottom to its tip above the newest work, with a leaf every so often
-      // on alternating sides, kept clear of the works' nodes
-      const { spineX: x, wob, height: h, nodes } = geo, tip = Math.max(0, Math.min(...nodes) - 30);
+    if (geo && stem) {
+      const { spineX: x, wob, height: h, tops } = geo, tip = Math.max(0, Math.min(...tops) - 30);
       let d = `M${x + wob(h)} ${h}`;
       for (let y = h - 8; y > tip; y -= 8) d += ` L${(x + wob(y)).toFixed(1)} ${y}`;
       lines += `<path class="stem" d="${d}"/>`;
       lines += `<path class="leaf" d="M${x + wob(h)} ${h} q-10 2 -16 9 M${x + wob(h)} ${h} q9 3 14 10 M${x + wob(h)} ${h} q1 6 -2 11"/>`;
       let side = 1;
       for (let y = h - 70; y > tip + 40; y -= 95) {
-        if (nodes.some(n => Math.abs(n - y) < 26)) continue;
+        if (tops.some(n => Math.abs(n - y) < 26)) continue;
         const sx = x + wob(y), s = side;
         lines += `<path class="leaf" d="M${sx} ${y} q${14 * s} -4 ${24 * s} -18 q${-12 * s} 2 ${-24 * s} 18"/>`;
         side = -side;
       }
-    } else if (geo && mode === 'kinds') {
-      kinds.forEach((kd, k) => { lines += `<path class="${folded.has(kd) ? 'shut' : ''}" d="M${geo.laneX(k)} ${geo.top + 20} V${geo.height}"/>`; });
     }
     lanesG.innerHTML = lines;
+    const box = ct.getBoundingClientRect();
     works.forEach((w, i) => {
-      const g = ctCurves[i];
-      if (ctNodes[i].hidden) return g.setAttribute('visibility', 'hidden');
-      g.removeAttribute('visibility');
-      const n = ctNodes[i].getBoundingClientRect(), a = w.li.querySelector('a').getBoundingClientRect(), left = w.li.classList.contains('l');
+      const n = nodes[i].getBoundingClientRect(), a = w.li.querySelector('a').getBoundingClientRect(), left = w.li.classList.contains('l');
       const sx = n.left + n.width / 2 - box.left + (left ? -8 : 8), sy = n.top + n.height / 2 - box.top;
       const ex = (left ? a.right + 8 : a.left - 8) - box.left, ey = a.top + a.height / 2 - box.top, mx = (sx + ex) / 2;
-      g.firstChild.setAttribute('d', `M${sx} ${sy} C${mx} ${sy} ${mx} ${ey} ${ex} ${ey}`);
-      g.lastChild.setAttribute('cx', ex); g.lastChild.setAttribute('cy', ey);
+      curves[i].firstChild.setAttribute('d', `M${sx} ${sy} C${mx} ${sy} ${mx} ${ey} ${ex} ${ey}`);
+      curves[i].lastChild.setAttribute('cx', ex);
+      curves[i].lastChild.setAttribute('cy', ey);
     });
   }
-  // keep the curve on its ends while the labels and the entry slide into place
-  let until = 0;
-  function follow() {
-    const running = performance.now() < until;
-    until = performance.now() + 500;
-    if (running) return;
-    const step = () => { connect(); if (performance.now() < until) requestAnimationFrame(step); };
-    step();
+
+  function mark(n) {
+    if (n === active) return;
+    active = n;
+    works.forEach((w, i) => { for (const el of [w.li, nodes[i], curves[i]]) el.classList.toggle('on', i === n); });
   }
   let lockUntil = 0;
   function update() {
     if (!feed.offsetParent || performance.now() < lockUntil) return;
-    // read at 45% of the screen; over the last half screen of the page that line slides to the bottom, so the last entries can be reached
+    // read at 45% of the screen; over the last half screen of the page that line slides to the bottom, so the last works can be reached
     const left = document.documentElement.scrollHeight - innerHeight - scrollY, near = innerHeight / 2;
     const r = feed.getBoundingClientRect(), mid = innerHeight * (.45 + .5 * Math.max(0, 1 - left / near));
-    const shown = r.top < innerHeight * .75 && r.bottom > innerHeight * .25;
-    vt.classList.toggle('shown', shown);
-    if (!shown) return mark(-1);
+    if (r.top > innerHeight * .75 || r.bottom < innerHeight * .25) return mark(-1);
     let best = 0, gap = Infinity;
-    items.forEach((li, i) => {
-      if (li.classList.contains('hide')) return;
-      const b = li.getBoundingClientRect(), d = Math.abs((b.top + b.bottom) / 2 - mid);
-      if (d < gap) { gap = d; best = i; }
-    });
+    items.forEach((li, i) => { const b = li.getBoundingClientRect(), d = Math.abs((b.top + b.bottom) / 2 - mid); if (d < gap) { gap = d; best = i; } });
     mark(best);
   }
-  // a clicked entry stays marked while the page scrolls to it
+  // a clicked work stays marked while the page scrolls to it
   function goTo(n) {
     mark(n);
     lockUntil = performance.now() + 1000;
     items[n].scrollIntoView({ behavior: still.matches ? 'auto' : 'smooth', block: 'center' });
   }
-  rail.addEventListener('click', e => {
-    const hit = e.target.closest('.vt-mark, .vt-label');
-    if (hit) return goTo((hit.classList.contains('vt-mark') ? marks : labels).indexOf(hit));
-    const r = rail.getBoundingClientRect(), f = (e.clientY - r.top) / r.height * 100;
-    let best = 0;
-    works.forEach((w, i) => { if (Math.abs(pos(w.d) - f) < Math.abs(pos(works[best].d) - f)) best = i; });
-    goTo(best);
-  });
+
   site.use(render);
   let raf = 0;
-  addEventListener('scroll', () => { raf ||= requestAnimationFrame(() => { raf = 0; update(); connect(); }); }, { passive: true });
-  addEventListener('resize', () => { place(); layout(); update(); connect(); });
-  document.fonts.ready.then(() => { place(); layout(); });
+  addEventListener('scroll', () => { raf ||= requestAnimationFrame(() => { raf = 0; update(); }); }, { passive: true });
+  addEventListener('resize', () => { place(); update(); });
+  document.fonts.ready.then(place);
   update();
 })();
 
@@ -1148,11 +897,8 @@ site.use(cfg => {
         v => site.set({ ocean: { enabled: v !== false, motion: v === true } })),
       group('Header bar', [['None', 'none'], ['Thin', 'thin'], ['Thick', 'thick'], ['Full width', 'band']], cfg.accent_bars.header, v => site.set({ accent_bars: { header: v } })),
       group('Section bars', [['None', 'none'], ['Short', 'short'], ['Full', 'full']], cfg.accent_bars.sections, v => site.set({ accent_bars: { sections: v } })),
-      group('Timeline', [['Centre', 'center'], ['Projects', 'projects'], ['Kinds', 'kinds'], ['Side', 'side']], cfg.timeline.layout, v => site.set({ timeline: { layout: v } })),
       group('Spine', [['Kelp', 'kelp'], ['Straight', 'straight']], cfg.timeline.spine, v => site.set({ timeline: { spine: v } })),
-      group('Side', [['Left', 'left'], ['Right', 'right']], cfg.timeline.side, v => site.set({ timeline: { side: v } })),
-      group('Timeline marks', [['Dots', 'dot'], ['Numbers', 'number'], ['Icons', 'icon']], cfg.timeline.marks, v => site.set({ timeline: { marks: v } })),
-      group('Dates', [['On', true], ['Off', false]], cfg.timeline.dates, v => site.set({ timeline: { dates: v } })),
+      group('Card marks', [['None', 'dot'], ['Numbers', 'number'], ['Icons', 'icon']], cfg.timeline.marks, v => site.set({ timeline: { marks: v } })),
       group('Example citations', [['On', true], ['Off', false]], cfg.citation_map.demo, v => site.set({ citation_map: { demo: v } })),
     );
   });

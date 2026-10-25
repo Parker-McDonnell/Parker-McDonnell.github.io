@@ -55,16 +55,11 @@ slideshow:
   autoplay: true                      # false: only moves when swiped or the arrows are pressed
   resume_after_touch_seconds: 4       # after a swipe, wait this long before moving on again
 
+# "Selected work" is a timeline: works placed by date along a spine down the middle, on alternating sides
 timeline:
-  layout: center                      # center: the work list is the timeline, works placed by date along a spine down the middle
-                                      # projects: a main line with a branch per project (2+ works), each shown by its headline until opened
-                                      # kinds: one lane per kind of work (papers, talks, ...), each can be folded away
-                                      # side: a list, with a timeline beside it that follows as you scroll
-  spine: kelp                         # center layout: kelp (a swaying stalk with leaves, rising from the sea floor) or straight
-  space_per_year: 16rem              # center layout: the height one year takes, so gaps in time show as gaps on the page
-  side: right                         # side layout: left or right of the list (phones always use a thin rail on the right)
-  marks: icon                        # dot, number (like a reference list) or icon (one per kind of work)
-  dates: true                         # show the month and year beside each mark
+  spine: kelp                         # kelp (a swaying stalk with leaves, rising from a holdfast) or straight
+  space_per_year: 16rem               # the height one year takes, so gaps in time show as gaps on the page
+  marks: icon                         # in each card: icon (one per kind of work), number (like a reference list) or dot (none)
 
 citation_map:
   demo: true                          # show made-up citing papers, marked "Example", until real ones exist
