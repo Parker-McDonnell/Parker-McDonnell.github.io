@@ -2,31 +2,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Concept A · Catalogue Slideshow</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=Hanken+Grotesk:wght@400;500&display=swap">
+<link rel="stylesheet" id="fonts" href="https://fonts.googleapis.com/css2?family=Newsreader:wght@400;600&family=Hanken+Grotesk:wght@400;500&display=swap">
 <style>
 /* Concept A, "Catalogue": a quiet catalogue. One narrow column, lots of air, works listed like a museum's object index. Built on al-folio (Jekyll).
-   This mock-up holds five pages (home, paper, talk, tool, about); the address's #name picks which one shows. */
+   This mock-up holds five pages (home, paper, talk, tool, about); the address's #name picks which one shows.
+   Fonts, colours, column width and slideshow speed come from theme.yml; the values here are only what shows if it can't be read. */
 :root {
-  --paper: #f6f5f1; --ink: #1d1e1f; --mute: #74757a; --rule: #d9d8d2; --shu: #a8432f; --well: #e9e7e0;
-  --display: "Newsreader", Georgia, "Times New Roman", serif;
-  --body: "Hanken Grotesk", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --paper: #ffffff; --ink: #16191d; --mute: #545c66; --rule: #d5dae0; --shu: #0b5cad; --well: #f3f5f8;
+  --display: "Newsreader", Georgia, serif;
+  --body: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
   --mono: ui-monospace, Menlo, Consolas, monospace;
+  --base: 16px; --col: 44rem; --slide: 6s;
 }
-:root[data-accent="indigo"] { --shu: #2f5079; }
-:root[data-accent="moss"] { --shu: #5b6b3a; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --paper:#151617; --ink:#e7e5df; --mute:#94959a; --rule:#2c2d2f; --shu:#d0705a; --well:#202123; color-scheme: dark }
-  :root[data-accent="indigo"]:not([data-theme="light"]) { --shu: #8eaad3; }
-  :root[data-accent="moss"]:not([data-theme="light"]) { --shu: #a3b37a; }
+  :root:not([data-theme="light"]) { --paper:#17191c; --ink:#eceef0; --mute:#a7adb5; --rule:#34383e; --shu:#5aa8e8; --well:#22252a; color-scheme: dark }
 }
-:root[data-theme="dark"] { --paper:#151617; --ink:#e7e5df; --mute:#94959a; --rule:#2c2d2f; --shu:#d0705a; --well:#202123; color-scheme: dark }
-:root[data-theme="dark"][data-accent="indigo"] { --shu: #8eaad3; }
-:root[data-theme="dark"][data-accent="moss"] { --shu: #a3b37a; }
-body { background: var(--paper); color: var(--ink); font: 400 16px/1.8 var(--body); }
-.wrap { max-width: 44rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 6rem; }
+:root[data-theme="dark"] { --paper:#17191c; --ink:#eceef0; --mute:#a7adb5; --rule:#34383e; --shu:#5aa8e8; --well:#22252a; color-scheme: dark }
+html { font-size: var(--base); }
+body { background: var(--paper); color: var(--ink); font: 400 1rem/1.8 var(--body); }
+.wrap { max-width: var(--col); margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 6rem; }
 a { color: inherit; text-decoration: none; }
 a:hover, a:focus-visible { color: var(--shu); }
-a:focus-visible, button:focus-visible { outline: 1px solid var(--shu); outline-offset: 3px; }
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 1px solid var(--shu); outline-offset: 3px; }
 header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 2.5rem; flex-wrap: wrap; }
 .mark { display: flex; align-items: center; gap: .7rem; font: 600 1.05rem var(--display); letter-spacing: .06em; }
 .mark span { color: var(--shu); }
@@ -48,6 +45,8 @@ h2 { font: 400 .78rem var(--body); letter-spacing: .2em; text-transform: upperca
 .t { font: 400 1.12rem/1.45 var(--display); min-width: 0; }
 .kind { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); }
 .yr { font-variant-numeric: tabular-nums; color: var(--mute); font-size: .85rem; }
+/* small line icons, one per kind of work, shared by the timeline and the list */
+.ico { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
 /* home */
 .intro { padding-block: 6rem 5rem; }
 .intro h1 { font: 400 clamp(2rem, 6vw, 3.1rem)/1.25 var(--display); margin: 0 0 1.5rem; text-wrap: balance; }
@@ -62,35 +61,50 @@ button { background: none; border: 0; color: var(--mute); font: inherit; cursor:
 button:hover { color: var(--shu); }
 .bar { height: 1px; background: var(--rule); margin-top: .75rem; }
 .bar i { display: block; height: 100%; width: 0; background: var(--shu); }
-.bar i.run { animation: fill 6s linear forwards; }
+.bar i.run { animation: fill var(--slide) linear forwards; }
 @keyframes fill { to { width: 100% } }
 /* selected work: one entry per work, newest first */
 .feed { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
 .feed a { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1.5rem; align-items: center; padding-block: 1.5rem; border-bottom: 1px solid var(--rule); transition: padding .4s ease; }
 .feed a:hover, .feed li.on a { padding-left: .6rem; }
-.feed li.on .t { color: var(--shu); }
+.feed li.on .t, .feed li.on .wm { color: var(--shu); }
 .feed .txt { display: grid; gap: .35rem; min-width: 0; }
 .feed p { margin: 0; color: var(--mute); font-size: .9rem; line-height: 1.6; }
+.wm { display: inline-flex; align-items: center; margin-right: .6rem; font-variant-numeric: tabular-nums; letter-spacing: .04em; transition: color .3s ease; }
+.wm .ico { width: 14px; height: 14px; }
 .plate.thumb { aspect-ratio: 1; font-size: .6rem; text-align: center; }
 .plate.thumb svg { width: 60%; }
 @media (max-width: 520px) { .feed a { grid-template-columns: 5rem minmax(0, 1fr); gap: 1rem; } }
 /* timeline: runs down the side while the work list is on screen, marks the entry being read, and a click scrolls to an entry.
-   A thin rail in the right gutter on narrow screens; with years and the entry's name in the left margin on wide ones. */
+   Narrow screens: a rail of plain dots in the right gutter. Wide screens: the left margin, with years, a mark per work
+   (dot, number or icon, set in theme.yml), a date beside each, and the title of the entry being read. */
 .vt { --x: 8px; position: fixed; z-index: 5; top: 50%; transform: translateY(-50%); right: env(safe-area-inset-right, 0px); width: 16px; height: min(50vh, 22rem); opacity: 0; visibility: hidden; transition: opacity .5s ease, visibility .5s; }
 .vt.shown { opacity: 1; visibility: visible; }
 .vt-rail { position: absolute; inset: 0; cursor: pointer; }
 .vt-rail::before { content: ""; position: absolute; top: 0; bottom: 0; left: var(--x); border-left: 1px solid var(--rule); }
-.vt-dot { position: absolute; left: var(--x); width: 7px; height: 7px; padding: 0; border-radius: 50%; border: 1px solid var(--ink); background: var(--paper); transform: translate(-50%, -50%); transition: transform .3s ease, background .3s ease, border-color .3s ease; }
-.vt-dot::before { content: ""; position: absolute; inset: -8px; }
-.vt-dot:hover, .vt-dot:focus-visible, .vt-dot.on { background: var(--shu); border-color: var(--shu); transform: translate(-50%, -50%) scale(1.35); outline: none; }
-.vt-tick, .vt-now { display: none; }
-@media (min-width: 1180px) {
-  .vt { --x: 3.25rem; right: auto; left: max(2.5rem, env(safe-area-inset-left, 0px)); width: 11rem; height: min(60vh, 28rem); }
-  .vt-dot { width: 11px; height: 11px; }
+.vt-mark { position: absolute; left: var(--x); width: 7px; height: 7px; padding: 0; border-radius: 50%; border: 1px solid var(--ink); background: var(--paper); color: var(--mute); transform: translate(-50%, -50%); transition: transform .3s ease, background .3s ease, border-color .3s ease, color .3s ease; }
+.vt-mark::before { content: ""; position: absolute; inset: -8px; }
+.vt-mark > * { display: none; }
+.vt-mark:hover, .vt-mark:focus-visible, .vt-mark.on { background: var(--shu); border-color: var(--shu); transform: translate(-50%, -50%) scale(1.35); outline: none; }
+.vt-tick, .vt-label { display: none; }
+@media (min-width: 1280px) {
+  .vt { --x: 3.25rem; right: auto; left: max(1.75rem, env(safe-area-inset-left, 0px)); width: calc((100vw - var(--col)) / 2 - 3.5rem); height: min(64vh, 30rem); }
   .vt-tick { display: block; position: absolute; left: 0; width: 2.4rem; text-align: right; transform: translateY(-50%); font-size: .72rem; color: var(--mute); font-variant-numeric: tabular-nums; pointer-events: none; }
   .vt-tick::after { content: ""; position: absolute; left: calc(100% + .3rem); top: 50%; width: .4rem; border-top: 1px solid var(--mute); }
-  .vt-now { display: block; position: absolute; left: calc(var(--x) + 1.1rem); right: 0; transform: translateY(-50%); transition: top .45s ease; font-size: .65rem; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); pointer-events: none; }
-  .vt-now b { display: block; margin-top: .15rem; font: 400 .9rem/1.35 var(--display); letter-spacing: 0; text-transform: none; color: var(--ink); }
+  .vt-mark { display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: var(--paper); }
+  .vt-mark > * { display: block; }
+  .vt-mark:hover, .vt-mark:focus-visible, .vt-mark.on { background: var(--paper); color: var(--shu); transform: translate(-50%, -50%); }
+  .vt-mark i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--ink); transition: background .3s ease, border-color .3s ease, transform .3s ease; }
+  .vt-mark:hover i, .vt-mark.on i { background: var(--shu); border-color: var(--shu); transform: scale(1.3); }
+  .vt-mark .num { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--rule); font: 500 .62rem/1 var(--body); font-variant-numeric: tabular-nums; transition: border-color .3s ease; }
+  .vt-mark.on .num, .vt-mark:hover .num { border-color: var(--shu); }
+  .vt-mark .ico { width: 15px; height: 15px; }
+  .vt-label { display: grid; gap: .15rem; position: absolute; left: calc(var(--x) + 1.2rem); right: 0; font-size: .68rem; line-height: 1.4; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); cursor: pointer; transition: top .35s ease, color .3s ease; }
+  .vt-label:hover { color: var(--ink); }
+  .vt-label.on .vt-meta { color: var(--shu); }
+  .vt-label.bare .vt-meta { display: none; }
+  .vt-title { display: none; }
+  .vt-label.on .vt-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; font: 400 .88rem/1.35 var(--display); letter-spacing: 0; text-transform: none; color: var(--ink); }
 }
 /* work pages */
 .facts { display: grid; grid-template-columns: 7rem 1fr; gap: .5rem 1.5rem; margin: 0; font-size: .9rem; }
@@ -114,12 +128,15 @@ button:hover { color: var(--shu); }
 .cmap { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 7rem minmax(0, 1fr); gap: 0 2rem; align-items: center; }
 .cmap-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 .cmap-lines path { fill: none; stroke: var(--rule); stroke-width: 1; transition: stroke .3s ease; }
+.cmap-lines path.demo { stroke-dasharray: 3 4; }
 .cmap-lines path.on { stroke: var(--shu); }
 .cmap-col { display: grid; gap: .35rem; align-content: center; min-width: 0; }
 .cmap-col[data-side="refs"] { text-align: right; }
 .cn { display: grid; gap: .1rem; padding-block: .45rem; min-width: 0; font-size: .75rem; color: var(--mute); }
 .cn .ct { font: 400 .95rem/1.35 var(--display); color: var(--ink); }
 .cn:hover .ct, .cn:focus-visible .ct, .cn.on .ct { color: var(--shu); }
+.cn.demo .ct { font-style: italic; color: var(--mute); }
+.cn .ex { color: var(--shu); letter-spacing: .14em; text-transform: uppercase; font-size: .62rem; }
 .cmap-me { display: grid; justify-items: center; gap: .3rem; text-align: center; }
 .cmap-me .t { font-size: 1rem; }
 .cmap-node { width: 15px; height: 15px; border-radius: 50%; background: var(--shu); }
@@ -136,11 +153,14 @@ button:hover { color: var(--shu); }
 @media (max-width: 560px) { .about { grid-template-columns: 1fr; } .about .plate { max-width: 13rem; } }
 .contact { font-size: .95rem; }
 .contact dd { font-family: var(--mono); font-size: .85rem; user-select: all; }
-footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); font-size: .75rem; color: var(--mute); display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-.accents { display: flex; gap: .25rem; align-items: center; }
-.accents button { font-size: .75rem; display: flex; align-items: center; gap: .35rem; }
-.accents button::before { content: ""; width: 9px; height: 9px; border-radius: 1px; background: var(--sw); }
-.accents button[aria-pressed="true"] { color: var(--ink); }
+footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); font-size: .75rem; color: var(--mute); display: grid; gap: 1rem; }
+/* playground: footer buttons for trying the options in theme.yml during this visit */
+.play { display: flex; flex-wrap: wrap; gap: .5rem 1.75rem; }
+.grp { display: flex; flex-wrap: wrap; align-items: center; gap: 0 .2rem; }
+.grp b { font-weight: 400; font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; margin-right: .3rem; }
+.grp button { font-size: .75rem; display: flex; align-items: center; gap: .35rem; }
+.grp button[style]::before { content: ""; width: 9px; height: 9px; border-radius: 1px; background: var(--sw); }
+.grp button[aria-pressed="true"] { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--shu); }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } .frames { scroll-behavior: auto } .bar { display: none } }
 </style>
 
@@ -172,15 +192,16 @@ footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule
     </section>
 
     <h2 id="works">Selected work</h2>
-    <ol class="feed" id="feed" reversed>
-      <li data-date="2026.77" data-kind="Paper"><a href="#paper"><div class="plate thumb"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="50" cy="50" r="6"/><path d="M50 44 Q48 25 40 10 M56 50 Q75 48 90 40 M50 56 Q52 75 60 90 M44 50 Q25 52 10 60 M54 46 Q68 32 80 18"/></svg></div><div class="txt"><span class="kind">Paper · 2026</span><span class="t">Plenty of fish in the sea, but only one multimodal feather star robot</span><p>Science Advances, with Nicole W. Xu.</p></div></a></li>
-      <li data-date="2025.75" data-kind="Talk"><a href="#talk"><div class="plate thumb"><span>Talk still</span></div><div class="txt"><span class="kind">Talk · 2025</span><span class="t">How jellyfish move water, and what robots can borrow</span><p>Invited seminar (placeholder).</p></div></a></li>
-      <li data-date="2025.3" data-kind="Tool"><a href="#tool"><div class="plate thumb"><span>Screen</span></div><div class="txt"><span class="kind">Tool · 2025</span><span class="t">SignalShepherd</span><p>Lines up sensor data and video on one clock, then exports figures and clips.</p></div></a></li>
-      <li data-date="2024.6" data-kind="Method"><a href="#"><div class="plate thumb"><span>Diagram</span></div><div class="txt"><span class="kind">Method · 2024</span><span class="t">A low-cost method for marker tracking in water tanks</span><p>Placeholder description.</p></div></a></li>
-      <li data-date="2023.9" data-kind="Talk"><a href="#"><div class="plate thumb"><span>Talk still</span></div><div class="txt"><span class="kind">Talk · 2023</span><span class="t">Conference talk, fluid dynamics meeting</span><p>Placeholder.</p></div></a></li>
-      <li data-date="2023.4" data-kind="Paper"><a href="#"><div class="plate thumb"><span>Figure</span></div><div class="txt"><span class="kind">Paper · 2023</span><span class="t">Earlier paper or preprint</span><p>Placeholder.</p></div></a></li>
+    <!-- data-date is the year and month the work came out; the timeline is drawn from these -->
+    <ol class="feed" id="feed">
+      <li data-date="2026-10" data-kind="Paper"><a href="#paper"><div class="plate thumb"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="50" cy="50" r="6"/><path d="M50 44 Q48 25 40 10 M56 50 Q75 48 90 40 M50 56 Q52 75 60 90 M44 50 Q25 52 10 60 M54 46 Q68 32 80 18"/></svg></div><div class="txt"><span class="kind">Paper · 2026</span><span class="t">Plenty of fish in the sea, but only one multimodal feather star robot</span><p>Science Advances, with Nicole W. Xu.</p></div></a></li>
+      <li data-date="2025-10" data-kind="Talk"><a href="#talk"><div class="plate thumb"><span>Talk still</span></div><div class="txt"><span class="kind">Talk · 2025</span><span class="t">How jellyfish move water, and what robots can borrow</span><p>Invited seminar (placeholder).</p></div></a></li>
+      <li data-date="2025-04" data-kind="Tool"><a href="#tool"><div class="plate thumb"><span>Screen</span></div><div class="txt"><span class="kind">Tool · 2025</span><span class="t">SignalShepherd</span><p>Lines up sensor data and video on one clock, then exports figures and clips.</p></div></a></li>
+      <li data-date="2024-08" data-kind="Method"><a href="#"><div class="plate thumb"><span>Diagram</span></div><div class="txt"><span class="kind">Method · 2024</span><span class="t">A low-cost method for marker tracking in water tanks</span><p>Placeholder description.</p></div></a></li>
+      <li data-date="2023-11" data-kind="Talk"><a href="#"><div class="plate thumb"><span>Talk still</span></div><div class="txt"><span class="kind">Talk · 2023</span><span class="t">Conference talk, fluid dynamics meeting</span><p>Placeholder.</p></div></a></li>
+      <li data-date="2023-05" data-kind="Paper"><a href="#"><div class="plate thumb"><span>Figure</span></div><div class="txt"><span class="kind">Paper · 2023</span><span class="t">Earlier paper or preprint</span><p>Placeholder.</p></div></a></li>
     </ol>
-    <nav class="vt" id="vt" aria-label="Timeline of selected work"><div class="vt-rail"></div><p class="vt-now" id="vtNow" aria-hidden="true"></p></nav>
+    <nav class="vt" id="vt" aria-label="Timeline of selected work"><div class="vt-rail"></div></nav>
   </section>
 
   <!-- PAPER -->
@@ -216,7 +237,7 @@ footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule
       <svg class="cmap-lines" aria-hidden="true"></svg>
       <div class="cmap-col" data-side="refs"><span class="kind" id="refsHead">It cites</span></div>
       <div class="cmap-me"><span class="cmap-node"></span><span class="kind">This paper</span><span class="t">Feather star robot</span><span class="yr">Oct 2026</span></div>
-      <div class="cmap-col" data-side="by"><span class="kind">Cited by · 0</span><p class="cmap-empty">Nothing cites it yet. Citing papers will appear here as they come out; the site picks them up from Crossref and OpenAlex each time it is rebuilt.</p></div>
+      <div class="cmap-col" data-side="by"><span class="kind" id="byHead">Cited by · 0</span><p class="cmap-empty" id="byEmpty">Nothing cites it yet. Citing papers will appear here as they come out; the site picks them up from Crossref and OpenAlex each time it is rebuilt.</p></div>
     </div>
 
     <h2>In the media</h2>
@@ -328,16 +349,79 @@ sigshep</div>
   </section>
 
   <footer>
-    <span>Concept A · built on al-folio (MIT) · placeholder content</span>
-    <span class="accents" role="group" aria-label="Try an accent colour">
-      <button data-accent="vermilion" style="--sw:#a8432f" aria-pressed="true">Vermilion</button>
-      <button data-accent="indigo" style="--sw:#2f5079" aria-pressed="false">Indigo</button>
-      <button data-accent="moss" style="--sw:#5b6b3a" aria-pressed="false">Moss</button>
-    </span>
+    <span>Concept A · built on al-folio (MIT) · placeholder content · look and feel set in theme.yml</span>
+    <div class="play" id="play" role="group" aria-label="Try the design options for this visit" hidden></div>
   </footer>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
 <script>
+// Settings: theme.yml is read once the page has loaded and handed to every part of the page that uses it.
+// These defaults cover only behaviour; fonts and colours fall back to the stylesheet above.
+const site = (() => {
+  const defaults = {
+    slideshow: { seconds_per_slide: 6, autoplay: true, resume_after_touch_seconds: 4 },
+    timeline: { marks: 'icon', dates: true },
+    citation_map: { demo: true },
+    playground: true,
+  };
+  const merge = (a, b) => {
+    if (!b || typeof b !== 'object' || Array.isArray(b)) return b ?? a;
+    const out = { ...a };
+    for (const k in b) out[k] = merge(a?.[k], b[k]);
+    return out;
+  };
+  const hooks = [];
+  const s = {
+    cfg: defaults,
+    use(fn) { hooks.push(fn); fn(s.cfg); },
+    set(change) { s.cfg = merge(s.cfg, change); hooks.forEach(fn => fn(s.cfg)); },
+  };
+  addEventListener('load', async () => {
+    try {
+      const text = await (await fetch('theme.yml', { cache: 'no-store' })).text();
+      s.set(jsyaml.load(text));
+    } catch (e) { console.warn('theme.yml not read; using the built-in look', e); }
+  });
+  return s;
+})();
+
+const ICONS = {
+  Paper: '<path d="M4 1.5h5.5L12 4v10.5H4z M9.5 1.5V4H12 M6 7.5h4 M6 10h4 M6 12.5h2.5"/>',
+  Talk: '<path d="M1.5 2.5h13 M2.5 2.5v7.5h11V2.5 M8 10v2 M5.5 14.5 8 12l2.5 2.5"/>',
+  Tool: '<path d="M5.5 4 2 8l3.5 4 M10.5 4 14 8l-3.5 4 M9 2.5l-2 11"/>',
+  Method: '<path d="M6 1.5h4 M6.5 1.5v4.5L3 13a1 1 0 0 0 .9 1.5h8.2A1 1 0 0 0 13 13L9.5 6V1.5 M4.6 10.5h6.8"/>',
+};
+const icon = kind => `<svg class="ico" viewBox="0 0 16 16" aria-hidden="true">${ICONS[kind] || '<circle cx="8" cy="8" r="3"/>'}</svg>`;
+
+// Look: fonts, colours, column width and slideshow speed from theme.yml, written as a stylesheet after the one above.
+site.use(cfg => {
+  const f = cfg.fonts;
+  const rules = [];
+  const root = {};
+  if (f) {
+    const fam = (name, w) => 'family=' + name.trim().replace(/ /g, '+') + (w ? ':wght@' + [].concat(w).join(';') : '');
+    document.getElementById('fonts').href = 'https://fonts.googleapis.com/css2?' + [fam(f.display, f.display_weights), fam(f.body, f.body_weights)].join('&') + '&display=swap';
+    const stack = (name, fb) => `"${name}", ${String(fb || 'serif').split(',').map(s => s.trim()).map(s => /\s/.test(s) && !/^["']/.test(s) ? `"${s}"` : s).join(', ')}`;
+    root['--display'] = stack(f.display, f.display_fallback);
+    root['--body'] = stack(f.body, f.body_fallback);
+    if (f.base_size) root['--base'] = f.base_size;
+  }
+  if (cfg.layout?.column_width) root['--col'] = cfg.layout.column_width;
+  if (cfg.slideshow?.seconds_per_slide) root['--slide'] = cfg.slideshow.seconds_per_slide + 's';
+  const p = (cfg.palettes || []).find(x => x.name === cfg.palette);
+  if (p) {
+    const tokens = t => t ? { '--paper': t.background, '--ink': t.text, '--mute': t.muted, '--rule': t.rule, '--well': t.panel, '--shu': t.accent } : {};
+    Object.assign(root, tokens(p.light));
+    const dark = Object.entries(tokens(p.dark)).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join('; ');
+    if (dark) rules.push(`@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ${dark}; color-scheme: dark } }`, `:root[data-theme="dark"] { ${dark}; color-scheme: dark }`);
+  }
+  rules.unshift(':root { ' + Object.entries(root).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join('; ') + ' }');
+  let tag = document.getElementById('theme');
+  if (!tag) { tag = document.createElement('style'); tag.id = 'theme'; document.head.append(tag); }
+  tag.textContent = rules.join('\n');
+});
+
 // Pages: show the one named in the address (#paper, #talk, ...), home otherwise.
 // Pages carry data-page rather than an id, so the browser never jumps to one as a fragment.
 (() => {
@@ -356,27 +440,14 @@ sigshep</div>
   route();
 })();
 
-// Accent colour: a viewer's choice is remembered in this browser only.
-(() => {
-  const btns = [...document.querySelectorAll('.accents button')];
-  const set = a => {
-    document.documentElement.dataset.accent = a;
-    btns.forEach(b => b.setAttribute('aria-pressed', b.dataset.accent === a));
-    try { localStorage.setItem('accent', a); } catch (e) {}
-  };
-  btns.forEach(b => b.onclick = () => set(b.dataset.accent));
-  let saved = null; try { saved = localStorage.getItem('accent'); } catch (e) {}
-  if (saved) set(saved);
-})();
-
 // Slideshow: touch swiping is native scrolling with snap points; this keeps the caption in step,
-// advances slowly on its own, and adds mouse dragging and arrow buttons for desktop.
+// advances on its own at the pace set in theme.yml, and adds mouse dragging and arrow buttons for desktop.
 (() => {
   const show = document.querySelector('.show'), box = document.getElementById('frames');
   const frames = [...box.querySelectorAll('.frame')];
   const bar = document.getElementById('bar'), cap = document.getElementById('cap');
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let i = 0, timer = null, paused = false;
+  let i = 0, timer = null, paused = false, opts = {};
   const go = n => box.scrollTo({ left: ((n + frames.length) % frames.length) * box.clientWidth });
   function settle() {
     if (!box.clientWidth) return;
@@ -393,10 +464,11 @@ sigshep</div>
   function restart() {
     clearTimeout(timer);
     bar.classList.remove('run'); void bar.offsetWidth;
-    if (still || paused) return;
+    if (still || paused || !opts.autoplay) return;
     bar.classList.add('run');
-    timer = setTimeout(() => { if (box.clientWidth) go(i + 1); else restart(); }, 6000);
+    timer = setTimeout(() => { if (box.clientWidth) go(i + 1); else restart(); }, opts.seconds_per_slide * 1000);
   }
+  site.use(cfg => { opts = cfg.slideshow; restart(); });
   let t; box.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(settle, 80); });
   document.getElementById('prev').onclick = () => go(i - 1);
   document.getElementById('next').onclick = () => go(i + 1);
@@ -406,7 +478,7 @@ sigshep</div>
   show.addEventListener('focusin', hold(true));
   show.addEventListener('focusout', hold(false));
   box.addEventListener('touchstart', hold(true), { passive: true });
-  box.addEventListener('touchend', () => setTimeout(hold(false), 4000), { passive: true });
+  box.addEventListener('touchend', () => setTimeout(hold(false), opts.resume_after_touch_seconds * 1000), { passive: true });
   let x0 = null, dragged = false;
   box.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') { x0 = e.clientX; dragged = false; } });
   addEventListener('pointerup', e => {
@@ -417,11 +489,11 @@ sigshep</div>
   box.addEventListener('click', e => { if (dragged) { e.preventDefault(); dragged = false; } });
   box.addEventListener('dragstart', e => e.preventDefault());
   addEventListener('resize', () => box.scrollTo({ left: i * box.clientWidth, behavior: 'instant' }));
-  restart();
 })();
 
 // Citation map: the paper's reference list as deposited with Crossref (fetched 25 October 2026), newest first,
 // each joined to the paper by a curve. The real site would fetch these, and the works that cite it, when it is built.
+// Demo mode (theme.yml, citation_map.demo) fills the empty "cited by" side with made-up papers marked "Example".
 (() => {
   const refs = [
     ['10.1126/sciadv.aeg9211', 2026, 'Minimal-actuation feather star–inspired soft swimmers for multimodal 3D maneuverability', 'Qing et al.', 'Sci. Adv.'],
@@ -434,73 +506,126 @@ sigshep</div>
     ['10.1038/s41586-022-05188-w', 2022, 'Multi-environment robotic transitions through adaptive morphogenesis', 'Baines et al.', 'Nature'],
     ['10.1126/scirobotics.abf6354', 2021, 'Emergence of robust self-organized undulatory swimming based on local hydrodynamic force sensing', 'Thandiackal et al.', 'Sci. Robot.'],
   ];
+  const examples = [
+    ['Arm-sweep kinematics of free-swimming feather stars', 'A. Author et al.', 'Journal name'],
+    ['Few-motor soft robots that switch between swimming, crawling and climbing', 'B. Author and C. Author', 'Journal name'],
+    ['Bioinspired multimodal swimmers: a review', 'D. Author', 'Review journal'],
+  ];
   const map = document.getElementById('cmap'), svg = map.querySelector('.cmap-lines'), node = map.querySelector('.cmap-node');
-  const col = map.querySelector('[data-side="refs"]');
-  document.getElementById('refsHead').textContent = 'It cites · ' + refs.length;
-  const cards = refs.map(([doi, yr, t, who, j]) => {
-    const a = document.createElement('a');
+  const refCol = map.querySelector('[data-side="refs"]'), byCol = map.querySelector('[data-side="by"]');
+  let cards = [], paths = [];
+  const card = (tag, title, meta) => {
+    const a = document.createElement(tag);
     a.className = 'cn';
-    a.href = 'https://doi.org/' + doi;
     a.innerHTML = '<span class="ct"></span><span></span>';
-    a.firstChild.textContent = t;
-    a.lastChild.textContent = `${who} · ${j} · ${yr}`;
-    col.append(a);
+    a.firstChild.textContent = title;
+    a.lastChild.textContent = meta;
     return a;
+  };
+  document.getElementById('refsHead').textContent = 'It cites · ' + refs.length;
+  for (const [doi, yr, t, who, j] of refs) {
+    const a = card('a', t, `${who} · ${j} · ${yr}`);
+    a.href = 'https://doi.org/' + doi;
+    refCol.append(a);
+  }
+  site.use(cfg => {
+    const demo = !!cfg.citation_map?.demo;
+    byCol.querySelectorAll('.cn').forEach(c => c.remove());
+    document.getElementById('byEmpty').hidden = demo;
+    document.getElementById('byHead').textContent = demo ? `Cited by · ${examples.length} examples` : 'Cited by · 0';
+    if (demo) for (const [t, who, j] of examples) {
+      const c = card('div', t, `${who} · ${j} · `);
+      c.classList.add('demo');
+      c.tabIndex = 0;
+      c.lastChild.insertAdjacentHTML('beforeend', '<span class="ex">Example</span>');
+      byCol.append(c);
+    }
+    draw();
   });
-  let paths = [];
   function draw() {
+    cards = [...map.querySelectorAll('.cn')];
     const box = map.getBoundingClientRect();
     if (!box.width || getComputedStyle(svg).display === 'none') return;
     const n = node.getBoundingClientRect(), nx = n.left + n.width / 2 - box.left, ny = n.top + n.height / 2 - box.top;
     svg.innerHTML = cards.map(c => {
-      const r = c.getBoundingClientRect(), left = !!c.closest('[data-side="refs"]');
+      const r = c.getBoundingClientRect(), left = refCol.contains(c);
       const x = (left ? r.right + 8 : r.left - 8) - box.left, y = r.top + r.height / 2 - box.top;
       const ex = left ? nx - 12 : nx + 12, mx = (x + ex) / 2;
-      return `<path d="M${x} ${y} C${mx} ${y} ${mx} ${ny} ${ex} ${ny}"/>`;
+      return `<path${c.classList.contains('demo') ? ' class="demo"' : ''} d="M${x} ${y} C${mx} ${y} ${mx} ${ny} ${ex} ${ny}"/>`;
     }).join('');
     paths = [...svg.children];
   }
-  cards.forEach((c, i) => {
-    const on = v => () => { c.classList.toggle('on', v); paths[i]?.classList.toggle('on', v); };
-    c.addEventListener('mouseenter', on(true)); c.addEventListener('mouseleave', on(false));
-    c.addEventListener('focus', on(true)); c.addEventListener('blur', on(false));
-  });
+  const hl = on => e => {
+    const c = e.target.closest?.('.cn');
+    if (!c) return;
+    c.classList.toggle('on', on);
+    paths[cards.indexOf(c)]?.classList.toggle('on', on);
+  };
+  map.addEventListener('mouseover', hl(true)); map.addEventListener('mouseout', hl(false));
+  map.addEventListener('focusin', hl(true)); map.addEventListener('focusout', hl(false));
   new ResizeObserver(draw).observe(map);
   document.fonts.ready.then(draw);
 })();
 
 // Timeline: drawn from the list of works (newest at the top), marks the entry nearest the middle of the screen
-// as the reader scrolls, and scrolls to the nearest entry when clicked.
+// as the reader scrolls, and scrolls to the nearest entry when clicked. Marks are dots, numbers or icons (theme.yml);
+// numbers count from the oldest work, like a reference list, so adding a new work never renumbers the others.
 (() => {
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const feed = document.getElementById('feed'), items = [...feed.children];
-  const vt = document.getElementById('vt'), rail = vt.querySelector('.vt-rail'), now = document.getElementById('vtNow');
+  const vt = document.getElementById('vt'), rail = vt.querySelector('.vt-rail');
   const still = matchMedia('(prefers-reduced-motion: reduce)');
-  const dates = items.map(li => +li.dataset.date);
-  const y0 = Math.floor(Math.min(...dates)), y1 = Math.ceil(Math.max(...dates) + 0.01);
-  const pos = d => (y1 - d) / (y1 - y0) * 100;
-  const about = li => ({ k: li.dataset.kind, yr: Math.floor(+li.dataset.date), t: li.querySelector('.t').textContent });
-  for (let y = y0; y < y1; y++) rail.insertAdjacentHTML('beforeend', `<span class="vt-tick" style="top:${pos(y)}%">${y}</span>`);
-  const dots = items.map((li, n) => {
-    const a = about(li), b = document.createElement('button');
-    b.className = 'vt-dot';
-    b.style.top = pos(dates[n]) + '%';
-    b.setAttribute('aria-label', `${a.yr}, ${a.k}: ${a.t}. Scroll to it`);
-    rail.append(b);
-    return b;
+  const works = items.map((li, i) => {
+    const [y, m] = li.dataset.date.split('-').map(Number);
+    return { li, n: items.length - i, d: y + (m - .5) / 12, date: `${MONTHS[m - 1]} ${y}`, k: li.dataset.kind, t: li.querySelector('.t').textContent };
   });
-  let active = -1;
-  function label(n) {
-    const a = about(items[n]);
-    now.style.top = pos(dates[n]) + '%';
-    now.innerHTML = `${a.k} · ${a.yr}<b></b>`;
-    now.querySelector('b').textContent = a.t;
+  const y0 = Math.floor(Math.min(...works.map(w => w.d))), y1 = Math.ceil(Math.max(...works.map(w => w.d)) + .01);
+  const pos = d => (y1 - d) / (y1 - y0) * 100;
+  for (let y = y0; y < y1; y++) rail.insertAdjacentHTML('beforeend', `<span class="vt-tick" style="top:${pos(y)}%">${y}</span>`);
+  let marks = [], labels = [], active = -1;
+
+  function render(cfg) {
+    const style = cfg.timeline?.marks || 'dot', dates = cfg.timeline?.dates !== false;
+    marks.concat(labels).forEach(e => e.remove());
+    marks = []; labels = [];
+    for (const w of works) {
+      const m = document.createElement('button');
+      m.className = 'vt-mark';
+      m.style.top = pos(w.d) + '%';
+      m.setAttribute('aria-label', `${w.date}, ${w.k}: ${w.t}. Scroll to it`);
+      m.innerHTML = style === 'number' ? `<span class="num">${w.n}</span>` : style === 'icon' ? icon(w.k) : '<i></i>';
+      const l = document.createElement('span');
+      l.className = 'vt-label';
+      l.setAttribute('aria-hidden', 'true');
+      l.innerHTML = '<span class="vt-meta"></span><span class="vt-title"></span>';
+      const meta = [style !== 'icon' && w.k, dates && w.date].filter(Boolean).join(' · ');
+      l.firstChild.textContent = meta;
+      l.lastChild.textContent = w.t;
+      l.classList.toggle('bare', !meta);
+      rail.append(m, l);
+      marks.push(m); labels.push(l);
+      // the same mark in the list, before "Paper · 2026"
+      w.li.querySelector('.wm')?.remove();
+      if (style !== 'dot') w.li.querySelector('.kind').insertAdjacentHTML('afterbegin', `<span class="wm">${style === 'number' ? `[${w.n}]` : icon(w.k)}</span>`);
+    }
+    const n = active; active = -1; mark(n);
+  }
+  // labels sit beside their mark, pushed down where they would overlap the one above
+  function layout() {
+    const h = rail.clientHeight;
+    if (!h || !labels.length || getComputedStyle(labels[0]).display === 'none') return;
+    let below = -Infinity;
+    labels.forEach((l, i) => {
+      const top = Math.max(pos(works[i].d) / 100 * h - 9, below + 6);
+      l.style.top = top + 'px';
+      below = top + l.offsetHeight;
+    });
   }
   function mark(n) {
     if (n === active) return;
     active = n;
-    items.forEach((li, i) => li.classList.toggle('on', i === n));
-    dots.forEach((d, i) => d.classList.toggle('on', i === n));
-    if (n >= 0) label(n);
+    works.forEach((w, i) => { w.li.classList.toggle('on', i === n); marks[i].classList.toggle('on', i === n); labels[i].classList.toggle('on', i === n); });
+    layout();
   }
   let lockUntil = 0;
   function update() {
@@ -522,20 +647,49 @@ sigshep</div>
     items[n].scrollIntoView({ behavior: still.matches ? 'auto' : 'smooth', block: 'center' });
   }
   rail.addEventListener('click', e => {
-    const dot = e.target.closest('.vt-dot');
-    if (dot) return goTo(dots.indexOf(dot));
+    const hit = e.target.closest('.vt-mark, .vt-label');
+    if (hit) return goTo((hit.classList.contains('vt-mark') ? marks : labels).indexOf(hit));
     const r = rail.getBoundingClientRect(), f = (e.clientY - r.top) / r.height * 100;
     let best = 0;
-    dates.forEach((d, i) => { if (Math.abs(pos(d) - f) < Math.abs(pos(dates[best]) - f)) best = i; });
+    works.forEach((w, i) => { if (Math.abs(pos(w.d) - f) < Math.abs(pos(works[best].d) - f)) best = i; });
     goTo(best);
   });
-  dots.forEach((d, i) => {
-    d.addEventListener('mouseenter', () => label(i));
-    d.addEventListener('mouseleave', () => active >= 0 && label(active));
-  });
+  site.use(render);
   let raf = 0;
   addEventListener('scroll', () => { raf ||= requestAnimationFrame(() => { raf = 0; update(); }); }, { passive: true });
-  addEventListener('resize', update);
+  addEventListener('resize', () => { layout(); update(); });
+  document.fonts.ready.then(layout);
   update();
+})();
+
+// Playground: footer buttons that try the options from theme.yml for this visit only (nothing is remembered,
+// so the file stays the one place the look is decided). Hidden when theme.yml sets playground: false.
+(() => {
+  const play = document.getElementById('play');
+  const group = (label, options, current, pick) => {
+    const g = document.createElement('span');
+    g.className = 'grp';
+    g.innerHTML = `<b>${label}</b>`;
+    for (const [name, value, swatch] of options) {
+      const b = document.createElement('button');
+      b.textContent = name;
+      if (swatch) b.style.setProperty('--sw', swatch);
+      b.setAttribute('aria-pressed', value === current);
+      b.onclick = () => pick(value);
+      g.append(b);
+    }
+    return g;
+  };
+  site.use(cfg => {
+    play.hidden = !cfg.playground;
+    play.replaceChildren();
+    if (!cfg.playground) return;
+    if (cfg.palettes?.length) play.append(group('Palette', cfg.palettes.map(p => [p.name, p.name, p.light?.accent]), cfg.palette, v => site.set({ palette: v })));
+    play.append(
+      group('Timeline marks', [['Dots', 'dot'], ['Numbers', 'number'], ['Icons', 'icon']], cfg.timeline.marks, v => site.set({ timeline: { marks: v } })),
+      group('Dates', [['On', true], ['Off', false]], cfg.timeline.dates, v => site.set({ timeline: { dates: v } })),
+      group('Example citations', [['On', true], ['Off', false]], cfg.citation_map.demo, v => site.set({ citation_map: { demo: v } })),
+    );
+  });
 })();
 </script>

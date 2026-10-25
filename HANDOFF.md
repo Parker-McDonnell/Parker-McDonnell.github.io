@@ -43,6 +43,15 @@ The latest commit adds talk, tool and about pages, a richer paper page (video-lo
 3. Real content: summary, key findings, talk details, bio, portrait, email, ORCID, Scholar link, CV, and his list of works. Everything apart from the paper's details is placeholder.
 4. ~~Whether to keep the vertical name in the margin.~~ Removed 2026-10-25: the vertical timeline now uses that margin.
 
+## The theme file (`concepts/ma-slideshow/theme.yml`)
+
+Fonts, the colour palette, column width, slideshow speed, the timeline's style and the citation demo are all set in `theme.yml`. The page reads it on load and falls back to the built-in Journal Light look if it can't (for example when opened from disk). It's YAML because al-folio is Jekyll: the same file can move to `_data/theme.yml` on the real site and be read at build time.
+
+- **Palettes:** Journal Light (the default, matching the comps slides) and Journal Crimson are copied from `PhD-Comps-Exam/Code/themes/palettes/*.json`, each with its dark version. If those change, copy them again. "Warm paper" is the concept's first look, kept for comparison.
+- **Playground:** footer buttons try palettes, timeline marks, dates and the demo for that visit only. Nothing is remembered, so the file stays the one place the look is decided. Set `playground: false` for the real site.
+- **Citation demo:** `citation_map.demo: true` fills "cited by" with three made-up papers marked "Example". Turn it off once real citations exist.
+- **Timeline marks:** `dot`, `number` (counted from the oldest work, like a reference list, so new works don't renumber old ones) or `icon` (paper, talk, tool, method), with or without dates. The same mark appears in the list entry.
+
 ## Added 2026-10-25 (Parker's ideas)
 
 - **Vertical timeline.** "Selected work" is now a list of entries with thumbnails. While it is on screen, a timeline runs down the side: in the left margin on wide screens (years, a dot per work, the current entry's name), and as a thin rail in the right gutter on phones. It marks the entry being read as you scroll, and a click on a dot or anywhere on the rail scrolls to the nearest entry. It replaces the horizontal timeline.
