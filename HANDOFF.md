@@ -71,6 +71,7 @@ Parker: "the site is looking awesome". His notes for next time:
 2. **Light shafts:** tone them down; they're a bit distracting.
 3. **Bubbles:** they should rise up through the wave at the top and vanish at the surface.
 4. **Placing by hand:** he wants to drag, rotate and resize the animals himself, save their places, and leave the animating to the agent. Proposed (not built): an arrange mode, switched on from the footer, that pauses motion and gives each drawing a drag, a resize corner and a rotate handle. Each place is stored against the page piece it sits by (for example "right of the paper's key findings"), so it survives content changes, with a separate phone placement or "hide on phones". Saving: a button that downloads `placements.yml` for the repository, or, in the Artifact, a shared store the agent reads directly. Ask Parker which.
+5. **QR codes:** make them look sunken into the page, with an inner shadow on the tile. Keep enough light margin round the code that phones still read it.
 
 ## Next steps
 
