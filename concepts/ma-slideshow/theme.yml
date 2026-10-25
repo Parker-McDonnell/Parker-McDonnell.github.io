@@ -42,6 +42,10 @@ palettes:
 layout:
   column_width: 44rem                 # width of the reading column; 44rem is about 700 pixels
 
+accent_bars:                          # lines in the accent colour that break the page into sections
+  header: thin                        # under the name and menu: none, thin, thick, or band (the full window width)
+  sections: short                     # above each section heading: none, short (a short dash) or full (across the column)
+
 slideshow:
   seconds_per_slide: 6
   autoplay: true                      # false: only moves when swiped or the arrows are pressed

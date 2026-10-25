@@ -30,6 +30,13 @@ header { display: flex; justify-content: space-between; align-items: center; gap
 nav { display: flex; gap: 1.5rem; font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; }
 nav a[aria-current] { color: var(--shu); }
 h2 { font: 400 .78rem var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--mute); margin: 6rem 0 1.25rem; }
+/* accent bars (theme.yml, accent_bars): under the header, and above each section heading */
+:root[data-header-bar="thin"] header { border-bottom: 2px solid var(--shu); }
+:root[data-header-bar="thick"] header { border-bottom: 5px solid var(--shu); }
+:root[data-header-bar="band"] header { border-bottom: 4px solid var(--shu); border-image: linear-gradient(var(--shu) 0 0) 0 0 1 0 / 0 0 4px 0 / 0 100vw; }
+h2::before { content: ""; display: none; background: var(--shu); margin-bottom: 1.1rem; }
+:root[data-section-bar="short"] h2::before { display: block; width: 2.5rem; height: 2px; }
+:root[data-section-bar="full"] h2::before { display: block; height: 1px; }
 .eyebrow { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--shu); margin: 0; }
 .page-title { font: 400 clamp(1.8rem, 5vw, 2.6rem)/1.3 var(--display); margin: 1rem 0 1.25rem; text-wrap: balance; }
 .byline { color: var(--mute); font-size: .9rem; margin: 0 0 4rem; }
@@ -86,9 +93,14 @@ button:hover { color: var(--shu); }
 .vt-mark::before { content: ""; position: absolute; inset: -8px; }
 .vt-mark > * { display: none; }
 .vt-mark:hover, .vt-mark:focus-visible, .vt-mark.on { background: var(--shu); border-color: var(--shu); transform: translate(-50%, -50%) scale(1.35); outline: none; }
-.vt-tick, .vt-label { display: none; }
+.vt-tick, .vt-label, .vt-link { display: none; }
 @media (min-width: 1280px) {
-  .vt { --x: 3.25rem; right: auto; left: max(1.75rem, env(safe-area-inset-left, 0px)); width: calc((100vw - var(--col)) / 2 - 3.5rem); height: min(64vh, 30rem); }
+  /* docked against the reading column: its right edge sits about 4.5rem from the list (room for the connecting curve), wherever the window's edge is */
+  .vt { --x: 3.25rem; --w: min(15rem, calc((100vw - var(--col)) / 2 - 6.5rem)); right: auto; left: max(1rem, env(safe-area-inset-left, 0px), calc((100vw - var(--col)) / 2 - var(--w) - 4.5rem)); width: var(--w); height: min(64vh, 30rem); }
+  .vt-label > * { width: fit-content; max-width: 100%; }
+  .vt-link { display: block; position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 4; pointer-events: none; overflow: visible; }
+  .vt-link path { fill: none; stroke: var(--shu); stroke-width: 1; opacity: .55; transition: opacity .3s ease; }
+  .vt-link circle { fill: var(--shu); }
   .vt-tick { display: block; position: absolute; left: 0; width: 2.4rem; text-align: right; transform: translateY(-50%); font-size: .72rem; color: var(--mute); font-variant-numeric: tabular-nums; pointer-events: none; }
   .vt-tick::after { content: ""; position: absolute; left: calc(100% + .3rem); top: 50%; width: .4rem; border-top: 1px solid var(--mute); }
   .vt-mark { display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: var(--paper); }
@@ -202,6 +214,7 @@ footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule
       <li data-date="2023-05" data-kind="Paper"><a href="#"><div class="plate thumb"><span>Figure</span></div><div class="txt"><span class="kind">Paper · 2023</span><span class="t">Earlier paper or preprint</span><p>Placeholder.</p></div></a></li>
     </ol>
     <nav class="vt" id="vt" aria-label="Timeline of selected work"><div class="vt-rail"></div></nav>
+    <svg class="vt-link" id="vtLink" aria-hidden="true"></svg>
   </section>
 
   <!-- PAPER -->
@@ -363,6 +376,7 @@ const site = (() => {
     slideshow: { seconds_per_slide: 6, autoplay: true, resume_after_touch_seconds: 4 },
     timeline: { marks: 'icon', dates: true },
     citation_map: { demo: true },
+    accent_bars: { header: 'thin', sections: 'short' },
     playground: true,
   };
   const merge = (a, b) => {
@@ -408,6 +422,8 @@ site.use(cfg => {
     if (f.base_size) root['--base'] = f.base_size;
   }
   if (cfg.layout?.column_width) root['--col'] = cfg.layout.column_width;
+  document.documentElement.dataset.headerBar = cfg.accent_bars?.header || 'none';
+  document.documentElement.dataset.sectionBar = cfg.accent_bars?.sections || 'none';
   if (cfg.slideshow?.seconds_per_slide) root['--slide'] = cfg.slideshow.seconds_per_slide + 's';
   const p = (cfg.palettes || []).find(x => x.name === cfg.palette);
   if (p) {
@@ -626,6 +642,29 @@ site.use(cfg => {
     active = n;
     works.forEach((w, i) => { w.li.classList.toggle('on', i === n); marks[i].classList.toggle('on', i === n); labels[i].classList.toggle('on', i === n); });
     layout();
+    follow();
+  }
+  // wide screens: a thin accent curve from the marked work's label to its entry in the list
+  const link = document.getElementById('vtLink');
+  function connect() {
+    if (active < 0 || !vt.classList.contains('shown') || getComputedStyle(link).display === 'none') return link.replaceChildren();
+    const parts = [...labels[active].children].filter(c => getComputedStyle(c).display !== 'none');
+    const from = parts.length ? parts : [marks[active]];
+    const sx = Math.max(...from.map(c => c.getBoundingClientRect().right)) + 10;
+    const first = from[0].getBoundingClientRect(), sy = first.top + first.height / 2;
+    const thumb = items[active].querySelector('.plate').getBoundingClientRect();
+    const ex = thumb.left - 10, ey = thumb.top + thumb.height / 2, mx = (sx + ex) / 2;
+    if (ex - sx < 24) return link.replaceChildren();
+    link.innerHTML = `<path d="M${sx} ${sy} C${mx} ${sy} ${mx} ${ey} ${ex} ${ey}"/><circle cx="${ex}" cy="${ey}" r="2.5"/>`;
+  }
+  // keep the curve on its ends while the labels and the entry slide into place
+  let until = 0;
+  function follow() {
+    const running = performance.now() < until;
+    until = performance.now() + 500;
+    if (running) return;
+    const step = () => { connect(); if (performance.now() < until) requestAnimationFrame(step); };
+    step();
   }
   let lockUntil = 0;
   function update() {
@@ -656,8 +695,8 @@ site.use(cfg => {
   });
   site.use(render);
   let raf = 0;
-  addEventListener('scroll', () => { raf ||= requestAnimationFrame(() => { raf = 0; update(); }); }, { passive: true });
-  addEventListener('resize', () => { layout(); update(); });
+  addEventListener('scroll', () => { raf ||= requestAnimationFrame(() => { raf = 0; update(); connect(); }); }, { passive: true });
+  addEventListener('resize', () => { layout(); update(); connect(); });
   document.fonts.ready.then(layout);
   update();
 })();
@@ -686,6 +725,8 @@ site.use(cfg => {
     if (!cfg.playground) return;
     if (cfg.palettes?.length) play.append(group('Palette', cfg.palettes.map(p => [p.name, p.name, p.light?.accent]), cfg.palette, v => site.set({ palette: v })));
     play.append(
+      group('Header bar', [['None', 'none'], ['Thin', 'thin'], ['Thick', 'thick'], ['Full width', 'band']], cfg.accent_bars.header, v => site.set({ accent_bars: { header: v } })),
+      group('Section bars', [['None', 'none'], ['Short', 'short'], ['Full', 'full']], cfg.accent_bars.sections, v => site.set({ accent_bars: { sections: v } })),
       group('Timeline marks', [['Dots', 'dot'], ['Numbers', 'number'], ['Icons', 'icon']], cfg.timeline.marks, v => site.set({ timeline: { marks: v } })),
       group('Dates', [['On', true], ['Off', false]], cfg.timeline.dates, v => site.set({ timeline: { dates: v } })),
       group('Example citations', [['On', true], ['Off', false]], cfg.citation_map.demo, v => site.set({ citation_map: { demo: v } })),
