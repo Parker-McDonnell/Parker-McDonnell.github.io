@@ -58,7 +58,9 @@ body { background: var(--paper); color: var(--ink); font: 400 1rem/1.8 var(--bod
 .handle.turn { left: calc(50% - 7px); top: -30px; cursor: grab; }
 .handle.size { right: -12px; bottom: -12px; border-radius: 2px; cursor: nwse-resize; }
 .handle.hide { right: -12px; top: -12px; cursor: pointer; }
-.arrange-bar { position: fixed; left: 50%; bottom: 1rem; transform: translateX(-50%); z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; box-sizing: border-box; width: max-content; max-width: calc(100vw - 32px); padding: .6rem 1rem; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 6px 24px rgba(0, 0, 0, .12); font-size: .75rem; color: var(--mute); }
+.handle.copy { left: -12px; top: -12px; cursor: copy; }
+.critter.absent { display: none !important; }
+.arrange-bar { position: fixed; left: 50%; bottom: .75rem; transform: translateX(-50%); z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .8rem; box-sizing: border-box; width: max-content; max-width: calc(100vw - 32px); padding: .45rem .8rem; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 6px 24px rgba(0, 0, 0, .12); font-size: .75rem; color: var(--mute); }
 .arrange-bar button, .arrange-open { font: inherit; font-size: .75rem; color: var(--shu); background: none; border: 1px solid var(--rule); border-radius: 4px; padding: .3rem .7rem; cursor: pointer; }
 .arrange-open { justify-self: start; }
 .arrange-bar .said { color: var(--shu); }
@@ -538,7 +540,7 @@ site.use(cfg => {
 // column's width, and y, a share of the page's height or a fixed distance from the top (such as '3rem'); the page
 // moves each creature to the nearest open water clear of the words, and hides one that finds none. Nearness runs from
 // 0 (far off, faint) to 1 (close, clearer). FLOOR entries are [drawing, place, size, motion, delay, nearness].
-// Placed by hand: Arrange (in the footer) lets an editor drag, resize, turn and hide each drawing. A placement is kept
+// Placed by hand: Arrange (in the footer) lets an editor drag, resize, turn, hide and copy each drawing. A placement is kept
 // per page and per screen size (wide or narrow), pinned to the piece of the page above it, so it survives edits to the
 // text; it overrides the place written here. Placements come from placements.yml beside this page, then from the
 // Artifact's own store (where Arrange saves when the page is an Artifact) or this browser (when it is not).
@@ -661,6 +663,16 @@ site.use(cfg => {
     const [kind, i] = el.dataset.id.split('-');
     return [el.dataset.id, { el, kind, e: (kind === 'sea' ? SEA : FLOOR)[i] }];
   }));
+  // a copy (made with Arrange) is named after its original, as sea-6+k3x, and exists only where it was placed
+  function ensure(id) {
+    if (critters.has(id) || !id.includes('+')) return critters.get(id);
+    const base = critters.get(id.split('+')[0]), home = base?.kind === 'sea' ? sea : floor;
+    if (!base) return null;
+    home.insertAdjacentHTML('beforeend', critter(id, base.e));
+    const c = { el: home.lastElementChild, kind: base.kind, e: base.e, copy: true };
+    critters.set(id, c);
+    return c;
+  }
   const wrap = document.querySelector('.wrap');
   const rem = () => parseFloat(getComputedStyle(document.documentElement).fontSize);
   let placements = {}, arranging = false;
@@ -688,6 +700,7 @@ site.use(cfg => {
   function settle() {
     if (document.documentElement.dataset.ocean !== 'on') return;
     const f = frame(), marks = landmarks(f), mine = placements[f.key] || {}, floorMine = placements[f.floorKey] || {};
+    [...Object.keys(mine), ...Object.keys(floorMine)].forEach(ensure);
     const busy = [...wrap.querySelectorAll('*')].filter(el => el.offsetParent && !el.closest('svg') && (
       [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) || el.matches('img, video, button, input') ||
       getComputedStyle(el).backgroundColor !== 'rgba(0, 0, 0, 0)'))
@@ -701,6 +714,8 @@ site.use(cfg => {
     for (const [id, c] of critters) {
       const [name, where, size, motion, , , turn = 0] = c.e, [aw, ah] = ART[name];
       const p = (c.kind === 'sea' ? mine : floorMine)[id];
+      c.el.classList.toggle('absent', !!c.copy && !p);
+      if (c.copy && !p) continue;
       c.el.classList.toggle('gone', !!p?.hide);
       c.el.classList.toggle('crowded', false);
       if (c.kind === 'floor') {
@@ -770,7 +785,8 @@ site.use(cfg => {
   })();
 
   // Arrange: drag a drawing to move it, its corner to size it, its knob to turn it (Shift snaps to 15 degrees), and
-  // the cross to hide it on this page. Each change is saved as it is made.
+  // the cross to hide it on this page, and the plus to copy it (a copy's cross removes it). Each change is saved as it
+  // is made.
   let bar = null, sel = null, saving = 0;
   function offerArrange() {
     const b = document.createElement('button');
@@ -786,7 +802,7 @@ site.use(cfg => {
       bar = document.createElement('div');
       bar.className = 'arrange-bar';
       bar.innerHTML = '<span class="where"></span><span class="said" aria-live="polite"></span>' +
-        '<button data-act="reset">Undo all on this page</button>' + (store ? '' : '<button data-act="file">Download placements.yml</button>') + '<button data-act="done">Done</button>';
+        '<button data-act="reset">Undo this page</button>' + (store ? '' : '<button data-act="file">Download placements.yml</button>') + '<button data-act="done">Done</button>';
       bar.onclick = e => {
         const act = e.target.dataset.act;
         if (act === 'done') arrange(false);
@@ -796,6 +812,8 @@ site.use(cfg => {
       document.body.append(bar);
     }
     if (bar) bar.hidden = !on;
+    // room below the page for the bar, so the sea floor can be scrolled up above it
+    document.body.style.paddingBottom = on ? bar.offsetHeight + 40 + 'px' : '';
     if (!on) select(null);
     tell();
     settle();
@@ -803,7 +821,7 @@ site.use(cfg => {
   function tell(said = '') {
     if (!bar) return;
     const f = frame();
-    bar.querySelector('.where').textContent = `Arranging this page, ${f.key.split('~')[1]} screens. Drag, size from the corner, turn by the knob.`;
+    bar.querySelector('.where').textContent = `Arranging (${f.key.split('~')[1]} screens): drag, corner sizes, knob turns`;
     bar.querySelector('.said').textContent = said;
   }
   function select(el) {
@@ -812,7 +830,7 @@ site.use(cfg => {
     sel = el;
     if (!el) return;
     el.classList.add('sel');
-    el.insertAdjacentHTML('beforeend', '<i class="handle turn" title="Turn"></i><i class="handle size" title="Size"></i><i class="handle hide" title="Hide or show on this page">×</i>');
+    el.insertAdjacentHTML('beforeend', '<i class="handle turn" title="Turn"></i><i class="handle size" title="Size"></i><i class="handle hide" title="Hide or show on this page">×</i><i class="handle copy" title="Copy">+</i>');
   }
   // the record kept for a drawing: where it is now, pinned to the piece of the page above it
   function record(c) {
@@ -831,6 +849,24 @@ site.use(cfg => {
     const [key, rec] = record(c);
     (placements[key] ||= {})[c.el.dataset.id] = rec;
     save(key);
+  }
+  // a copy starts just below and to the right of its original
+  function duplicate(c) {
+    const twin = ensure(`${c.el.dataset.id.split('+')[0]}+${Date.now().toString(36)}`), s = c.el.style;
+    twin.el.style.cssText = s.cssText;
+    twin.el.classList.remove('gone');
+    if (c.kind === 'floor') twin.el.style.left = parseFloat(s.left) + 3 + '%';
+    else Object.assign(twin.el.style, { left: parseFloat(s.left) + 24 + 'px', top: parseFloat(s.top) + 24 + 'px' });
+    keep(twin);
+    select(twin.el);
+  }
+  function forget(c) {
+    const [key] = record(c);
+    delete placements[key]?.[c.el.dataset.id];
+    save(key);
+    select(null);
+    c.el.remove();
+    critters.delete(c.el.dataset.id);
   }
   const pending = new Set();
   function save(key) {
@@ -865,8 +901,10 @@ site.use(cfg => {
     e.preventDefault();
     const c = critters.get(el.dataset.id);
     if (el !== sel) select(el);
-    const how = e.target.classList.contains('turn') ? 'turn' : e.target.classList.contains('size') ? 'size' : e.target.classList.contains('hide') ? 'hide' : 'move';
+    const how = ['turn', 'size', 'hide', 'copy'].find(k => e.target.classList.contains(k)) || 'move';
+    if (how === 'hide' && c.copy) { forget(c); return; }
     if (how === 'hide') { el.classList.toggle('gone'); keep(c); return; }
+    if (how === 'copy') { duplicate(c); return; }
     const s = el.style, box = el.getBoundingClientRect(), cx = box.left + box.width / 2, cy = box.top + box.height / 2;
     const start = { x: e.clientX, y: e.clientY, w: parseFloat(s.width), h: parseFloat(s.height), l: el.offsetLeft, t: el.offsetTop };
     const isFloor = c.kind === 'floor', ratio = start.h / start.w;
