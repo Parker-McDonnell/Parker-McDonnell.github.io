@@ -79,8 +79,9 @@ Parker: "the site is looking awesome". Then:
 - **The timeline unfolds as you scroll** (Parker's ideas, 2026-10-25; `timeline.unfold`, footer button "Unfold"). Four ways to compare, all scroll-linked (scrolling back reverses them), all simply open for viewers who ask for less motion or with the sea still:
   - `fold` (the default; Parker: "your method is super cool"): each card folds down open from its top edge, an origami crease across its middle flattening as it opens; curves and nodes fade in; the kelp stalk grows down ahead of the reader. Swinging sideways from the spine was tried first; Parker wanted it vertical.
   - `scroll`: the timeline unrolls like a paper scroll above a paper roll that travels down ahead of the reader.
-  - `light`: a line-drawn submarine travels down the spine to the work being read and lights it with a warm lamp; the other works wait dim.
+  - `light` (Parker: "I love the submarine"): a line-drawn submarine goes to the work being read and lights it with a warm lamp; the other works wait dim. It waits just below the work's node, a little out from the kelp so it never covers the spine or the line, nose tilted up 45 degrees (Parker's placement); its lamp turns to point at the middle of the work.
   - `fade`: works fade in slowly, rising a little, and the kelp leaves fade in with them.
+  - `grow` (Parker's idea): each work grows like a leaf: its node appears, then its line draws out, then the card grows outward from the spine and fades in.
   Parker hasn't picked one yet. The kelp leaves were made bigger (and a little further apart) the same day, and Selected work has no soft grounds (Parker: no shading there).
 - **Jellyfish pulse** (Parker, 2026-10-25): the bell squeezes in fast and the jellyfish lurches forward along its slant, then relaxes slowly, each on its own rhythm (`.beat`).
 - **Perched drawings can be arranged too:** the crab on the footer line and the bubbles by the slideshow (placements under `perch~wide` / `perch~narrow`, across and down from the piece they sit on).
