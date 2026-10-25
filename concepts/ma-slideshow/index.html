@@ -222,8 +222,8 @@ button:hover { color: var(--shu); }
 .works.fold .feed li > a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   background: linear-gradient(to bottom, rgba(0, 0, 0, .16), transparent 46%, rgba(255, 255, 255, .5) 49.5%, rgba(0, 0, 0, .14) 50.5%, transparent 70%);
   opacity: calc(1 - var(--u, 1)); }
-/* Light: a submarine travels down the spine to the work being read and lights it with its lamp; the others wait in the
-   dark. Its lamp turns to the side the work is on. */
+/* Light: a submarine travels down beside the spine to the work being read and lights it with its lamp; the others wait
+   in the dark. It hovers in the gap between the spine and the work, just above its curve, so the spine stays clear. */
 :root { --beam: color-mix(in oklab, #ffd36a 34%, transparent); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --beam: color-mix(in oklab, #ffe6a0 20%, transparent); } }
 :root[data-theme="dark"] { --beam: color-mix(in oklab, #ffe6a0 20%, transparent); }
@@ -231,6 +231,8 @@ button:hover { color: var(--shu); }
 .works.light .sub { display: block; position: absolute; width: 60px; height: 32px; z-index: 3; pointer-events: none; color: var(--line);
   transform: translate(-50%, -50%); transition: top .9s ease, left .9s ease; }
 .works.light .sub.west { transform: translate(-50%, -50%) scaleX(-1); }
+.works.light .sub { scale: .8; }
+.works.light .sub.small { scale: .6; }
 .sub .hull { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.2;
   stroke-linecap: round; stroke-linejoin: round; animation: hover 6s ease-in-out infinite; }
 .sub .hull path:first-child { fill: var(--paper); }
@@ -1341,11 +1343,15 @@ site.use(cfg => {
     wrap.classList.toggle('light', on && folding === 'light');
     wrap.classList.toggle('fade', on && folding === 'fade');
     if (on && folding === 'light') {
-      // the submarine goes to the work being read and turns its lamp to that work's side
-      const n = Math.max(active, 0), y = parseFloat(nodes[n].style.top) || geo.tops[n];
-      Object.assign(sub.style, { top: y + 'px', left: geo.spineX + geo.wob(y) + 'px' });
-      sub.classList.toggle('west', works[n].li.classList.contains('l'));
-      sub.style.setProperty('--beamw', (narrow.matches ? ct.clientWidth - geo.spineX : ct.clientWidth / 2) + 'px');
+      // the submarine goes to the work being read and lights it, hovering in the gap between the spine and that work,
+      // just above its curve, so the spine and the other works stay clear
+      const n = Math.max(active, 0), li = works[n].li, west = li.classList.contains('l');
+      const y = li.offsetTop + li.offsetHeight / 2; // level with the work itself, not its date (two works can share one)
+      const x = geo.spineX + geo.wob(y), off = narrow.matches ? 10 : 36;
+      Object.assign(sub.style, { top: y - (narrow.matches ? 16 : 22) + 'px', left: x + (west ? -off : off) + 'px' });
+      sub.classList.toggle('west', west);
+      sub.classList.toggle('small', narrow.matches);
+      sub.style.setProperty('--beamw', (narrow.matches ? ct.clientWidth - x - off : ct.clientWidth / 2 - off) + 'px');
     }
     const shown = on && folding !== 'light';
     const box = ct.getBoundingClientRect(), edge = innerHeight * .92;
