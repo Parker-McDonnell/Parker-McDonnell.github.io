@@ -82,6 +82,37 @@ button:hover { color: var(--shu); }
 .plate.thumb { aspect-ratio: 1; font-size: .6rem; text-align: center; }
 .plate.thumb svg { width: 60%; }
 @media (max-width: 520px) { .feed a { grid-template-columns: 5rem minmax(0, 1fr); gap: 1rem; } }
+/* centre timeline (theme.yml, timeline.layout: center): the work list becomes the timeline. A spine runs down the middle,
+   the works hang off it on alternating sides, and a node on the spine, placed by date, joins each one with a curve.
+   Phones: the spine runs down the left and every work sits to its right. */
+.works { position: relative; }
+.ct { display: none; }
+.works.center { --spine: 50%; --gutter: 4.5rem; width: min(64rem, calc(100vw - 2rem)); margin-left: 50%; transform: translateX(-50%); }
+.works.center .feed { position: relative; border-top: 0; }
+.works.center .feed li { position: absolute; width: calc(50% - var(--gutter)); }
+.works.center .feed li.r { left: calc(50% + var(--gutter)); }
+.works.center .feed a { grid-template-columns: 5.5rem minmax(0, 1fr); gap: 1.25rem; padding-block: .5rem; border-bottom: 0; }
+.works.center .feed a:hover, .works.center .feed li.on a { padding-left: 0; }
+.works.center .feed li.l a { grid-template-columns: minmax(0, 1fr) 5.5rem; text-align: right; }
+.works.center .feed li.l .plate { order: 2; }
+.works.center .ct { display: block; position: absolute; inset: 0; pointer-events: none; }
+.ct::before { content: ""; position: absolute; top: 0; bottom: 0; left: var(--spine); border-left: 1px solid var(--rule); }
+.ct-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ct-lines g { opacity: .2; transition: opacity .4s ease; }
+.ct-lines g.on { opacity: .8; }
+.ct-lines path { fill: none; stroke: var(--shu); stroke-width: 1; }
+.ct-lines circle { fill: var(--shu); }
+.ct-node { position: absolute; left: var(--spine); width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 1px solid var(--ink); background: var(--paper); transform: translate(-50%, -50%); pointer-events: auto; transition: transform .3s ease, background .3s ease, border-color .3s ease; }
+.ct-node::before { content: ""; position: absolute; inset: -8px; }
+.ct-node:hover, .ct-node:focus-visible, .ct-node.on { background: var(--shu); border-color: var(--shu); transform: translate(-50%, -50%) scale(1.4); outline: none; }
+.ct-year { position: absolute; left: var(--spine); transform: translate(-50%, -50%); padding: .2rem .45rem; background: var(--paper); font-size: .7rem; color: var(--mute); font-variant-numeric: tabular-nums; letter-spacing: .06em; }
+:root[data-vt-layout="center"] .vt, :root[data-vt-layout="center"] .vt-link { display: none !important; }
+@media (max-width: 720px) {
+  .works.center { --spine: .9rem; width: auto; margin-left: 0; transform: none; }
+  .works.center .feed li, .works.center .feed li.r { left: 2.75rem; width: calc(100% - 2.75rem); }
+  .works.center .feed a { grid-template-columns: 5rem minmax(0, 1fr); gap: 1rem; }
+  .ct-year { font-size: .6rem; padding-inline: .15rem; writing-mode: vertical-rl; transform: translate(-50%, -50%) rotate(180deg); }
+}
 /* timeline: runs down the side while the work list is on screen, marks the entry being read, and a click scrolls to an entry.
    Narrow screens: a rail of plain dots in the right gutter. Wide screens: the left margin, with years, a mark per work
    (dot, number or icon, set in theme.yml), a date beside each, and the title of the entry being read. */
@@ -213,6 +244,7 @@ footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule
 
     <h2 id="works">Selected work</h2>
     <!-- data-date is the year and month the work came out; the timeline is drawn from these -->
+    <div class="works" id="worksWrap">
     <ol class="feed" id="feed">
       <li data-date="2026-10" data-kind="Paper"><a href="#paper"><div class="plate thumb"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="50" cy="50" r="6"/><path d="M50 44 Q48 25 40 10 M56 50 Q75 48 90 40 M50 56 Q52 75 60 90 M44 50 Q25 52 10 60 M54 46 Q68 32 80 18"/></svg></div><div class="txt"><span class="kind">Paper · 2026</span><span class="t">Plenty of fish in the sea, but only one multimodal feather star robot</span><p>Science Advances, with Nicole W. Xu.</p></div></a></li>
       <li data-date="2025-10" data-kind="Talk"><a href="#talk"><div class="plate thumb"><span>Talk still</span></div><div class="txt"><span class="kind">Talk · 2025</span><span class="t">How jellyfish move water, and what robots can borrow</span><p>Invited seminar (placeholder).</p></div></a></li>
@@ -221,6 +253,8 @@ footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule
       <li data-date="2023-11" data-kind="Talk"><a href="#"><div class="plate thumb"><span>Talk still</span></div><div class="txt"><span class="kind">Talk · 2023</span><span class="t">Conference talk, fluid dynamics meeting</span><p>Placeholder.</p></div></a></li>
       <li data-date="2023-05" data-kind="Paper"><a href="#"><div class="plate thumb"><span>Figure</span></div><div class="txt"><span class="kind">Paper · 2023</span><span class="t">Earlier paper or preprint</span><p>Placeholder.</p></div></a></li>
     </ol>
+    <div class="ct" id="ct"><svg class="ct-lines" aria-hidden="true"></svg></div>
+    </div>
     <nav class="vt" id="vt" aria-label="Timeline of selected work"><div class="vt-rail"></div></nav>
     <svg class="vt-link" id="vtLink" aria-hidden="true"></svg>
   </section>
@@ -382,7 +416,7 @@ sigshep</div>
 const site = (() => {
   const defaults = {
     slideshow: { seconds_per_slide: 6, autoplay: true, resume_after_touch_seconds: 4 },
-    timeline: { marks: 'icon', dates: true, side: 'right' },
+    timeline: { layout: 'center', space_per_year: '16rem', marks: 'icon', dates: true, side: 'right' },
     citation_map: { demo: true },
     accent_bars: { header: 'thin', sections: 'short' },
     playground: true,
@@ -611,6 +645,9 @@ site.use(cfg => {
   function render(cfg) {
     const style = cfg.timeline?.marks || 'dot', dates = cfg.timeline?.dates !== false;
     document.documentElement.dataset.vtSide = cfg.timeline?.side === 'left' ? 'left' : 'right';
+    center = cfg.timeline?.layout !== 'side';
+    perYear = parseFloat(cfg.timeline?.space_per_year) || 16;
+    document.documentElement.dataset.vtLayout = center ? 'center' : 'side';
     marks.concat(labels).forEach(e => e.remove());
     marks = []; labels = [];
     for (const w of works) {
@@ -633,6 +670,7 @@ site.use(cfg => {
       w.li.querySelector('.wm')?.remove();
       if (style !== 'dot') w.li.querySelector('.kind').insertAdjacentHTML('afterbegin', `<span class="wm">${style === 'number' ? `[${w.n}]` : icon(w.k)}</span>`);
     }
+    placeCenter();
     const n = active; active = -1; mark(n);
   }
   // labels sit beside their mark, pushed down where they would overlap the one above
@@ -649,7 +687,9 @@ site.use(cfg => {
   function mark(n) {
     if (n === active) return;
     active = n;
-    works.forEach((w, i) => { w.li.classList.toggle('on', i === n); marks[i].classList.toggle('on', i === n); labels[i].classList.toggle('on', i === n); });
+    works.forEach((w, i) => {
+      for (const el of [w.li, marks[i], labels[i], ctNodes[i], ctCurves[i]]) el.classList.toggle('on', i === n);
+    });
     layout();
     follow();
   }
@@ -677,6 +717,74 @@ site.use(cfg => {
       const ex = right ? row.right + 10 : thumb.left - 10, ey = thumb.top + thumb.height / 2, mx = (sx + ex) / 2;
       if (Math.abs(ex - sx) < 24) return g.setAttribute('visibility', 'hidden');
       g.removeAttribute('visibility');
+      g.firstChild.setAttribute('d', `M${sx} ${sy} C${mx} ${sy} ${mx} ${ey} ${ex} ${ey}`);
+      g.lastChild.setAttribute('cx', ex); g.lastChild.setAttribute('cy', ey);
+    });
+  }
+  // centre layout: each work is placed at its date on a fixed scale (timeline.space_per_year), so a quiet year
+  // leaves a gap and a busy one crowds; a card is pushed down only as far as it must be to clear the one above
+  // it on the same side, and a curve joins it to the node at its exact date on the spine.
+  const wrap = document.getElementById('worksWrap'), ct = document.getElementById('ct'), ctSvg = ct.querySelector('.ct-lines');
+  const narrow = matchMedia('(max-width: 720px)');
+  let center = true, perYear = 16;
+  const ctNodes = works.map((w, i) => {
+    const b = document.createElement('button');
+    b.className = 'ct-node';
+    b.setAttribute('aria-label', `${w.date}, ${w.k}: ${w.t}. Scroll to it`);
+    b.onclick = () => goTo(i);
+    ct.append(b);
+    return b;
+  });
+  const ctCurves = works.map(() => {
+    const g = document.createElementNS(NS, 'g');
+    g.innerHTML = '<path/><circle r="2.5"/>';
+    ctSvg.append(g);
+    return g;
+  });
+  const ctYears = [];
+  for (let yr = y1 - 1; yr >= y0; yr--) {
+    const s = document.createElement('span');
+    s.className = 'ct-year';
+    s.textContent = yr;
+    ct.append(s);
+    ctYears.push([yr, s]);
+  }
+  function placeCenter() {
+    wrap.classList.toggle('center', center);
+    if (!center) {
+      items.forEach(li => { li.style.top = ''; li.classList.remove('l', 'r'); });
+      feed.style.height = '';
+      return;
+    }
+    if (!feed.clientWidth) return;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize), one = narrow.matches;
+    works.forEach((w, i) => { const r = one || i % 2 === 1; w.li.classList.toggle('r', r); w.li.classList.toggle('l', !r); });
+    const pad = 2.5 * rem, gap = rem;
+    // one column on a phone: stretch the scale until the stacked works fit it, so the dates stay beside their works
+    const stacked = works.reduce((sum, w) => sum + w.li.offsetHeight + gap, 0);
+    const S = one ? Math.max(perYear * rem * .6, stacked / (y1 - y0)) : perYear * rem;
+    const at = d => pad + (y1 - d) * S;
+    const below = { l: 0, r: 0 };
+    let prev = -Infinity, end = 0;
+    works.forEach((w, i) => {
+      const side = w.li.classList.contains('l') ? 'l' : 'r', h = w.li.offsetHeight;
+      const top = Math.max(at(w.d) - h / 2, below[side] + gap, prev + (one ? 0 : 2 * gap), 0);
+      w.li.style.top = top + 'px';
+      below[side] = top + h; prev = top; end = Math.max(end, top + h);
+      ctNodes[i].style.top = at(w.d) + 'px';
+    });
+    feed.style.height = Math.max(end, at(y0)) + pad + 'px';
+    ctYears.forEach(([yr, s]) => s.style.top = at(yr + 1) + 'px');
+    drawCenter();
+  }
+  function drawCenter() {
+    if (!center) return;
+    const box = ct.getBoundingClientRect();
+    works.forEach((w, i) => {
+      const n = ctNodes[i].getBoundingClientRect(), a = w.li.querySelector('a').getBoundingClientRect(), left = w.li.classList.contains('l');
+      const sx = n.left + n.width / 2 - box.left + (left ? -8 : 8), sy = n.top + n.height / 2 - box.top;
+      const ex = (left ? a.right + 8 : a.left - 8) - box.left, ey = a.top + a.height / 2 - box.top, mx = (sx + ex) / 2;
+      const g = ctCurves[i];
       g.firstChild.setAttribute('d', `M${sx} ${sy} C${mx} ${sy} ${mx} ${ey} ${ex} ${ey}`);
       g.lastChild.setAttribute('cx', ex); g.lastChild.setAttribute('cy', ey);
     });
@@ -720,8 +828,8 @@ site.use(cfg => {
   site.use(render);
   let raf = 0;
   addEventListener('scroll', () => { raf ||= requestAnimationFrame(() => { raf = 0; update(); connect(); }); }, { passive: true });
-  addEventListener('resize', () => { layout(); update(); connect(); });
-  document.fonts.ready.then(layout);
+  addEventListener('resize', () => { placeCenter(); layout(); update(); connect(); });
+  document.fonts.ready.then(() => { placeCenter(); layout(); });
   update();
 })();
 
@@ -751,7 +859,8 @@ site.use(cfg => {
     play.append(
       group('Header bar', [['None', 'none'], ['Thin', 'thin'], ['Thick', 'thick'], ['Full width', 'band']], cfg.accent_bars.header, v => site.set({ accent_bars: { header: v } })),
       group('Section bars', [['None', 'none'], ['Short', 'short'], ['Full', 'full']], cfg.accent_bars.sections, v => site.set({ accent_bars: { sections: v } })),
-      group('Timeline side', [['Left', 'left'], ['Right', 'right']], cfg.timeline.side, v => site.set({ timeline: { side: v } })),
+      group('Timeline', [['Centre', 'center'], ['Side', 'side']], cfg.timeline.layout, v => site.set({ timeline: { layout: v } })),
+      group('Side', [['Left', 'left'], ['Right', 'right']], cfg.timeline.side, v => site.set({ timeline: { side: v } })),
       group('Timeline marks', [['Dots', 'dot'], ['Numbers', 'number'], ['Icons', 'icon']], cfg.timeline.marks, v => site.set({ timeline: { marks: v } })),
       group('Dates', [['On', true], ['Off', false]], cfg.timeline.dates, v => site.set({ timeline: { dates: v } })),
       group('Example citations', [['On', true], ['Off', false]], cfg.citation_map.demo, v => site.set({ citation_map: { demo: v } })),

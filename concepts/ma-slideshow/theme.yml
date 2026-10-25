@@ -52,7 +52,10 @@ slideshow:
   resume_after_touch_seconds: 4       # after a swipe, wait this long before moving on again
 
 timeline:
-  side: right                         # left or right of the work list (wide screens; phones always use a thin rail on the right)
+  layout: center                      # center: the work list is the timeline, works placed by date along a spine down the middle
+                                      # side: a list, with a timeline beside it that follows as you scroll
+  space_per_year: 16rem               # center layout: the height one year takes, so gaps in time show as gaps on the page
+  side: right                         # side layout: left or right of the list (phones always use a thin rail on the right)
   marks: icon                        # dot, number (like a reference list) or icon (one per kind of work)
   dates: true                         # show the month and year beside each mark
 
