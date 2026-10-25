@@ -26,13 +26,15 @@ Parker asked for "simple and sleek", like a "high class art gallery", using a kn
 
 ## Decided
 
-- **Concept A, slideshow version.** It's a single readable column. At the top is a swipeable slideshow of featured work, which snaps into place, advances every 6 seconds and pauses while touched. Below that is a timeline (one row each for papers, talks, tools and methods, marks placed by date and linked both ways to the list), then the "Selected work" list.
+- **Concept A, slideshow version.** It's a single readable column. At the top is a swipeable slideshow of featured work, which snaps into place, advances every 6 seconds and pauses while touched. Below that is "Selected work", which is now itself a timeline (see the theme file section for its four layouts).
+- **Colours:** Journal Light, matching Parker's comps slides (Journal Crimson is the alternative).
+- **Parker's reactions so far (2026-10-25):** loved the timeline with icons and dates, and the faded curves to every work ("super cool", "very snazzy"). He found the side timeline disconnected from the page, and thought the centre or branch versions might be better. The ocean must stay "a slight flourish, not overbearing or distracting". He wants the page's own pieces to be part of the sea (a crab on a card, plants growing from works, bubbles passing in front).
 - **Template:** al-folio was recommended, but Parker hasn't said yes to it explicitly.
 - **Paper details from Crossref:** "Plenty of fish in the sea, but only one multimodal feather star robot". Parker McDonnell and Nicole W. Xu. *Science Advances* 12(41), eaem0495, 9 October 2026. doi `10.1126/sciadv.aem0495`.
 
 ## Built and checked (`ma-slideshow/index.html`)
 
-The latest commit adds talk, tool and about pages, a richer paper page (video-loop slot, related work, "In the media"), a vertical name in the margin on wide screens, and a footer switcher for Vermilion, Indigo and Moss accents. One file holds all five pages, and `#home`, `#paper`, `#talk`, `#tool` or `#about` picks which one shows.
+One file holds all five pages (home, paper, talk, tool, about), and `#home`, `#paper`, `#talk`, `#tool` or `#about` picks which one shows. The paper page has a video-loop slot, related work, a citation map and "In the media". The look comes from `theme.yml`, and footer buttons try its options. To publish the Artifact, send `theme.yml` along as a `text/plain` file (the Artifact host doesn't serve `.yml`).
 
 **Page switching works** (checked 2026-10-25 over a local HTTP server at 375 px and 1280 px wide): from the menu, the list, the timeline dots, the slideshow, typed and reloaded addresses, and the back button. The earlier failure was the preview opening the file from disk. Pages are marked with `data-page`, not an `id`, so the browser doesn't jump partway down the page as it would to a fragment; keep it that way. To test locally, serve the folder (`python -m http.server`) rather than opening the file.
 
@@ -68,6 +70,6 @@ Fonts, the colour palette, column width, slideshow speed, the timeline's style a
 ## Next steps
 
 1. ~~Fix and verify the page switching~~ Done 2026-10-25; the Artifact is linked in the table above.
-2. Keep refining the concept with Parker ("jam" on it); there's no rush to go live.
+2. Keep refining the concept with Parker ("jam" on it); there's no rush to go live. Open choices: which timeline layout (centre, projects or kinds); which header bar is the default (thin now, or full width); whether the git-graph needs zoom levels; and the robot outlines to add to the ocean.
 3. Once Parker approves, build the real site on al-folio in this style on `redesign`. One file per work should feed the slideshow, the timeline and the list. Add schema.org metadata and links to Scholar and ORCID.
 4. Only with Parker's OK: merge to `main` to go live.
