@@ -52,7 +52,11 @@ Fonts, the colour palette, column width, slideshow speed, the timeline's style a
 - **Citation demo:** `citation_map.demo: true` fills "cited by" with three made-up papers marked "Example". Turn it off once real citations exist.
 - **Accent bars:** `accent_bars.header` (none, thin, thick, or band across the full window) and `accent_bars.sections` (none, short dash, or full line above each section heading). Parker asked for a splash of colour to break up the sections.
 - **Timeline layout:** `timeline.layout: center` (default, Parker's idea) makes the work list the timeline. A spine runs down the middle, works alternate sides, and each sits at its date on a fixed scale (`space_per_year`), so gaps in time show as gaps on the page. Cards are pushed down only to clear the one above, and a curve joins each to its exact date. On phones the spine runs down the left and the scale stretches to fit the cards. `side` keeps the earlier list with a timeline beside it.
-- **Next idea (Parker):** a git-graph version with branches, so several works can share a date. It needs a way to stay calm: zoom levels, or branches that collapse and expand.
+- **Git-graph layouts** (Parker's idea, so several works can share a date), both on the same date scale with curves to the cards:
+  - `projects`: a main line, with a branch for each project of two or more works (`data-project` on the list item). A branch leaves the main line before its first work and merges back at its last. Each project shows its headline (its paper, or its newest work) until "N more" on that card opens it.
+  - `kinds`: a lane per kind of work, each folded away by clicking its icon at the top.
+  - Works on the same date in one lane stack their nodes. On phones the graph layouts drop the thumbnails to make room for the lanes. Zoom levels are a possible later step.
+  - The project names and three of the works (dataset, SignalShepherd 2.0, poster) are made-up placeholders to show branches.
 - **Timeline marks:** Parker likes icons with dates (the default). On wide screens the timeline is docked about 4.5rem from the list, and thin accent curves join every work's label to its entry: faded, with the marked one strong (Parker's idea). `timeline.side` puts it on the right (default, mirrored: labels face the list, years on the outside) or the left. `dot`, `number` (counted from the oldest work, like a reference list, so new works don't renumber old ones) or `icon` (paper, talk, tool, method), with or without dates. The same mark appears in the list entry.
 
 ## Added 2026-10-25 (Parker's ideas)
