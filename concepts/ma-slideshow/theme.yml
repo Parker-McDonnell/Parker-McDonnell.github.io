@@ -46,6 +46,7 @@ ocean:                                # scrolling down the page sinks through th
   enabled: true                       # the deepening shade, the creatures in the page and the sea floor
   motion: true                        # very slow drifting; always still for viewers who ask their device for less motion
   light_shafts: true                  # sun rays at the top that fade as the reader scrolls down
+  blocks: soft                        # the ground under each block of words, hiding what swims behind: soft (frosted), sunken (an inner shadow) or none
 
 qr:                                   # QR codes to open the site, or a paper, talk or tool, on a phone
   site_url: ""                        # the address they point to; empty: this page's own. The real site: https://parker-mcdonnell.github.io/
