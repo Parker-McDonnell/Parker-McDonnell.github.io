@@ -52,7 +52,8 @@ slideshow:
   resume_after_touch_seconds: 4       # after a swipe, wait this long before moving on again
 
 timeline:
-  marks: icon                         # dot, number (like a reference list) or icon (one per kind of work)
+  side: right                         # left or right of the work list (wide screens; phones always use a thin rail on the right)
+  marks: icon                        # dot, number (like a reference list) or icon (one per kind of work)
   dates: true                         # show the month and year beside each mark
 
 citation_map:

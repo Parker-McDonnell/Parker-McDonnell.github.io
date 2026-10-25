@@ -99,8 +99,16 @@ button:hover { color: var(--shu); }
   .vt { --x: 3.25rem; --w: min(15rem, calc((100vw - var(--col)) / 2 - 6.5rem)); right: auto; left: max(1rem, env(safe-area-inset-left, 0px), calc((100vw - var(--col)) / 2 - var(--w) - 4.5rem)); width: var(--w); height: min(64vh, 30rem); }
   .vt-label > * { width: fit-content; max-width: 100%; }
   .vt-link { display: block; position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 4; pointer-events: none; overflow: visible; }
-  .vt-link path { fill: none; stroke: var(--shu); stroke-width: 1; opacity: .55; transition: opacity .3s ease; }
+  .vt-link g { opacity: .16; transition: opacity .4s ease; }
+  .vt-link g.on { opacity: .7; }
+  .vt-link path { fill: none; stroke: var(--shu); stroke-width: 1; }
   .vt-link circle { fill: var(--shu); }
+  /* mirrored on the right: list, then labels (right-aligned), the line with its marks, and the years on the outside */
+  :root[data-vt-side="right"] .vt { left: auto; right: max(1rem, env(safe-area-inset-right, 0px), calc((100vw - var(--col)) / 2 - var(--w) - 4.5rem)); }
+  :root[data-vt-side="right"] .vt-rail::before, :root[data-vt-side="right"] .vt-mark { left: calc(100% - var(--x)); }
+  :root[data-vt-side="right"] .vt-tick { left: auto; right: 0; text-align: left; }
+  :root[data-vt-side="right"] .vt-tick::after { left: auto; right: calc(100% + .3rem); }
+  :root[data-vt-side="right"] .vt-label { left: 0; right: calc(var(--x) + 1.2rem); justify-items: end; text-align: right; }
   .vt-tick { display: block; position: absolute; left: 0; width: 2.4rem; text-align: right; transform: translateY(-50%); font-size: .72rem; color: var(--mute); font-variant-numeric: tabular-nums; pointer-events: none; }
   .vt-tick::after { content: ""; position: absolute; left: calc(100% + .3rem); top: 50%; width: .4rem; border-top: 1px solid var(--mute); }
   .vt-mark { display: grid; place-items: center; width: 22px; height: 22px; border: 0; background: var(--paper); }
@@ -374,7 +382,7 @@ sigshep</div>
 const site = (() => {
   const defaults = {
     slideshow: { seconds_per_slide: 6, autoplay: true, resume_after_touch_seconds: 4 },
-    timeline: { marks: 'icon', dates: true },
+    timeline: { marks: 'icon', dates: true, side: 'right' },
     citation_map: { demo: true },
     accent_bars: { header: 'thin', sections: 'short' },
     playground: true,
@@ -602,6 +610,7 @@ site.use(cfg => {
 
   function render(cfg) {
     const style = cfg.timeline?.marks || 'dot', dates = cfg.timeline?.dates !== false;
+    document.documentElement.dataset.vtSide = cfg.timeline?.side === 'left' ? 'left' : 'right';
     marks.concat(labels).forEach(e => e.remove());
     marks = []; labels = [];
     for (const w of works) {
@@ -644,18 +653,33 @@ site.use(cfg => {
     layout();
     follow();
   }
-  // wide screens: a thin accent curve from the marked work's label to its entry in the list
-  const link = document.getElementById('vtLink');
+  // wide screens: a thin accent curve from every work's label to its entry in the list, the marked one strongest.
+  // On the left the curves meet the thumbnails; on the right, the row's right-hand end.
+  const link = document.getElementById('vtLink'), NS = 'http://www.w3.org/2000/svg';
+  const curves = works.map(() => {
+    const g = document.createElementNS(NS, 'g');
+    g.innerHTML = '<path/><circle r="2.5"/>';
+    link.append(g);
+    return g;
+  });
   function connect() {
-    if (active < 0 || !vt.classList.contains('shown') || getComputedStyle(link).display === 'none') return link.replaceChildren();
-    const parts = [...labels[active].children].filter(c => getComputedStyle(c).display !== 'none');
-    const from = parts.length ? parts : [marks[active]];
-    const sx = Math.max(...from.map(c => c.getBoundingClientRect().right)) + 10;
-    const first = from[0].getBoundingClientRect(), sy = first.top + first.height / 2;
-    const thumb = items[active].querySelector('.plate').getBoundingClientRect();
-    const ex = thumb.left - 10, ey = thumb.top + thumb.height / 2, mx = (sx + ex) / 2;
-    if (ex - sx < 24) return link.replaceChildren();
-    link.innerHTML = `<path d="M${sx} ${sy} C${mx} ${sy} ${mx} ${ey} ${ex} ${ey}"/><circle cx="${ex}" cy="${ey}" r="2.5"/>`;
+    const off = !vt.classList.contains('shown') || getComputedStyle(link).display === 'none';
+    const right = document.documentElement.dataset.vtSide === 'right';
+    works.forEach((w, i) => {
+      const g = curves[i];
+      g.classList.toggle('on', i === active);
+      if (off) return g.setAttribute('visibility', 'hidden');
+      const parts = [...labels[i].children].filter(c => getComputedStyle(c).display !== 'none');
+      const from = (parts.length ? parts : [marks[i]]).map(c => c.getBoundingClientRect());
+      const sx = right ? Math.min(...from.map(r => r.left)) - 10 : Math.max(...from.map(r => r.right)) + 10;
+      const sy = from[0].top + from[0].height / 2;
+      const thumb = w.li.querySelector('.plate').getBoundingClientRect(), row = w.li.getBoundingClientRect();
+      const ex = right ? row.right + 10 : thumb.left - 10, ey = thumb.top + thumb.height / 2, mx = (sx + ex) / 2;
+      if (Math.abs(ex - sx) < 24) return g.setAttribute('visibility', 'hidden');
+      g.removeAttribute('visibility');
+      g.firstChild.setAttribute('d', `M${sx} ${sy} C${mx} ${sy} ${mx} ${ey} ${ex} ${ey}`);
+      g.lastChild.setAttribute('cx', ex); g.lastChild.setAttribute('cy', ey);
+    });
   }
   // keep the curve on its ends while the labels and the entry slide into place
   let until = 0;
@@ -727,6 +751,7 @@ site.use(cfg => {
     play.append(
       group('Header bar', [['None', 'none'], ['Thin', 'thin'], ['Thick', 'thick'], ['Full width', 'band']], cfg.accent_bars.header, v => site.set({ accent_bars: { header: v } })),
       group('Section bars', [['None', 'none'], ['Short', 'short'], ['Full', 'full']], cfg.accent_bars.sections, v => site.set({ accent_bars: { sections: v } })),
+      group('Timeline side', [['Left', 'left'], ['Right', 'right']], cfg.timeline.side, v => site.set({ timeline: { side: v } })),
       group('Timeline marks', [['Dots', 'dot'], ['Numbers', 'number'], ['Icons', 'icon']], cfg.timeline.marks, v => site.set({ timeline: { marks: v } })),
       group('Dates', [['On', true], ['Off', false]], cfg.timeline.dates, v => site.set({ timeline: { dates: v } })),
       group('Example citations', [['On', true], ['Off', false]], cfg.citation_map.demo, v => site.set({ citation_map: { demo: v } })),

@@ -51,7 +51,7 @@ Fonts, the colour palette, column width, slideshow speed, the timeline's style a
 - **Playground:** footer buttons try palettes, timeline marks, dates and the demo for that visit only. Nothing is remembered, so the file stays the one place the look is decided. Set `playground: false` for the real site.
 - **Citation demo:** `citation_map.demo: true` fills "cited by" with three made-up papers marked "Example". Turn it off once real citations exist.
 - **Accent bars:** `accent_bars.header` (none, thin, thick, or band across the full window) and `accent_bars.sections` (none, short dash, or full line above each section heading). Parker asked for a splash of colour to break up the sections.
-- **Timeline marks:** Parker likes icons with dates (the default). On wide screens the timeline is docked about 4.5rem from the list, and a thin accent curve joins the marked work's label to its entry. `dot`, `number` (counted from the oldest work, like a reference list, so new works don't renumber old ones) or `icon` (paper, talk, tool, method), with or without dates. The same mark appears in the list entry.
+- **Timeline marks:** Parker likes icons with dates (the default). On wide screens the timeline is docked about 4.5rem from the list, and thin accent curves join every work's label to its entry: faded, with the marked one strong (Parker's idea). `timeline.side` puts it on the right (default, mirrored: labels face the list, years on the outside) or the left. `dot`, `number` (counted from the oldest work, like a reference list, so new works don't renumber old ones) or `icon` (paper, talk, tool, method), with or without dates. The same mark appears in the list entry.
 
 ## Added 2026-10-25 (Parker's ideas)
 
