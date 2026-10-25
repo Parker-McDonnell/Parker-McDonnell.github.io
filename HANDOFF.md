@@ -76,7 +76,12 @@ Parker: "the site is looking awesome". Then:
 
 - **Blocks over the sea** (Parker, 2026-10-25): the creatures sit behind the page, and each block of words (timeline cards, headings, paragraphs, links, QR) stands on a ground that hides what swims behind it. `ocean.blocks` in `theme.yml`, also a footer button: `soft` (frosted, fading edge; the default) or `none`. Sunken text blocks were tried and dropped: Parker wants only the pictures sunken.
 - **Pictures sunk into the page** (Parker, 2026-10-25): every picture (slides, timeline thumbnails, related work) has a hairline border, a fine light edge just inside and a soft inner shadow, drawn over the picture so real photos and video sit in it the same way.
-- **The timeline unfolds** (Parker's origami idea, 2026-10-25; `timeline.unfold`, footer button): as each work comes up the screen its card swings open from the spine like a folded sheet, a shadow in the fold lifting as it opens, its curve and node fading in with it; the kelp stalk grows down ahead of the reader and opens its leaves as it passes them. Scroll-linked, so scrolling back folds them again. Off (all open) for viewers who ask for less motion, or with the sea still.
+- **The timeline unfolds as you scroll** (Parker's ideas, 2026-10-25; `timeline.unfold`, footer button "Unfold"). Four ways to compare, all scroll-linked (scrolling back reverses them), all simply open for viewers who ask for less motion or with the sea still:
+  - `fold` (the default; Parker: "your method is super cool"): each card folds down open from its top edge, an origami crease across its middle flattening as it opens; curves and nodes fade in; the kelp stalk grows down ahead of the reader. Swinging sideways from the spine was tried first; Parker wanted it vertical.
+  - `scroll`: the timeline unrolls like a paper scroll above a paper roll that travels down ahead of the reader.
+  - `light`: a line-drawn submarine travels down the spine to the work being read and lights it with a warm lamp; the other works wait dim.
+  - `fade`: works fade in slowly, rising a little, and the kelp leaves fade in with them.
+  Parker hasn't picked one yet. The kelp leaves were made bigger (and a little further apart) the same day, and Selected work has no soft grounds (Parker: no shading there).
 - **Jellyfish pulse** (Parker, 2026-10-25): the bell squeezes in fast and the jellyfish lurches forward along its slant, then relaxes slowly, each on its own rhythm (`.beat`).
 - **Perched drawings can be arranged too:** the crab on the footer line and the bubbles by the slideshow (placements under `perch~wide` / `perch~narrow`, across and down from the piece they sit on).
 

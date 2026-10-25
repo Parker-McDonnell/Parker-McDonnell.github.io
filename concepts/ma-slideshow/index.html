@@ -102,12 +102,13 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 :root[data-ocean="on"] .perch { display: block; position: absolute; z-index: 2; pointer-events: none; fill: none; stroke: var(--line); stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; overflow: visible; opacity: .6; }
 :root[data-ocean="on"] footer, :root[data-ocean="on"] .show { position: relative; }
 /* the page in front of the sea (theme.yml, ocean.blocks): each block of words stands on a soft, frosted ground the
-   colour of the page, its edge fading out, so a creature behind it is hidden or only glimpsed. Translucent, so it still
+   colour of the page, its edge fading out, so a creature behind it is hidden or only glimpsed. Not in Selected work
+   (Parker: no shading there). Translucent, so it still
    sits on the deepening water. */
 :root { --veil: color-mix(in oklab, var(--paper) 82%, transparent); --rim: rgba(255, 255, 255, .95); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --rim: rgba(255, 255, 255, .22); } }
 :root[data-theme="dark"] { --rim: rgba(255, 255, 255, .22); }
-:root[data-ocean="on"][data-blocks="soft"] :is(.feed a, .intro h1, .intro p, .view p:not(.feed p), .eyebrow, .page-title, .byline, .lede, h2,
+:root[data-ocean="on"][data-blocks="soft"] :is(.intro h1, .intro p, .view p:not(.feed p), .eyebrow, .page-title, .byline, .lede, .view:not([data-page="home"]) h2,
   .facts, .findings, .links, .related a, .caption, .mentions) {
   background: var(--veil); box-shadow: 0 0 16px 10px var(--veil); border-radius: 10px;
   -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
@@ -214,15 +215,44 @@ button:hover { color: var(--shu); }
 /* the spine as a kelp stalk (theme.yml, timeline.spine: kelp) replaces the straight line */
 .ct-lines .lanes path { fill: none; stroke: var(--mute); stroke-width: 1.25; opacity: .55; }
 .works.stem .ct::before { display: none; }
-/* unfolding (theme.yml, timeline.unfold): each card is hinged on its spine side and swings open as it comes up the
-   screen, a shadow in the fold lifting as it opens; the stalk's leaves open as it grows past them */
-.works.unfold .feed li { --hinge: 100%; --swing: 92deg; }
-.works.unfold .feed li.r { --hinge: 0%; --swing: -92deg; }
-.works.unfold .feed li > a { position: relative; transform-origin: var(--hinge) 50%;
-  transform: perspective(900px) rotateY(calc((1 - var(--u, 1)) * var(--swing))); opacity: calc(.1 + .9 * var(--u, 1)); }
-.works.unfold .feed li > a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: linear-gradient(to right, rgba(0, 0, 0, .14), transparent 70%); opacity: calc(1 - var(--u, 1)); }
-.works.unfold .feed li.l > a::after { background: linear-gradient(to left, rgba(0, 0, 0, .14), transparent 70%); }
+/* unfolding (theme.yml, timeline.unfold). Fold: each card is hinged on its top edge and folds down open as it comes up
+   the screen, an origami crease across its middle flattening as it opens. */
+.works.fold .feed li > a { position: relative; transform-origin: 50% 0;
+  transform: perspective(900px) rotateX(calc((1 - var(--u, 1)) * -92deg)); opacity: calc(.1 + .9 * var(--u, 1)); }
+.works.fold .feed li > a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, .16), transparent 46%, rgba(255, 255, 255, .5) 49.5%, rgba(0, 0, 0, .14) 50.5%, transparent 70%);
+  opacity: calc(1 - var(--u, 1)); }
+/* Light: a submarine travels down the spine to the work being read and lights it with its lamp; the others wait in the
+   dark. Its lamp turns to the side the work is on. */
+:root { --beam: color-mix(in oklab, #ffd36a 34%, transparent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --beam: color-mix(in oklab, #ffe6a0 20%, transparent); } }
+:root[data-theme="dark"] { --beam: color-mix(in oklab, #ffe6a0 20%, transparent); }
+.sub { display: none; }
+.works.light .sub { display: block; position: absolute; width: 60px; height: 32px; z-index: 3; pointer-events: none; color: var(--line);
+  transform: translate(-50%, -50%); transition: top .9s ease, left .9s ease; }
+.works.light .sub.west { transform: translate(-50%, -50%) scaleX(-1); }
+.sub .hull { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.2;
+  stroke-linecap: round; stroke-linejoin: round; animation: hover 6s ease-in-out infinite; }
+.sub .hull path:first-child { fill: var(--paper); }
+.sub .beam { position: absolute; left: 90%; top: 50%; width: var(--beamw, 26rem); height: 170px; transform: translateY(-50%); fill: url(#beamFade); }
+@keyframes hover { 50% { transform: translateY(-3px); } }
+.works.light .feed li { opacity: .14; transition: opacity .7s ease; }
+.works.light .feed li.on { opacity: 1; }
+/* Fade: each work fades in slowly as it comes up the screen, rising a little; the stalk's leaves fade in as it's passed */
+.works.fade .feed li > a { opacity: var(--u, 1); transform: translateY(calc((1 - var(--u, 1)) * 16px)); }
+.works.fade .ct-lines .lanes path.leaf { transition: opacity 1.6s ease; }
+/* Scroll: the timeline unrolls like a paper scroll as the reader goes down. What is
+   still rolled up is hidden below the roll, a paper cylinder that travels down the page ahead of the reader (--reach,
+   set by the page); the stalk's leaves open as it grows past them */
+.works.scroll .feed, .works.scroll .ct { clip-path: polygon(-50vw -2rem, 150vw -2rem, 150vw var(--reach, 100%), -50vw var(--reach, 100%)); }
+.roll { display: none; }
+.works.scroll .roll { display: block; position: absolute; left: -1rem; right: -1rem; height: 22px; z-index: 2; transform: translateY(-50%);
+  pointer-events: none; border-radius: 11px; transition: opacity .5s ease;
+  background: linear-gradient(to bottom, color-mix(in oklab, var(--paper), #000 9%), var(--paper) 32%, var(--paper) 52%, color-mix(in oklab, var(--paper), #000 20%));
+  box-shadow: 0 7px 12px -5px rgba(0, 0, 0, .28), 0 0 0 1px var(--rule); }
+/* the paper just above the roll curls toward it */
+.works.scroll .roll::before { content: ""; position: absolute; left: 1rem; right: 1rem; bottom: 100%; height: 2.5rem; background: linear-gradient(transparent, rgba(0, 0, 0, .05)); }
+.works.scroll .roll.done { opacity: 0; }
 .works.unfold .ct-lines .lanes path.leaf { transition: opacity .8s ease; }
 .ct-lines .lanes path.stem { stroke-width: 1.4; opacity: .6; }
 .ct-lines .lanes path.leaf { stroke-width: 1; opacity: .45; }
@@ -504,7 +534,7 @@ sigshep</div>
 const site = (() => {
   const defaults = {
     slideshow: { seconds_per_slide: 6, autoplay: true, resume_after_touch_seconds: 4 },
-    timeline: { spine: 'kelp', space_per_year: '16rem', marks: 'icon', unfold: true },
+    timeline: { spine: 'kelp', space_per_year: '16rem', marks: 'icon', unfold: 'fold' },
     citation_map: { demo: true },
     ocean: { enabled: true, motion: true, light_shafts: true, blocks: 'soft', line_color: 'muted' },
     qr: { site_url: '' },
@@ -1179,8 +1209,20 @@ site.use(cfg => {
     return { li, n: items.length - i, d: y + (m - .5) / 12, date: `${MONTHS[m - 1]} ${y}`, k: li.dataset.kind, t: li.querySelector('.t').textContent };
   });
   const y0 = Math.floor(Math.min(...works.map(w => w.d))), y1 = Math.ceil(Math.max(...works.map(w => w.d)) + .01);
-  let perYear = 16, stem = true, folding = true, active = -1, geo = null;
+  let perYear = 16, stem = true, folding = 'fold', active = -1, geo = null;
 
+  const roll = document.createElement('div');
+  roll.className = 'roll';
+  wrap.append(roll);
+  // the submarine (unfold: light): a line drawing on the spine with a lamp that lights the work being read
+  const sub = document.createElement('div');
+  sub.className = 'sub';
+  sub.innerHTML = '<svg class="beam" viewBox="0 0 400 160" preserveAspectRatio="none"><defs><linearGradient id="beamFade">' +
+    '<stop offset="0" style="stop-color:var(--beam)"/><stop offset="1" style="stop-color:var(--beam);stop-opacity:0"/></linearGradient></defs>' +
+    '<path d="M0 74 L400 0 L400 160 L0 86 Z"/></svg>' +
+    '<svg class="hull" viewBox="0 0 60 32"><path d="M8 20 Q8 12 20 12 L44 12 Q54 12 54 20 Q54 28 44 28 L20 28 Q8 28 8 20 Z"/>' +
+    '<path d="M24 12 L26 5 L36 5 L38 12 M31 5 V1 h4 M8 20 l-5 -5 v10 z"/><circle cx="25" cy="20" r="2.2"/><circle cx="34" cy="20" r="2.2"/><circle cx="43" cy="20" r="2.2"/></svg>';
+  wrap.append(sub);
   const lanesG = document.createElementNS(NS, 'g');
   lanesG.setAttribute('class', 'lanes');
   ctSvg.append(lanesG);
@@ -1211,7 +1253,8 @@ site.use(cfg => {
     const style = cfg.timeline?.marks || 'icon';
     perYear = parseFloat(cfg.timeline?.space_per_year) || 16;
     stem = cfg.timeline?.spine !== 'straight';
-    folding = cfg.timeline?.unfold !== false;
+    const u = cfg.timeline?.unfold;
+    folding = u === false || u === 'off' ? 'off' : ['scroll', 'light', 'fade'].includes(u) ? u : 'fold';
     for (const w of works) {
       // the work's mark in its card, before "Paper · 2026"
       w.li.querySelector('.wm')?.remove();
@@ -1266,10 +1309,10 @@ site.use(cfg => {
       lines += `<path class="stem" pathLength="1" d="${d}"/>`;
       lines += `<path class="leaf" data-y="${h}" d="M${x + wob(h)} ${h} q-10 2 -16 9 M${x + wob(h)} ${h} q9 3 14 10 M${x + wob(h)} ${h} q1 6 -2 11"/>`;
       let side = 1;
-      for (let y = h - 70; y > tip + 40; y -= 95) {
-        if (tops.some(n => Math.abs(n - y) < 26)) continue;
+      for (let y = h - 80; y > tip + 50; y -= 115) {
+        if (tops.some(n => Math.abs(n - y) < 36)) continue;
         const sx = x + wob(y), s = side;
-        lines += `<path class="leaf" data-y="${y}" d="M${sx} ${y} q${14 * s} -4 ${24 * s} -18 q${-12 * s} 2 ${-24 * s} 18"/>`;
+        lines += `<path class="leaf" data-y="${y}" d="M${sx} ${y} q${24 * s} -7 ${41 * s} -31 q${-20 * s} 3 ${-41 * s} 31"/>`;
         side = -side;
       }
     }
@@ -1285,22 +1328,38 @@ site.use(cfg => {
     });
   }
 
-  // Unfolding (timeline.unfold): as each work comes up the screen its card swings open from the spine like a folded
-  // sheet, its curve and node coming with it (--u runs 0 to 1), and the stalk grows down ahead of the reader, opening
-  // its leaves as it reaches them. Everything is simply open for viewers who ask for less motion, or with the sea still.
+  // Unfolding (timeline.unfold). Fold: each card folds down open as it comes up the screen. Light: a submarine lights the
+  // work being read and the rest stay dim. Fade: works fade in slowly, and the stalk's leaves with them. Scroll: the timeline unrolls like a paper scroll: it shows down to a paper roll that travels down
+  // ahead of the reader, each work's curve and node fading in as it comes up (--u runs 0 to 1), and the stalk grows with it,
+  // opening its leaves as it reaches them. Everything is simply open for viewers who ask for less motion, or with the sea still.
   function unfold() {
     if (!geo) return;
-    const on = folding && !still.matches && document.documentElement.dataset.oceanMotion !== 'off';
+    const on = folding !== 'off' && !still.matches && document.documentElement.dataset.oceanMotion !== 'off';
     wrap.classList.toggle('unfold', on);
+    wrap.classList.toggle('fold', on && folding === 'fold');
+    wrap.classList.toggle('scroll', on && folding === 'scroll');
+    wrap.classList.toggle('light', on && folding === 'light');
+    wrap.classList.toggle('fade', on && folding === 'fade');
+    if (on && folding === 'light') {
+      // the submarine goes to the work being read and turns its lamp to that work's side
+      const n = Math.max(active, 0), y = parseFloat(nodes[n].style.top) || geo.tops[n];
+      Object.assign(sub.style, { top: y + 'px', left: geo.spineX + geo.wob(y) + 'px' });
+      sub.classList.toggle('west', works[n].li.classList.contains('l'));
+      sub.style.setProperty('--beamw', (narrow.matches ? ct.clientWidth - geo.spineX : ct.clientWidth / 2) + 'px');
+    }
+    const shown = on && folding !== 'light';
     const box = ct.getBoundingClientRect(), edge = innerHeight * .92;
     works.forEach((w, i) => {
-      const u = on ? Math.min(1, Math.max(0, (edge - w.li.getBoundingClientRect().top) / (innerHeight * .3))) : 1;
+      const u = shown ? Math.min(1, Math.max(0, (edge - w.li.getBoundingClientRect().top) / (innerHeight * (folding === 'fade' ? .5 : .3)))) : 1;
       for (const el of [w.li, nodes[i], curves[i]]) el.style.setProperty('--u', u.toFixed(3));
     });
-    const reach = edge - box.top, grown = on ? Math.min(1, Math.max(0, reach / geo.height)) : 1;
+    const reach = edge - box.top, grown = shown && folding !== 'fade' ? Math.min(1, Math.max(0, reach / geo.height)) : 1;
+    wrap.style.setProperty('--reach', on ? Math.max(0, reach) + 'px' : '100%');
+    roll.style.top = Math.max(0, Math.min(reach, geo.height)) + 'px';
+    roll.classList.toggle('done', reach >= geo.height);
     const stalk = lanesG.querySelector('.stem');
     if (stalk) Object.assign(stalk.style, { strokeDasharray: `${grown} 1`, strokeDashoffset: -(1 - grown) });
-    lanesG.querySelectorAll('.leaf').forEach(l => { l.style.opacity = !on || +l.dataset.y < reach ? '' : 0; });
+    lanesG.querySelectorAll('.leaf').forEach(l => { l.style.opacity = !shown || +l.dataset.y < reach ? '' : 0; });
   }
   function mark(n) {
     if (n === active) return;
@@ -1365,7 +1424,7 @@ site.use(cfg => {
       group('Header bar', [['None', 'none'], ['Thin', 'thin'], ['Thick', 'thick'], ['Full width', 'band']], cfg.accent_bars.header, v => site.set({ accent_bars: { header: v } })),
       group('Section bars', [['None', 'none'], ['Short', 'short'], ['Full', 'full']], cfg.accent_bars.sections, v => site.set({ accent_bars: { sections: v } })),
       group('Spine', [['Kelp', 'kelp'], ['Straight', 'straight']], cfg.timeline.spine, v => site.set({ timeline: { spine: v } })),
-      group('Unfold', [['On', true], ['Off', false]], cfg.timeline.unfold !== false, v => site.set({ timeline: { unfold: v } })),
+      group('Unfold', [['Fold', 'fold'], ['Scroll', 'scroll'], ['Submarine', 'light'], ['Fade', 'fade'], ['Off', 'off']], { true: 'fold', false: 'off' }[cfg.timeline.unfold] || cfg.timeline.unfold, v => site.set({ timeline: { unfold: v } })),
       group('Card marks', [['None', 'dot'], ['Numbers', 'number'], ['Icons', 'icon']], cfg.timeline.marks, v => site.set({ timeline: { marks: v } })),
       group('Example citations', [['On', true], ['Off', false]], cfg.citation_map.demo, v => site.set({ citation_map: { demo: v } })),
     );
