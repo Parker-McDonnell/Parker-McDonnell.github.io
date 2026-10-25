@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Concept A · Catalogue Slideshow</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600&family=Zen+Kaku+Gothic+New:wght@400;500&display=swap">
@@ -123,7 +125,7 @@ footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule
   </header>
 
   <!-- HOME -->
-  <section class="view" id="home">
+  <section class="view" data-page="home">
     <div class="intro">
       <h1>Soft robots that swim the way sea animals do.</h1>
       <p>PhD researcher in the Xu Lab, University of Colorado Boulder. I study how jellyfish and other swimmers move water, and build soft machines that borrow from them.</p>
@@ -160,7 +162,7 @@ footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule
   </section>
 
   <!-- PAPER -->
-  <article class="view" id="paper" hidden>
+  <article class="view" data-page="paper" hidden>
     <p class="eyebrow">Paper · Science Advances · October 2026</p>
     <h1 class="page-title">Plenty of fish in the sea, but only one multimodal feather star robot</h1>
     <p class="byline">Parker McDonnell, Nicole W. Xu &nbsp;·&nbsp; Sci. Adv. 12(41), eaem0495</p>
@@ -207,7 +209,7 @@ footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule
   </article>
 
   <!-- TALK -->
-  <article class="view" id="talk" hidden>
+  <article class="view" data-page="talk" hidden>
     <p class="eyebrow">Talk · 2025</p>
     <h1 class="page-title">How jellyfish move water, and what robots can borrow</h1>
     <p class="byline">Invited seminar (placeholder title, venue and date)</p>
@@ -236,7 +238,7 @@ footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule
   </article>
 
   <!-- TOOL -->
-  <article class="view" id="tool" hidden>
+  <article class="view" data-page="tool" hidden>
     <p class="eyebrow">Tool · Python · 2025</p>
     <h1 class="page-title">SignalShepherd</h1>
     <p class="byline">Import, clean, synchronise, cut, plot and export sensor and video data from an experiment</p>
@@ -268,7 +270,7 @@ sigshep</div>
   </article>
 
   <!-- ABOUT -->
-  <section class="view" id="about" hidden>
+  <section class="view" data-page="about" hidden>
     <p class="eyebrow">About</p>
     <div class="about">
       <div class="plate"><span>Portrait</span></div>
@@ -306,14 +308,16 @@ sigshep</div>
 
 <script>
 // Pages: show the one named in the address (#paper, #talk, ...), home otherwise.
+// Pages carry data-page rather than an id, so the browser never jumps to one as a fragment.
 (() => {
   const views = [...document.querySelectorAll('.view')];
   const navs = [...document.querySelectorAll('nav a')];
   function route() {
     const id = location.hash.slice(1);
-    const view = views.find(v => v.id === id) || views[0];
+    const view = views.find(v => v.dataset.page === id) || views[0];
+    const page = view.dataset.page;
     views.forEach(v => v.hidden = v !== view);
-    navs.forEach(a => a.toggleAttribute('aria-current', a.dataset.view === view.id || (view.id !== 'about' && a.dataset.view === 'home')));
+    navs.forEach(a => a.toggleAttribute('aria-current', a.dataset.view === page || (page !== 'about' && a.dataset.view === 'home')));
     if (id === 'works') document.getElementById('works').scrollIntoView(); else scrollTo(0, 0);
     dispatchEvent(new Event('resize'));
   }
