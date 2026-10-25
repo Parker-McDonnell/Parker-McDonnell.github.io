@@ -1,0 +1,135 @@
+<title>Concept C · Scroll</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500&family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono&display=swap">
+<style>
+/* Concept C, "Scroll": an asymmetric page like a hanging scroll. A narrow reading column offset left, a wide margin on the right for notes and small figures (Tufte-style). Built on a Quarto website. */
+:root {
+  --paper: #fbfbf9; --ink: #202326; --mute: #6c7176; --rule: #dfe1e2; --ai: #2d4f74; --tint: #eef1f4;
+  --display: "Noto Serif JP", "Yu Mincho", Georgia, serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper:#14171a; --ink:#e3e5e6; --mute:#8f959a; --rule:#2a2f33; --ai:#8fb0d6; --tint:#1c2126; color-scheme: dark } }
+:root[data-theme="dark"] { --paper:#14171a; --ink:#e3e5e6; --mute:#8f959a; --rule:#2a2f33; --ai:#8fb0d6; --tint:#1c2126; color-scheme: dark }
+body { background: var(--paper); color: var(--ink); font: 400 16px/1.75 var(--body); }
+.wrap { max-width: 70rem; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 6rem; }
+a { color: var(--ai); text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+a:focus-visible { outline: 1px solid var(--ai); outline-offset: 3px; }
+header { display: flex; gap: 2rem; align-items: baseline; padding-block: 2rem; border-bottom: 1px solid var(--rule); flex-wrap: wrap; }
+.mark { color: var(--ink); font: 500 1rem var(--display); }
+nav { display: flex; gap: 1.5rem; font-size: .85rem; }
+nav a { color: var(--mute); }
+.row { display: grid; grid-template-columns: minmax(0, 38rem) minmax(0, 1fr); gap: 4rem; }
+.row > * { min-width: 0; }
+.side { font-size: .8rem; color: var(--mute); line-height: 1.6; }
+@media (max-width: 820px) { .row { grid-template-columns: 1fr; gap: 1rem; } }
+.hero { padding-block: 7rem 4rem; }
+.hero h1 { font: 400 clamp(1.9rem, 5vw, 2.8rem)/1.35 var(--display); margin: 0 0 1.5rem; text-wrap: balance; }
+.hero p { margin: 0; color: var(--mute); }
+.vlabel { writing-mode: vertical-rl; font: 400 .72rem var(--mono); letter-spacing: .3em; text-transform: uppercase; color: var(--ai); border-right: 1px solid var(--ai); padding-right: .5rem; height: max-content; }
+@media (max-width: 820px) { .vlabel { writing-mode: horizontal-tb; border-right: 0; border-bottom: 1px solid var(--ai); padding: 0 0 .3rem; } }
+.sec { padding-block: 4rem 0; }
+.entries { display: grid; gap: 2.75rem; }
+.entry { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 1.5rem; align-items: start; }
+@media (max-width: 520px) { .entry { grid-template-columns: 1fr; } }
+.thumb { aspect-ratio: 1; max-width: 100%; background: var(--tint); display: grid; place-items: center; color: var(--mute); font: .65rem var(--mono); }
+.thumb svg { width: 55%; opacity: .55 }
+.entry h3 { font: 400 1.15rem/1.4 var(--display); margin: 0 0 .35rem; }
+.entry h3 a { color: var(--ink); }
+.meta { font: .75rem var(--mono); color: var(--mute); }
+.entry p { margin: .4rem 0 0; font-size: .92rem; }
+.divider { margin: 8rem 0 0; padding-block: 1rem; border-top: 2px solid var(--ai); color: var(--ai); font: .72rem var(--mono); letter-spacing: .2em; text-transform: uppercase; }
+/* paper page */
+.paper h1 { font: 400 clamp(1.8rem, 4.5vw, 2.5rem)/1.35 var(--display); margin: 3rem 0 1rem; text-wrap: balance; }
+.fig { aspect-ratio: 16/9; max-width: 100%; background: var(--tint); display: grid; place-items: center; color: var(--mute); font: .7rem var(--mono); margin: 2.5rem 0 .5rem; }
+.paper h2 { font: 500 1rem var(--body); margin: 3rem 0 .75rem; }
+.paper ol { padding-left: 1.2rem; display: grid; gap: .75rem; }
+.callout { border-left: 2px solid var(--ai); background: var(--tint); padding: 1rem 1.25rem; }
+.cite { background: var(--tint); padding: 1.25rem; font: .78rem/1.6 var(--mono); overflow-x: auto; white-space: pre; }
+.tags { display: flex; flex-wrap: wrap; gap: .5rem; }
+.tags a { border: 1px solid var(--rule); padding: .3rem .8rem; font: .75rem var(--mono); color: var(--ink); }
+.tags a:hover { border-color: var(--ai); text-decoration: none; }
+footer { margin-top: 6rem; font: .72rem var(--mono); color: var(--mute); }
+</style>
+
+<div class="wrap">
+  <header>
+    <a class="mark" href="#top">Parker McDonnell</a>
+    <nav><a href="#works">Research</a><a href="#paper">Paper</a><a href="#">Talks</a><a href="#">Tools</a><a href="#">CV</a></nav>
+  </header>
+
+  <section class="row hero" id="top">
+    <div>
+      <h1>I study how jellyfish move water, and build soft robots that do the same.</h1>
+      <p>PhD researcher, Xu Lab, University of Colorado Boulder.</p>
+    </div>
+    <aside class="side">Margin notes live here: a short bio, an email, ORCID and Google Scholar links, or a small looping figure.</aside>
+  </section>
+
+  <section class="sec" id="works">
+    <div class="row">
+      <div class="entries">
+        <div class="entry">
+          <div class="thumb"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M15 50 Q15 15 50 15 Q85 15 85 50 Q70 46 50 50 Q30 46 15 50Z"/><path d="M30 50 q-3 18 2 34 M42 51 q-2 20 1 36 M58 51 q2 20-1 36 M70 50 q3 18-2 34"/></svg></div>
+          <div><span class="meta">Paper · Science Advances · 2026</span><h3><a href="#paper">Science Advances paper, title to come</a></h3><p>One sentence on what it found, for a general reader.</p></div>
+        </div>
+        <div class="entry">
+          <div class="thumb">talk</div>
+          <div><span class="meta">Talk · 2025</span><h3><a href="#">Invited talk on jellyfish-inspired propulsion</a></h3><p>Slides, recording, and the three figures people asked about.</p></div>
+        </div>
+        <div class="entry">
+          <div class="thumb">tool</div>
+          <div><span class="meta">Tool · Python · 2025</span><h3><a href="#">SignalShepherd</a></h3><p>Import, synchronise and plot sensor and video data from an experiment.</p></div>
+        </div>
+        <div class="entry">
+          <div class="thumb">method</div>
+          <div><span class="meta">Method · 2024</span><h3><a href="#">Marker tracking in water tanks on a budget</a></h3><p>A step-by-step recipe with a parts list.</p></div>
+        </div>
+      </div>
+      <span class="vlabel">Selected work</span>
+    </div>
+  </section>
+
+  <p class="divider" id="paper">Paper page</p>
+
+  <article class="paper">
+    <div class="row">
+      <div>
+        <span class="meta">Science Advances · 2026 · doi 10.1126/sciadv.aem0495</span>
+        <h1>Title of the Science Advances paper goes here</h1>
+        <p class="meta">P. McDonnell, co-authors, senior author</p>
+      </div>
+      <div></div>
+    </div>
+    <div class="row">
+      <div>
+        <div class="fig">Key figure · licence to check</div>
+        <p class="meta">Figure 1. Caption written for a general reader.</p>
+        <h2>In plain language</h2>
+        <div class="callout">A two-or-three-sentence summary for someone with no background: what the jellyfish does, what we built or measured, and why it matters outside the lab.</div>
+        <h2>What we found</h2>
+        <ol>
+          <li>First finding in one plain sentence, with the number that makes it concrete.</li>
+          <li>Second finding, stated as the reader would say it back.</li>
+          <li>Third finding, or what it lets someone else now do.</li>
+        </ol>
+        <h2>Cite this</h2>
+        <div class="cite">@article{mcdonnell2026,
+  title   = {Title of the paper},
+  author  = {McDonnell, Parker and others},
+  journal = {Science Advances},
+  year    = {2026},
+  doi     = {10.1126/sciadv.aem0495}
+}</div>
+      </div>
+      <aside class="side" style="padding-top:2.5rem; display:grid; gap:2rem; align-content:start">
+        <div class="tags"><a href="https://doi.org/10.1126/sciadv.aem0495">Paper</a><a href="#">PDF</a><a href="#">Code</a><a href="#">Data</a><a href="#">Video</a></div>
+        <p style="margin:0">Margin note: a definition, a side result, or a link to the talk that presented this work.</p>
+        <div class="thumb" style="max-width:12rem">small figure</div>
+      </aside>
+    </div>
+  </article>
+
+  <footer>Concept C · built with Quarto (open source) · placeholder content</footer>
+</div>
