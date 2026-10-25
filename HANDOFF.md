@@ -17,7 +17,7 @@ Parker asked for "simple and sleek", like a "high class art gallery", using a kn
 
 | Folder | Concept | Template it maps to | Artifact (on Parker's first account) |
 |---|---|---|---|
-| `ma-slideshow/` | **A, slideshow version (chosen)** | al-folio (Jekyll, MIT) | https://claude.ai/artifact/PRwmShLz2V284Kcv4Vx2di. **Out of date:** it still shows the Japanese numerals and none of the newer pages |
+| `ma-slideshow/` | **A, slideshow version (chosen)** | al-folio (Jekyll, MIT) | https://claude.ai/artifact/PJHdr9E6CvwNrVoKcZF7Yw (current, published 2026-10-25). The older https://claude.ai/artifact/PRwmShLz2V284Kcv4Vx2di is out of date: it still shows the Japanese numerals |
 | `ma/` | A, grid version | al-folio | https://claude.ai/artifact/H4SUKqzrhAq9f8De9g8zHt. **Out of date:** it still shows the Japanese numerals and the old "Ma" name |
 | `gallery/` | B, dark gallery | HTML5 UP (CC BY 3.0, credit required) | https://claude.ai/artifact/1WUCMSHQCEicC1af8ujYVV |
 | `scroll/` | C, margin-notes layout | Quarto | https://claude.ai/artifact/E17noUvrL5YJcRbhvM5dkK |
@@ -30,11 +30,11 @@ Parker asked for "simple and sleek", like a "high class art gallery", using a kn
 - **Template:** al-folio was recommended, but Parker hasn't said yes to it explicitly.
 - **Paper details from Crossref:** "Plenty of fish in the sea, but only one multimodal feather star robot". Parker McDonnell and Nicole W. Xu. *Science Advances* 12(41), eaem0495, 9 October 2026. doi `10.1126/sciadv.aem0495`.
 
-## Built but not yet checked (`ma-slideshow/index.html`)
+## Built and checked (`ma-slideshow/index.html`)
 
 The latest commit adds talk, tool and about pages, a richer paper page (video-loop slot, related work, "In the media"), a vertical name in the margin on wide screens, and a footer switcher for Vermilion, Indigo and Moss accents. One file holds all five pages, and `#home`, `#paper`, `#talk`, `#tool` or `#about` picks which one shows.
 
-**The page switching is unverified.** In one test in the in-app browser, the page didn't change when the address changed, perhaps because of how that preview loads local files. Test it in a real browser first.
+**Page switching works** (checked 2026-10-25 over a local HTTP server at 375 px and 1280 px wide): from the menu, the list, the timeline dots, the slideshow, typed and reloaded addresses, and the back button. The earlier failure was the preview opening the file from disk. Pages are marked with `data-page`, not an `id`, so the browser doesn't jump partway down the page as it would to a fragment; keep it that way. To test locally, serve the folder (`python -m http.server`) rather than opening the file.
 
 ## Still waiting on Parker
 
@@ -45,7 +45,7 @@ The latest commit adds talk, tool and about pages, a richer paper page (video-lo
 
 ## Next steps
 
-1. Fix and verify the page switching in `concepts/ma-slideshow/index.html`. Check it at phone width, then publish it as a new Artifact for Parker.
+1. ~~Fix and verify the page switching~~ Done 2026-10-25; the Artifact is linked in the table above.
 2. Keep refining the concept with Parker ("jam" on it); there's no rush to go live.
 3. Once Parker approves, build the real site on al-folio in this style on `redesign`. One file per work should feed the slideshow, the timeline and the list. Add schema.org metadata and links to Scholar and ORCID.
 4. Only with Parker's OK: merge to `main` to go live.
