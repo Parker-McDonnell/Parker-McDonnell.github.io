@@ -24,7 +24,21 @@ a:focus-visible { outline: 1px solid var(--shu); outline-offset: 3px; }
 .intro p { color: var(--mute); max-width: 32rem; margin: 0; }
 .plate { aspect-ratio: 3/2; max-width: 100%; background: var(--well); display: grid; place-items: center; color: var(--mute); font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; }
 .plate svg { width: 38%; opacity: .55 }
-.caption { font-size: .75rem; color: var(--mute); padding-block: .75rem 0; display: flex; justify-content: space-between; gap: 1rem; }
+.caption { font-size: .75rem; color: var(--mute); padding-block: .75rem 0; display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.caption .t { font: 400 .95rem/1.4 var(--display); color: var(--ink); }
+/* showcase: breaks out of the reading column, like a hanging wall above the catalogue */
+.showcase { width: min(68rem, calc(100vw - 2 * max(16px, env(safe-area-inset-left, 0px)))); margin-left: 50%; transform: translateX(-50%); display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: auto auto; gap: 2.5rem 1.5rem; }
+.piece { display: flex; flex-direction: column; min-width: 0; }
+.piece .plate { transition: opacity .6s ease; }
+.piece:hover .plate { opacity: .82; }
+.piece:hover .t { color: var(--shu); }
+.lead { grid-row: span 2; }
+.lead .plate { aspect-ratio: auto; flex: 1; min-height: 18rem; }
+.showcase > .piece:nth-child(2) { grid-row: span 2; }
+.showcase > .piece:nth-child(2) .plate { aspect-ratio: auto; flex: 1; }
+.showcase > .piece:nth-child(3), .showcase > .piece:nth-child(4) { grid-column: 3; }
+@media (max-width: 760px) { .showcase { grid-template-columns: 1fr 1fr; } .lead { grid-column: 1 / -1; grid-row: auto; } .lead .plate { min-height: 14rem; } .showcase > .piece:nth-child(n+2) { grid-column: auto; grid-row: auto; } .showcase > .piece:nth-child(2) .plate { aspect-ratio: 3/2; } }
+@media (max-width: 440px) { .showcase { grid-template-columns: 1fr; } }
 h2 { font: 400 .78rem var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--mute); margin: 6rem 0 1.25rem; }
 .index { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
 .index li a { display: grid; grid-template-columns: 4.5rem 1fr auto; gap: 1rem; padding-block: 1.15rem; border-bottom: 1px solid var(--rule); align-items: baseline; transition: padding .4s ease; }
@@ -59,10 +73,24 @@ footer { margin-top: 6rem; font-size: .75rem; color: var(--mute); }
     <p>PhD researcher in the Xu Lab, University of Colorado Boulder. I study the fluid mechanics of jellyfish and build bio-inspired machines that borrow from them.</p>
   </section>
 
-  <figure class="plate" style="margin:0" aria-label="Placeholder for lead figure">
-    <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1"><path d="M15 50 Q15 15 50 15 Q85 15 85 50 Q70 46 50 50 Q30 46 15 50Z"/><path d="M30 50 q-3 18 2 34 M42 51 q-2 20 1 36 M58 51 q2 20-1 36 M70 50 q3 18-2 34"/></svg>
-  </figure>
-  <div class="caption"><span>Lead figure or video loop</span><span>Placeholder</span></div>
+  <section class="showcase" aria-label="Featured work">
+    <a class="piece lead" href="#paper">
+      <div class="plate"><svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="1"><path d="M15 50 Q15 15 50 15 Q85 15 85 50 Q70 46 50 50 Q30 46 15 50Z"/><path d="M30 50 q-3 18 2 34 M42 51 q-2 20 1 36 M58 51 q2 20-1 36 M70 50 q3 18-2 34"/></svg></div>
+      <div class="caption"><span class="t">Science Advances paper</span><span class="kind">Paper · 2026</span></div>
+    </a>
+    <a class="piece" href="#">
+      <div class="plate tall"><span>Talk still</span></div>
+      <div class="caption"><span class="t">Jellyfish propulsion</span><span class="kind">Talk</span></div>
+    </a>
+    <a class="piece" href="#">
+      <div class="plate"><span>Screenshot</span></div>
+      <div class="caption"><span class="t">SignalShepherd</span><span class="kind">Tool</span></div>
+    </a>
+    <a class="piece" href="#">
+      <div class="plate"><span>Diagram</span></div>
+      <div class="caption"><span class="t">Tank marker tracking</span><span class="kind">Method</span></div>
+    </a>
+  </section>
 
   <h2 id="works">Selected work</h2>
   <ul class="index">
