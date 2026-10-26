@@ -49,7 +49,8 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 .rays .glint { fill: color-mix(in oklab, var(--shu) 35%, transparent); stroke: none; opacity: 0; animation: twinkle 5.2s ease-in-out infinite; }
 @keyframes twinkle { 0%, 70%, 100% { opacity: 0; } 78% { opacity: .9; } 86% { opacity: .15; } 90% { opacity: .6; } }
 /* a fish's tail flicks now and then, turning in and out of the page; a crab's claws wave */
-.tail { transform-box: fill-box; transform-origin: 0 50%; animation: flick 7s ease-in-out infinite; animation-delay: var(--d, 0s); }
+.tail { transform-box: fill-box; transform-origin: 0 50%; animation: flick 7s ease-in-out infinite;
+  animation-duration: calc(7s * var(--pace, 1)); animation-delay: calc(var(--d, 0s) + var(--o, 0s)); }
 @keyframes flick { 0%, 72%, 100% { transform: scaleX(1); } 76% { transform: scaleX(.25); } 80% { transform: scaleX(1); } 84% { transform: scaleX(.35); } 88% { transform: scaleX(1); } }
 .claw { transform-box: view-box; animation: wave 9s ease-in-out infinite; }
 .claw.left { transform-origin: 20px 17px; }
@@ -91,6 +92,7 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 /* bubbles that rise to the surface and vanish there (--rise, set by the page, is the distance up to the swell) */
 /* a jellyfish's beat: squeeze and lurch forward fast, relax slowly; each one on its own rhythm (--d) */
 .beat { transform-box: view-box; transform-origin: 30px 8px; animation: beat 3.2s cubic-bezier(.2, .7, .3, 1) infinite; animation-delay: var(--d, 0s); }
+.beat { animation-duration: calc(3.2s * var(--pace, 1)); }
 @keyframes beat { 0%, 100% { transform: translateY(0) scale(1, 1); } 20% { transform: translateY(-5px) scale(.84, 1.08); } }
 @keyframes surface { 0% { transform: translateY(0); opacity: 0; } 15%, 80% { opacity: 1; } 100% { transform: translateY(var(--rise, -3rem)); opacity: 0; } }
 .surface { animation: surface 12s ease-in infinite; }
@@ -675,7 +677,7 @@ site.use(cfg => {
   const ART = {
     fish: [40, 20, fish],
     fishBack: [40, 20, `<g transform="translate(40 0) scale(-1 1)">${fish}</g>`],
-    school: [80, 40, [[0, 8, .7], [26, 0, .55], [30, 22, .6]].map(([x, y, s]) => `<g transform="translate(${x} ${y}) scale(${s})">${fish}</g>`).join('')],
+    school: [80, 40, [[0, 8, .7], [26, 0, .55], [30, 22, .6]].map(([x, y, s], i) => `<g transform="translate(${x} ${y}) scale(${s})" style="--o:${-i * 2.3}s">${fish}</g>`).join('')],
     jelly: [60, 32, moon()],
     robot: [100, 100, '<circle cx="50" cy="50" r="6"/><path d="M50 44 Q48 25 40 10 M56 50 Q75 48 90 40 M50 56 Q52 75 60 90 M44 50 Q25 52 10 60 M54 46 Q68 32 80 18"/>'],
     bubbles: [16, 30, '<circle cx="8" cy="26" r="2.4"/><circle cx="4" cy="16" r="1.6"/><circle cx="10" cy="7" r="1.2"/>'],
@@ -732,9 +734,16 @@ site.use(cfg => {
     return `<svg class="life ${cls} ${motion}" viewBox="0 0 ${w} ${h}" style="${style}">${art}</svg>`;
   };
   // a drawing that can be placed: a box that is moved, sized and turned, holding the drawing that moves within it
+  // each creature keeps its own time: a pace between .75 and 1.35, fixed by its name, slows or quickens its pulse and flicks
+  const pace = id => {
+    let h = 7;
+    for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 100003;
+    const v = Math.sin(h * 78.233) * 43758.5453; // spread names that differ by one letter far apart
+    return (.75 + (v - Math.floor(v)) * .6).toFixed(2);
+  };
   const critter = (id, [name, , , motion, delay, near]) => {
     const [w, h, art] = ART[name];
-    return `<div class="critter${id.startsWith('perch') ? ' perch' : ''}" data-id="${id}" style="--d:${delay}s;${fade(near).slice(1)}"><svg class="life ${motion}" viewBox="0 0 ${w} ${h}" style="animation-delay:${delay}s">${art}</svg></div>`;
+    return `<div class="critter${id.startsWith('perch') ? ' perch' : ''}" data-id="${id}" style="--d:${delay - (id.includes('+') ? pace(id) * 9 : 0)}s;--pace:${pace(id)};${fade(near).slice(1)}"><svg class="life ${motion}" viewBox="0 0 ${w} ${h}" style="animation-delay:${delay}s">${art}</svg></div>`;
   };
   // the surface: one swell drifting slowly; it is two identical halves, so the loop is seamless
   const swell = (amp, half) => {
@@ -980,7 +989,10 @@ site.use(cfg => {
   // a copy starts just below and to the right of its original
   function duplicate(c) {
     const twin = ensure(`${c.el.dataset.id.split('+')[0]}+${Date.now().toString(36)}`), s = c.el.style;
+    // its place and size from the original, but its own time (pace and start), so the two never move as one
+    const own = ['--d', '--pace'].map(k => [k, twin.el.style.getPropertyValue(k)]);
     twin.el.style.cssText = s.cssText;
+    own.forEach(([k, v]) => twin.el.style.setProperty(k, v));
     twin.el.classList.remove('gone');
     if (c.kind === 'floor') twin.el.style.left = parseFloat(s.left) + 3 + '%';
     else if (c.kind === 'perch') Object.assign(twin.el.style, { left: c.el.offsetLeft + 24 + 'px', top: c.el.offsetTop + 24 + 'px', right: '', bottom: '' });
