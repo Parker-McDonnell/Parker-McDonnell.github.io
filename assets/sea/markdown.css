@@ -1,0 +1,24 @@
+/* Pages written in Markdown: the parts of a work's page or the about page that Parker writes as plain Markdown take the
+   same look as the design's own pieces (sea.css). The layouts mark the first paragraph as the summary (.lede) and a
+   definition list as details (.facts); this file styles the rest as Markdown writes them. */
+
+/* a numbered list: the findings, a big accent number beside each */
+.view > ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 2rem; counter-reset: finding; }
+.view > ol > li { display: grid; grid-template-columns: 2.5rem 1fr; gap: 1rem; counter-increment: finding; }
+.view > ol > li::before { content: counter(finding); font: 400 1.4rem var(--display); color: var(--shu); }
+
+/* a bulleted list: quiet, with a fine rule between items */
+.view > ul:not(.mentions):not(.feed) { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.view > ul:not(.mentions):not(.feed) > li { padding-block: .7rem; border-bottom: 1px solid var(--rule); font-size: .95rem; }
+
+/* links in running text */
+.view p a, .view li a, .view dd a, .bio a { border-bottom: 1px solid var(--rule); }
+.view p a:hover, .view li a:hover, .view dd a:hover, .bio a:hover { border-color: var(--shu); }
+
+/* a paragraph marked {: .links} under it: a row of link buttons */
+p.links { margin: 0; }
+
+/* a code block (three backticks): as the design's code panel */
+.view div.highlight, .view pre { margin: 0; }
+.view pre { background: var(--well); padding: 1.25rem 1.5rem; font: .8rem/1.6 var(--mono); overflow-x: auto; white-space: pre; }
+.view code { font-family: var(--mono); font-size: .85em; }

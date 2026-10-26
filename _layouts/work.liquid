@@ -2,8 +2,11 @@
 layout: default
 ---
 {%- comment -%}
-  A work's own page (a paper, talk, tool, method, dataset or poster), from its file in _projects/. Every section is
-  optional and appears only when the work's front matter has it; the body of the file is free text after the summary.
+  A work's own page (a paper, talk, tool, method, dataset or poster), from its file in _projects/.
+  The front matter gives what the layout draws: the head (kind, venue, date, title, byline), the picture, and at the
+  foot the related works, the citation map, the media and the citation. Everything Parker writes is the file's body, in
+  Markdown: its first paragraph is the summary, a numbered list shows as findings, a definition list as details, a
+  paragraph followed by {: .links} as a row of links. See _projects/_template.md.
 {%- endcomment -%}
 {%- assign slug = page.slug | default: page.name | remove: '.md' -%}
 {%- comment -%} the page takes its journal's accent colour (_data/venues.yml), on the body so it reaches the header too {%- endcomment -%}
@@ -18,7 +21,7 @@ layout: default
 <article class="view" data-page="{{ slug }}">
   <p class="eyebrow">{{ page.kind }}{% if page.venue %} · {{ page.venue }}{% endif %} · {{ page.date | date: '%B %Y' }}</p>
   <h1 class="page-title">{{ page.title }}</h1>
-  {% if page.byline %}<p class="byline">{{ page.byline }}</p>{% endif %}
+  {% if page.byline %}<p class="byline">{{ page.byline | markdownify | remove: '<p>' | remove: '</p>' | strip }}</p>{% endif %}
 
   {% if page.image %}
     <div class="plate wide"><img src="{{ page.image | relative_url }}" alt="{{ page.image_alt | escape }}"></div>
@@ -26,36 +29,9 @@ layout: default
     <div class="plate wide"><span>{{ page.wide_label | default: page.plate_label | default: page.kind }}</span>{% if page.badge %}<span class="badge">{{ page.badge }}</span>{% endif %}</div>
   {% endif %}
 
-  {% if page.summary %}<p class="lede">{{ page.summary }}</p>{% endif %}
+  {{ content | replace_first: '<p>', '<p class="lede">' | replace: '<dl>', '<dl class="facts">' }}
   {% if page.placeholder %}<p class="note">Placeholder: this work and its details stand in until the real ones are written.</p>{% endif %}
 
-  {{ content }}
-
-  {% if page.findings %}
-    <h2>{{ page.findings_title | default: 'What we found' }}</h2>
-    <ol class="findings">
-      {%- for f in page.findings %}<li><b>{{ forloop.index }}</b><span>{{ f }}</span></li>{% endfor -%}
-    </ol>
-  {% endif %}
-
-  {% if page.get_started %}
-    <h2>Get started</h2>
-    <div class="code">{{ page.get_started | escape | strip }}</div>
-  {% endif %}
-
-  {% if page.facts %}
-    <h2>Details</h2>
-    <dl class="facts">
-      {%- for f in page.facts %}<dt>{{ f.term }}</dt><dd>{{ f.detail }}</dd>{% endfor -%}
-    </dl>
-  {% endif %}
-
-  {% if page.links %}
-    <h2>{{ page.links_title | default: 'Links' }}</h2>
-    <div class="links">
-      {%- for l in page.links %}<a href="{{ l.url }}">{{ l.label }}</a>{% endfor -%}
-    </div>
-  {% endif %}
   <figure class="qr" data-qr="{{ slug }}" data-name="this {{ page.kind | downcase }}"></figure>
 
   {% if page.related %}

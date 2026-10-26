@@ -874,15 +874,17 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
     // and what its lamp must cover: from the headline's left edge, the headline's height
     return [Math.min(innerWidth - 60, last.right + Math.max(170, innerWidth * .22)), all.top + all.height / 2 + scrollY, all.left, all.height];
   }
-  // the diving sub eases toward where it should be, a little behind the scroll; chase(null) stops it
-  let held = null, aim = null, chasing = 0;
-  function chase(x, y) {
+  // the sub eases toward where it should be, a little behind the scroll (pace: the share of the way it goes each frame,
+  // quicker along the timeline, where it must keep up with each work in turn); chase(null) stops it
+  let held = null, aim = null, chasing = 0, pace = .1;
+  function chase(x, y, quick) {
     if (x === null) { cancelAnimationFrame(chasing); chasing = 0; held = null; return; }
+    pace = quick ? .2 : .1;
     aim = [x, y];
     held ||= [x, y];
     if (chasing) return;
     const step = () => {
-      held = held.map((v, i) => v + (aim[i] - v) * .1);
+      held = held.map((v, i) => v + (aim[i] - v) * pace);
       Object.assign(sub.style, { left: held[0] + 'px', top: held[1] + 'px' });
       chasing = Math.hypot(aim[0] - held[0], aim[1] - held[1]) > .3 ? requestAnimationFrame(step) : 0;
     };
@@ -950,8 +952,7 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
         sub.style.setProperty('--beamw', startX * 1.3 / big + 'px');
         sub.style.setProperty('--beamh', spread + 'px');
       } else {
-      chase(null);
-      Object.assign(sub.style, { left: x + 'px', top: y + 'px' });
+      chase(x, y, true);
       if (past) {
         // waiting at the foot of the stalk, facing it, lamp low
         sub.classList.add('west');
@@ -1021,8 +1022,9 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
 })();
 
 // Page sub: on a page without the timeline (a work's page, about), the submarine swims down the right margin and lights
-// one section at a time: the one being read, at 45% down the screen (sliding to the bottom over the last half screen,
-// so the last section can be reached); the others wait in the dark. A section is the page's head (kind, title, byline),
+// one section at a time: the one being read, at 45% down the screen (a fifth of the way down at the very top, so it
+// starts at the title, and sliding to the bottom over the last half screen, so the last section can be reached); the
+// others wait in the dark. A section is the page's head (kind, title, byline),
 // its picture, its summary, or a heading with what follows it. Beside a tall section the sub keeps to the reading line.
 // Off with theme.yml page_sub: false, the ocean off or still, or a viewer who asks for less motion.
 (() => {
@@ -1070,7 +1072,10 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
   function update() {
     if (!on) return;
     const left = document.documentElement.scrollHeight - innerHeight - scrollY;
-    const line = innerHeight * (.45 + .5 * Math.max(0, 1 - left / (innerHeight / 2)));
+    // the reading line: a fifth of the way down at the top of the page, so the sub starts at the title, settling at 45%
+    // over the first half screen; over the last half screen it slides to the bottom, so the last section can be reached
+    const settle = Math.min(1, scrollY / (innerHeight / 2));
+    const line = innerHeight * (.2 + .25 * settle + .5 * Math.max(0, 1 - left / (innerHeight / 2)));
     const boxes = groups.map(bounds);
     let best = 0, gap = Infinity;
     boxes.forEach((b, i) => {

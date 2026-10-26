@@ -2,33 +2,16 @@
 layout: default
 ---
 {%- comment -%}
-  About: portrait and bio (the page's body), then contact, links elsewhere and education from its front matter.
+  About, written in Markdown (_pages/about.md): what comes before the first ## heading is the bio, beside the portrait;
+  the rest (contact, links, education...) follows below it. A definition list shows as details, a paragraph followed by
+  {: .links} as a row of links.
 {%- endcomment -%}
+{%- assign parts = content | replace: '<dl>', '<dl class="facts">' | split: '<h2' -%}
 <section class="view" data-page="about">
   <p class="eyebrow">About</p>
   <div class="about">
     <div class="plate">{% if page.portrait %}<img src="{{ page.portrait | relative_url }}" alt="{{ site.first_name }} {{ site.last_name }}">{% else %}<span>Portrait</span>{% endif %}</div>
-    <div class="bio">{{ content }}</div>
+    <div class="bio">{{ parts | first }}</div>
   </div>
-
-  {% if page.contact %}
-    <h2>Contact</h2>
-    <dl class="facts contact">
-      {%- for c in page.contact %}<dt>{{ c.term }}</dt><dd>{{ c.detail }}</dd>{% endfor -%}
-    </dl>
-  {% endif %}
-
-  {% if page.elsewhere %}
-    <h2>Elsewhere</h2>
-    <div class="links">
-      {%- for l in page.elsewhere %}<a href="{{ l.url }}">{{ l.label }}</a>{% endfor -%}
-    </div>
-  {% endif %}
-
-  {% if page.education %}
-    <h2>Education</h2>
-    <ul class="mentions">
-      {%- for e in page.education %}<li><span class="yr">{{ e.years }}</span><span>{{ e.what }}</span><span class="kind">{{ e.kind }}</span></li>{% endfor -%}
-    </ul>
-  {% endif %}
+  {% for part in parts offset: 1 %}<h2{{ part }}{% endfor %}
 </section>

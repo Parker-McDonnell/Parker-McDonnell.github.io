@@ -1,6 +1,6 @@
 ---
 # The paper's details are from Crossref (checked 2026-10-25). The summary, findings and media are placeholders for Parker
-# to write. Use no figure from the paper until its licence is checked on the article page (CC BY or CC BY-NC).
+# to write. The page's text is the Markdown below the front matter (see _projects/_template.md). Use no figure from the paper until its licence is checked on the article page (CC BY or CC BY-NC).
 layout: work
 kind: Paper
 title: Plenty of fish in the sea, but only one multimodal feather star robot
@@ -14,17 +14,6 @@ featured: true
 drawing: feather-star
 badge: Loop · 0:08
 wide_label: Silent video loop · licence to check
-summary: >-
-  Feather stars swim by sweeping their many arms. We built a soft robot shaped like one that can climb, turn and glide
-  in three dimensions with very few motors, because the shape of its body does much of the work. (Placeholder summary,
-  to be written by Parker.)
-findings:
-  - First finding in one plain sentence, with the number that makes it concrete. (Placeholder)
-  - Second finding, stated as the reader would say it back. (Placeholder)
-  - Third finding, or what it lets someone else now do. (Placeholder)
-links_title: Read and reuse
-links:
-  - { label: Paper, url: "https://doi.org/10.1126/sciadv.aem0495" }
 related: [jellyfish-seminar, signalshepherd, swimming-trials-dataset]
 cites_checked: 25 October 2026
 # what the paper cites, as deposited with Crossref: [doi, year, title, authors, journal]
@@ -54,3 +43,18 @@ bibtex: |
     doi     = {10.1126/sciadv.aem0495}
   }
 ---
+
+Feather stars swim by sweeping their many arms. We built a soft robot shaped like one that can climb, turn and glide in
+three dimensions with very few motors, because the shape of its body does much of the work. (Placeholder summary, to be
+written by Parker.)
+
+## What we found
+
+1. First finding in one plain sentence, with the number that makes it concrete. (Placeholder)
+2. Second finding, stated as the reader would say it back. (Placeholder)
+3. Third finding, or what it lets someone else now do. (Placeholder)
+
+## Read and reuse
+
+[Paper](https://doi.org/10.1126/sciadv.aem0495)
+{: .links}

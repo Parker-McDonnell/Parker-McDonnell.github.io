@@ -10,3 +10,5 @@ blurb: Video and tracked positions (placeholder).
 plate_label: Data
 related: [feather-star-robot]
 ---
+
+What the dataset holds, how it was recorded and how to use it.

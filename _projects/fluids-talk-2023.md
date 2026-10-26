@@ -8,3 +8,5 @@ date: 2023-11-20
 blurb: Placeholder.
 plate_label: Talk still
 ---
+
+Who the talk was for and the one idea to take away.

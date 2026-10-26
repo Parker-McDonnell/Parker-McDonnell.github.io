@@ -9,3 +9,5 @@ blurb: Same meeting as the talk (placeholder).
 plate_label: Poster
 related: [fluids-talk-2023]
 ---
+
+What the poster showed, in a paragraph.

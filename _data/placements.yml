@@ -1,3 +1,267 @@
-# Where the sea creatures sit, placed by hand. Open any page with ?arrange at the end of its address, arrange the
-# drawings, then "Download placements.yml" and save it over this file. Keyed by page~screen (wide or narrow), then drawing.
-{}
+# Where the sea creatures sit, placed by hand. Parker arranged these in the concept (2026-10-25); they were copied
+# from its store. To change them: open any page with ?arrange at the end of its address, arrange the drawings, then
+# "Download placements.yml" and save it over this file. Keyed by page~screen (wide or narrow), then drawing.
+# Written as JSON, which YAML reads as it is.
+{
+ "floor~wide": {
+  "floor-0": {
+   "b": 35,
+   "hide": false,
+   "r": 0,
+   "w": 62,
+   "x": 0.0219
+  },
+  "floor-1": {
+   "b": 61,
+   "hide": false,
+   "r": 0,
+   "w": 40,
+   "x": 0.1093
+  },
+  "floor-10": {
+   "b": 65,
+   "hide": false,
+   "r": 0,
+   "w": 34,
+   "x": 0.6761
+  },
+  "floor-11": {
+   "b": 48,
+   "hide": false,
+   "r": 10,
+   "w": 48,
+   "x": 0.7429
+  },
+  "floor-12": {
+   "b": 45,
+   "hide": false,
+   "r": 0,
+   "w": 34,
+   "x": 0.8907
+  },
+  "floor-12+mvonlby1": {
+   "b": 51,
+   "hide": false,
+   "r": 0,
+   "w": 44,
+   "x": 0.356
+  },
+  "floor-13": {
+   "b": 11,
+   "hide": false,
+   "r": 0,
+   "w": 44,
+   "x": 0.8843
+  },
+  "floor-2": {
+   "b": 16,
+   "hide": false,
+   "r": 0,
+   "w": 124,
+   "x": 0.1568
+  },
+  "floor-3": {
+   "b": 51,
+   "hide": false,
+   "r": 0,
+   "w": 30,
+   "x": 0.2931
+  },
+  "floor-4": {
+   "b": 59,
+   "hide": false,
+   "r": -9,
+   "w": 72,
+   "x": 0.4524
+  },
+  "floor-5": {
+   "b": 11,
+   "hide": false,
+   "r": 0,
+   "w": 58,
+   "x": 0.41
+  },
+  "floor-7": {
+   "b": 16,
+   "hide": false,
+   "r": 0,
+   "w": 60,
+   "x": 0.5861
+  },
+  "floor-8": {
+   "b": 77,
+   "hide": false,
+   "r": 0,
+   "w": 22,
+   "x": 0.6144
+  },
+  "floor-8+mvonkusx": {
+   "b": 125,
+   "hide": false,
+   "r": 0,
+   "w": 27,
+   "x": 0.2095
+  },
+  "floor-8+mvonl0bo": {
+   "b": 94,
+   "hide": false,
+   "r": 0,
+   "w": 27,
+   "x": 0.0463
+  },
+  "floor-9": {
+   "b": 10,
+   "hide": false,
+   "r": 0,
+   "w": 92,
+   "x": 0.7005
+  }
+ },
+ "home~wide": {
+  "sea-0": {
+   "a": "header",
+   "dy": 101,
+   "hide": false,
+   "r": 0,
+   "w": 48,
+   "x": 0.419
+  },
+  "sea-11": {
+   "a": "work:2025-10:Talk",
+   "dy": 61,
+   "hide": false,
+   "r": 35,
+   "w": 57,
+   "x": 0.2898
+  },
+  "sea-12": {
+   "a": "work:2024-08:Method",
+   "dy": 56,
+   "hide": false,
+   "r": 0,
+   "w": 87,
+   "x": 0.0895
+  },
+  "sea-13": {
+   "a": "work:2024-08:Method",
+   "dy": 139,
+   "hide": false,
+   "r": 0,
+   "w": 36,
+   "x": 0.2855
+  },
+  "sea-14": {
+   "a": "work:2023-05:Paper",
+   "dy": 78,
+   "hide": false,
+   "r": 0,
+   "w": 129,
+   "x": 0.642
+  },
+  "sea-15": {
+   "a": "work:2023-05:Paper",
+   "dy": 185,
+   "hide": false,
+   "r": 35,
+   "w": 123,
+   "x": 0.1563
+  },
+  "sea-16": {
+   "a": "footer",
+   "dy": 113,
+   "hide": false,
+   "r": 0,
+   "w": 85,
+   "x": 0.669
+  },
+  "sea-16+mvonmkhk": {
+   "a": "footer",
+   "dy": 162,
+   "hide": false,
+   "r": 0,
+   "w": 85,
+   "x": 0.7912
+  },
+  "sea-16+mvonmlx8": {
+   "a": "footer",
+   "dy": 81,
+   "hide": false,
+   "r": 0,
+   "w": 85,
+   "x": 0.7841
+  },
+  "sea-2": {
+   "a": "header",
+   "dy": 86,
+   "hide": false,
+   "r": 0,
+   "w": 23,
+   "x": 0.5497
+  },
+  "sea-3": {
+   "a": "header",
+   "dy": 83,
+   "hide": false,
+   "r": 0,
+   "w": 83,
+   "x": 0.652
+  },
+  "sea-4": {
+   "a": "header",
+   "dy": 175,
+   "hide": false,
+   "r": -22,
+   "w": 101,
+   "x": 0.679
+  },
+  "sea-5": {
+   "a": "h1:Soft robots that swim the way sea animal",
+   "dy": 230,
+   "hide": false,
+   "r": 0,
+   "w": 104,
+   "x": 0.5895
+  },
+  "sea-6": {
+   "a": "h1:Soft robots that swim the way sea animal",
+   "dy": 225,
+   "hide": false,
+   "r": 35,
+   "w": 101,
+   "x": 0.294
+  },
+  "sea-9": {
+   "a": "slideshow",
+   "dy": 559,
+   "hide": false,
+   "r": 0,
+   "w": 122,
+   "x": 0.5256
+  },
+  "sea-9+mvonnj0a": {
+   "a": "slideshow",
+   "dy": 563,
+   "hide": false,
+   "r": 0,
+   "w": 83,
+   "x": 0.1222
+  },
+  "sea-9+mvop6vhy": {
+   "a": "slideshow",
+   "dy": 533,
+   "hide": false,
+   "r": 0,
+   "w": 83,
+   "x": 0.321
+  }
+ },
+ "perch~wide": {
+  "perch-0": {
+   "hide": false,
+   "r": 0,
+   "w": 67,
+   "x": 0.7869,
+   "y": -40
+  }
+ }
+}

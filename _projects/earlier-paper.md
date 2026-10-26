@@ -8,3 +8,5 @@ date: 2023-05-15
 blurb: Placeholder.
 plate_label: Figure
 ---
+
+The paper's summary, in plain words.

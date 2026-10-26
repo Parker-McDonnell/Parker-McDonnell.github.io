@@ -257,7 +257,7 @@ button:hover { color: var(--shu); }
 :root[data-theme="dark"] { --beam: color-mix(in oklab, #ffe6a0 20%, transparent); }
 .sub { display: none; }
 .works.light .sub { display: block; position: absolute; width: 60px; height: 32px; z-index: -1; pointer-events: none; color: var(--line);
-  transform: translate(-50%, -50%) rotate(var(--tilt, 0deg)); transition: top .9s ease, left .9s ease, transform .9s ease; }
+  transform: translate(-50%, -50%) rotate(var(--tilt, 0deg)); transition: transform .35s ease; }
 .works.light .sub.lamp { z-index: 3; }
 .works.light .sub.west { transform: translate(-50%, -50%) scaleX(-1) rotate(var(--tilt, 0deg)); }
 .works.light .sub { scale: 1.3; }

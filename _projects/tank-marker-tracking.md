@@ -10,3 +10,5 @@ blurb: Placeholder description.
 featured: true
 plate_label: Diagram
 ---
+
+What the method does and why it is cheaper, in a paragraph.

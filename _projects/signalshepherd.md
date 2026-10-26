@@ -10,20 +10,30 @@ blurb: Lines up sensor data and video on one clock, then exports figures and cli
 featured: true
 plate_label: Screen
 wide_label: Screenshot or short screen recording
-summary: >-
-  If you record force, pressure or position alongside video, lining the two up by hand takes hours. SignalShepherd does
-  it in a few clicks and exports figures and clips ready for a paper or talk.
-findings_title: What it does
-findings:
-  - Opens common sensor files and video side by side.
-  - Lines them up on one clock, then lets you cut out the parts you need.
-  - Exports plots, synced video and clean data files.
-get_started: |
-  pip install git+https://github.com/<owner>/Tool-SignalMaster
-  sigshep
-facts:
-  - { term: Licence, detail: To confirm }
-  - { term: Runs on, detail: "Windows, macOS, Linux · Python 3.11+" }
 related_title: Used in
 related: [feather-star-robot, signalshepherd-2]
 ---
+
+If you record force, pressure or position alongside video, lining the two up by hand takes hours. SignalShepherd does it
+in a few clicks and exports figures and clips ready for a paper or talk.
+
+## What it does
+
+1. Opens common sensor files and video side by side.
+2. Lines them up on one clock, then lets you cut out the parts you need.
+3. Exports plots, synced video and clean data files.
+
+## Get started
+
+```
+pip install git+https://github.com/<owner>/Tool-SignalMaster
+sigshep
+```
+
+## Details
+
+Licence
+: To confirm
+
+Runs on
+: Windows, macOS, Linux · Python 3.11+
