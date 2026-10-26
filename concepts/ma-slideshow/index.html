@@ -1459,6 +1459,29 @@ site.use(cfg => {
   // then its line, then the card. Focus: a vignette, the middle of the screen sharp and the rest fading and blurring. Scroll: the timeline unrolls like a paper scroll: it shows down to a paper roll that travels down
   // ahead of the reader, each work's curve and node fading in as it comes up (--u runs 0 to 1), and the stalk grows with it,
   // opening its leaves as it reaches them. Everything is simply open for viewers who ask for less motion, or with the sea still.
+  // where the diving sub starts, on the page: in the open water just right of the end of the headline, level with its last line
+  function besideHeadline() {
+    const h1 = [...document.querySelectorAll('h1')].find(h => h.getClientRects().length);
+    if (!h1) return [innerWidth * .8, 150 + scrollY];
+    const r = document.createRange();
+    r.selectNodeContents(h1);
+    const last = [...r.getClientRects()].pop() || h1.getBoundingClientRect();
+    return [Math.min(innerWidth - 50, last.right + Math.max(90, innerWidth * .14)), last.top + last.height / 2 + scrollY];
+  }
+  // the diving sub eases toward where it should be, a little behind the scroll; chase(null) stops it
+  let held = null, aim = null, chasing = 0;
+  function chase(x, y) {
+    if (x === null) { cancelAnimationFrame(chasing); chasing = 0; held = null; return; }
+    aim = [x, y];
+    held ||= [x, y];
+    if (chasing) return;
+    const step = () => {
+      held = held.map((v, i) => v + (aim[i] - v) * .1);
+      Object.assign(sub.style, { left: held[0] + 'px', top: held[1] + 'px' });
+      chasing = Math.hypot(aim[0] - held[0], aim[1] - held[1]) > .3 ? requestAnimationFrame(step) : 0;
+    };
+    step();
+  }
   function unfold() {
     if (!geo) return;
     const on = folding !== 'off' && !still.matches && document.documentElement.dataset.oceanMotion !== 'off';
@@ -1486,21 +1509,23 @@ site.use(cfg => {
       const home = ct.getBoundingClientRect(), card = works[n].li.querySelector('a').getBoundingClientRect();
       const dx = Math.abs(card.left + card.width / 2 - home.left - x), dy = card.top + card.height / 2 - home.top - y;
       sub.classList.toggle('small', narrow.matches);
-      // before the reader reaches the timeline the sub is diving: it starts just under the surface in the open water on
-      // the right, and sinks straight down the right side with the scroll, level, gliding across to its spot by the
-      // first work in the last stretch, as that work reaches the reading line (45% down the screen); its lamp is dimmed
+      // before the reader reaches the timeline the sub is diving: it starts in the open water just right of the headline,
+      // facing it, and sinks straight down the right side with the scroll, level, gliding across to its spot by the
+      // first work in the last stretch, as that work reaches the reading line (45% down the screen); its lamp is dimmed.
+      // It eases after the scroll rather than moving with it
       const line = innerHeight * .45, left = home.top + y - line;
       const dive = n === 0 && left > 0 ? Math.min(1, scrollY / (scrollY + left)) : 1;
       sub.classList.toggle('dive', dive < 1);
       if (dive < 1) {
-        const g = Math.max(0, (dive - .8) / .2), ease = g * g * (3 - 2 * g), startX = innerWidth * .8, startY = Math.min(150, line);
-        const vx = startX + (home.left + x - startX) * ease, vy = startY + (line - startY) * dive;
-        Object.assign(sub.style, { left: vx - home.left + 'px', top: vy - home.top + 'px' });
+        const g = Math.max(0, (dive - .8) / .2), ease = g * g * (3 - 2 * g), [startX, startY] = besideHeadline();
+        const vx = startX + (home.left + x - startX) * ease, k = 1 - (1 - dive) ** 3, vy = (startY - scrollY) * (1 - k) + line * k;
+        chase(vx - home.left, vy - home.top);
         sub.classList.add('west');
         sub.style.setProperty('--tilt', '0deg');
         sub.style.setProperty('--beamw', '7rem');
         sub.style.setProperty('--beamh', '60px');
       } else {
+      chase(null);
       Object.assign(sub.style, { left: x + 'px', top: y + 'px' });
       sub.classList.toggle('west', west);
       sub.style.setProperty('--tilt', Math.atan2(dy, dx) * 180 / Math.PI + 'deg');
