@@ -152,6 +152,33 @@ everything is.
 - **Preview:** `python bin/preview.py` downloads the latest successful build of `redesign` and serves it at
   http://127.0.0.1:8000 (needs `gh`), so no Ruby is needed here.
 
+## Where it stands (2026-10-26, moving to Parker's other account)
+
+- **Concept Artifact:** https://claude.ai/artifact/PJHdr9E6CvwNrVoKcZF7Yw, version 64, on the first account. A new
+  account can't update it: publish a fresh Artifact from `concepts/ma-slideshow/index.html` with `theme.yml` sent as a
+  `text/plain` file. Its placements store (the Arrange layout) stays with the old Artifact; the site's copy is
+  `_data/placements.yml` (last copied 2026-10-25).
+- **Site:** `redesign` at the commit that adds this section; every push is built by build-check and the builds pass.
+  Nothing is on `main`.
+- **Done 2026-10-26** (all Parker's asks): works a timeline step apart that is two wheel turns, so the sub stops at
+  each; the dive eases across to the first work; jellyfish tentacles ripple; bubbles from the periscope; a soft wake
+  ribbon behind the sub (smoothed once as laid, so it never snaps; Parker liked version 63's); the sub weaves round the
+  kelp (in front crossing left to right, behind crossing back); the lamp casts shadows on creatures and lit text; past
+  the timeline the sub rests on the footer line; Arrange can mirror a drawing (the arrows handle); section rules run
+  across the column (`accent_bars.sections: full`).
+- **Regenerating the site from the concept** (after any concept change):
+  `python bin/concept_to_site.py concepts/ma-slideshow/index.html assets/sea`, then
+  `python bin/concept_theme.py concepts/ma-slideshow/theme.yml _data/theme.yml` if `theme.yml` changed, then
+  `node --check assets/sea/sea.js`. `bin/placements_from_store.py <folder of store JSON> _data/placements.yml` turns
+  the Artifact's placements (read with ArtifactData into JSON files) into the site's file.
+- **Left to do:** Parker re-arranging the creatures (the top of the page is too busy; his earlier try was lost in a
+  test pane on 2026-10-26, and nothing new is in the store), then copying them to `_data/placements.yml`; the
+  "starfish I can't move" report (the robot drawing dragged fine in testing; ask which one); real content; the
+  paper's figure licence; Scholar and ORCID links; citing papers at build time; going live, only with Parker's OK.
+- **Testing note:** the in-app browser pane, when hidden, runs no animation frames: override `requestAnimationFrame`
+  with a timer before the page's loops start, or test with a stand-in. Never clear `localStorage` on a page Parker
+  may be arranging in.
+
 ## Next steps
 
 1. ~~Fix and verify the page switching~~ Done 2026-10-25; the Artifact is linked in the table above.
