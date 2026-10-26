@@ -1537,10 +1537,10 @@ site.use(cfg => {
         // down behind the slideshow, evenly with the scroll, arriving below it as that spot comes halfway down the screen
         // (or a little before the handover, if that comes first)
         const landed = Math.max(1, Math.min(below - innerHeight * .5, handover - innerHeight * .2)), sink = clamp(scrollY / landed);
-        // then across to the kelp line over the last stretch before the handover
-        const from = Math.max(landed, handover - innerHeight * .35), cross = clamp((scrollY - from) / Math.max(1, handover - from));
+        // then straight on to the first work, no pause: it sets off at the speed it sank and slows as it arrives
+        const from = landed, cross = clamp((scrollY - from) / Math.max(1, handover - from));
         const py = startY + (below - startY) * sink, px = startX;
-        const vx = px + (home.left + x - px) * smooth(cross), pageY = py + (spot - py) * smooth(cross);
+        const glide = 1 - (1 - cross) ** 2, vx = px + (home.left + x - px) * glide, pageY = py + (spot - py) * glide;
         chase(vx - home.left, pageY - ctTop);
         sub.classList.add('west');
         sub.style.setProperty('--tilt', '0deg');
