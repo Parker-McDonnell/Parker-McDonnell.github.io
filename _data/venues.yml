@@ -1,0 +1,16 @@
+# Journals and venues. A work names its venue with `venue_key:`, and its page takes the venue's accent colour: crimson for
+# Science Advances, blue for PNAS (Parker, 2026-10-25). `color` is for the light page and `color_dark` for the dark one.
+# The colours are our own picks in each journal's spirit, not the journals' official brand values. al-folio's
+# publication list also reads `url` and `color` from here.
+
+"SciAdv":
+  name: Science Advances
+  url: https://www.science.org/journal/sciadv
+  color: "#B31B1B"
+  color_dark: "#F2827A"
+
+"PNAS":
+  name: Proceedings of the National Academy of Sciences
+  url: https://www.pnas.org/
+  color: "#1F5FA6"
+  color_dark: "#7FB0E8"

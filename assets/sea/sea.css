@@ -1,0 +1,376 @@
+/* Made from concepts/ma-slideshow/index.html; change the concept and remake this, or edit here once the concept is retired. */
+/* Parker McDonnell's site: the sea design, carried from concepts/ma-slideshow into al-folio. A quiet catalogue. One narrow column, lots of air, works listed like a museum's object index. Built on al-folio (Jekyll).
+   This mock-up holds five pages (home, paper, talk, tool, about); the address's #name picks which one shows.
+   Fonts, colours, column width and slideshow speed come from theme.yml; the values here are only what shows if it can't be read. */
+:root {
+  --paper: #ffffff; --ink: #16191d; --mute: #545c66; --rule: #d5dae0; --shu: #0b5cad; --well: #f3f5f8;
+  --display: "Newsreader", Georgia, serif;
+  --body: "Hanken Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, Menlo, Consolas, monospace;
+  --base: 16px; --col: 44rem; --slide: 6s;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --paper:#17191c; --ink:#eceef0; --mute:#a7adb5; --rule:#34383e; --shu:#5aa8e8; --well:#22252a; color-scheme: dark }
+}
+:root[data-theme="dark"] { --paper:#17191c; --ink:#eceef0; --mute:#a7adb5; --rule:#34383e; --shu:#5aa8e8; --well:#22252a; color-scheme: dark }
+html { font-size: var(--base); }
+body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 1rem/1.8 var(--body); }
+/* ocean (theme.yml, ocean): scrolling down the page sinks through the water. The page deepens a shade toward the bottom,
+   light shafts fall from the surface and fade on the way down, creatures swim in the reading column between the words
+   (fish, moon jellyfish, bubbles, the robot), larger when near and fainter when far, and the sea floor closes every page. Drawn in the muted ink, thin like the feather star sketch; everything moves very slowly, and not at
+   all for viewers who ask for less motion. */
+/* the drawings' colour (theme.yml, ocean.line_color); white ones carry a faint dark edge so they still show on white */
+:root { --line: var(--mute); }
+:root[data-line="white"] :is(.sea, .floor, .perch) svg { filter: drop-shadow(0 0 .6px rgba(0, 0, 0, .35)); }
+:root { --deep: color-mix(in oklab, var(--paper), var(--shu) 11%); }
+:root[data-ocean="on"] body { position: relative; background: linear-gradient(var(--paper) 0, var(--paper) 12%, var(--deep) 100%); }
+.sea, .floor { display: none; }
+:root[data-ocean="on"] .sea { display: block; position: absolute; inset: 0; overflow: hidden; pointer-events: none; color: var(--line); }
+:root[data-ocean="on"] .floor { display: block; position: relative; height: 13rem; margin-top: -2rem; overflow: hidden; pointer-events: none; color: var(--line); }
+:root[data-ocean="on"] .wrap { position: relative; z-index: 1; }
+.sea svg, .floor svg { position: absolute; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
+.swell { top: 2.6rem; left: 0; width: 200%; height: 1.6rem; animation: drift 140s linear infinite; }
+:root[data-ocean="on"] header { padding-top: 5.2rem; }
+.life { opacity: .5; }
+.sand { left: 0; bottom: 0; width: 100%; height: 100%; }
+:root { --ray: color-mix(in oklab, var(--shu) 3.5%, transparent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --ray: color-mix(in oklab, var(--ink) 4%, transparent); } }
+:root[data-theme="dark"] { --ray: color-mix(in oklab, var(--ink) 4%, transparent); }
+.sea .rays { position: fixed; inset: 0 0 auto 0; height: 100vh; }
+:root[data-rays="off"] .rays { display: none; }
+.rays svg { inset: 0; width: 100%; height: 100%; }
+.rays path { fill: url(#ray); stroke: none; animation: shimmer 17s ease-in-out infinite alternate; }
+@keyframes shimmer { from { opacity: .25; } to { opacity: .7; } }
+.rays .glint { fill: color-mix(in oklab, var(--shu) 35%, transparent); stroke: none; opacity: 0; animation: twinkle 5.2s ease-in-out infinite; }
+@keyframes twinkle { 0%, 70%, 100% { opacity: 0; } 78% { opacity: .9; } 86% { opacity: .15; } 90% { opacity: .6; } }
+/* a fish's tail flicks now and then, turning in and out of the page; a crab's claws wave */
+.tail { transform-box: fill-box; transform-origin: 0 50%; animation: flick 7s ease-in-out infinite;
+  animation-duration: calc(7s * var(--pace, 1)); animation-delay: calc(var(--d, 0s) + var(--o, 0s)); }
+@keyframes flick { 0%, 72%, 100% { transform: scaleX(1); } 76% { transform: scaleX(.25); } 80% { transform: scaleX(1); } 84% { transform: scaleX(.35); } 88% { transform: scaleX(1); } }
+.claw { transform-box: view-box; animation: wave 9s ease-in-out infinite; }
+.claw.left { transform-origin: 20px 17px; }
+.claw.right { transform-origin: 40px 17px; animation-name: wave-r; animation-delay: -2.5s; }
+@keyframes wave { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(32deg); } }
+@keyframes wave-r { 0%, 100% { transform: rotate(6deg); } 50% { transform: rotate(-32deg); } }
+.floor .critter { bottom: 1.6rem; }
+/* a drawing that can be placed (Arrange, in the footer): the box is moved, sized and turned; the drawing moves inside it */
+.critter { position: absolute; pointer-events: none; }
+.critter svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.critter .life, .sail .boat { opacity: 1; }
+.critter.gone, .critter.crowded { display: none; }
+/* while arranging, the drawings stay behind the page as they are when seen; the page lets clicks through to them,
+   and only the one being changed comes in front */
+:root[data-arrange="on"] .wrap { pointer-events: none; }
+:root[data-arrange="on"] .critter.sel { z-index: 3; }
+:root[data-arrange="on"] .critter { display: block; pointer-events: auto; cursor: grab; touch-action: none; outline: 1px dashed color-mix(in oklab, var(--shu) 45%, transparent); outline-offset: 4px; }
+:root[data-arrange="on"] .critter.gone, :root[data-arrange="on"] .critter.crowded { opacity: .2 !important; }
+:root[data-arrange="on"] .critter.sel { outline: 1px solid var(--shu); }
+:root[data-arrange="on"] .critter *, :root[data-arrange="on"] .rays path { animation: none !important; }
+.handle { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: var(--paper); border: 1px solid var(--shu); color: var(--shu); font: normal 11px/12px var(--body); text-align: center; }
+.handle.turn { left: calc(50% - 7px); top: -30px; cursor: grab; }
+.handle.size { right: -12px; bottom: -12px; border-radius: 2px; cursor: nwse-resize; }
+.handle.hide { right: -12px; top: -12px; cursor: pointer; }
+.handle.copy { left: -12px; top: -12px; cursor: copy; }
+.critter.absent { display: none !important; }
+:root[data-ocean="on"] .critter.perch { pointer-events: none; }
+:root[data-arrange="on"] .critter.perch { pointer-events: auto; }
+.arrange-bar { position: fixed; left: 50%; bottom: .75rem; transform: translateX(-50%); z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .8rem; box-sizing: border-box; width: max-content; max-width: calc(100vw - 32px); padding: .45rem .8rem; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 6px 24px rgba(0, 0, 0, .12); font-size: .75rem; color: var(--mute); }
+.arrange-bar button, .arrange-open { font: inherit; font-size: .75rem; color: var(--shu); background: none; border: 1px solid var(--rule); border-radius: 4px; padding: .3rem .7rem; cursor: pointer; }
+.arrange-bar button:disabled { opacity: .35; cursor: default; }
+.arrange-open { justify-self: start; }
+.arrange-bar .said { color: var(--shu); }
+/* sailboats crossing the swell now and then, rocking as they go */
+.sail { position: absolute; left: 0; top: calc(3.4rem - .84 * var(--boat)); width: var(--boat); height: var(--boat); transform: translateX(-80px); animation: sail 150s linear infinite; }
+.sail svg { left: 0; top: 0; width: 100%; height: 100%; transform-origin: 50% 85%; animation: rock 7s ease-in-out infinite alternate; }
+.boat path:first-child { fill: var(--paper); }
+@keyframes sail { from { transform: translateX(-80px); } 65%, to { transform: translateX(calc(100vw + 20px)); } }
+@keyframes rock { from { transform: rotate(-4deg) translateY(-1px); } to { transform: rotate(4deg) translateY(2px); } }
+/* bubbles that rise to the surface and vanish there (--rise, set by the page, is the distance up to the swell) */
+/* a jellyfish's beat: squeeze and lurch forward fast, relax slowly; each one on its own rhythm (--d) */
+.beat { transform-box: view-box; transform-origin: 30px 8px; animation: beat 3.2s cubic-bezier(.2, .7, .3, 1) infinite; animation-delay: var(--d, 0s); }
+.beat { animation-duration: calc(3.2s * var(--pace, 1)); }
+@keyframes beat { 0%, 100% { transform: translateY(0) scale(1, 1); } 20% { transform: translateY(-5px) scale(.84, 1.08); } }
+/* the explorer: patrols the floor slowly, stopping at each end to look around, its lamp sweeping down over the creatures */
+:root[data-ocean="on"] .floor { container-type: inline-size; }
+.explorer { position: absolute; bottom: 6.6rem; left: 3%; width: 54px; height: 29px; color: var(--line); will-change: translate; animation: patrol 150s ease-in-out infinite; }
+.explorer .facing { position: absolute; inset: 0; animation: face 150s linear infinite; }
+.explorer svg { position: absolute; overflow: visible; }
+.explorer .hull { inset: 0; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; animation: hover 7s ease-in-out infinite; }
+.explorer .hull path:first-child { fill: var(--paper); }
+.explorer .lamp { left: 88%; top: 62%; width: 190px; height: 70px; transform-origin: 0 50%; transform: translateY(-50%) rotate(45deg); animation: sweep 11s ease-in-out infinite alternate; }
+.explorer .lamp path { fill: url(#exBeam); stroke: none; }
+@keyframes patrol { 0%, 8% { translate: 0 0; } 42%, 58% { translate: calc(91cqw - 54px) 0; } 92%, 100% { translate: 0 0; } }
+@keyframes face { 0%, 49.8% { transform: scaleX(1); } 50%, 99.8% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
+@keyframes sweep { from { transform: translateY(-50%) rotate(34deg); } to { transform: translateY(-50%) rotate(58deg); } }
+@keyframes surface { 0% { transform: translateY(0); opacity: 0; } 15%, 80% { opacity: 1; } 100% { transform: translateY(var(--rise, -3rem)); opacity: 0; } }
+.surface { animation: surface 12s ease-in infinite; }
+@keyframes drift { to { transform: translateX(-50%); } }
+@keyframes swim { 50% { transform: translateX(1.6rem) translateY(-.3rem); } }
+@keyframes bob { 50% { transform: translateY(-.8rem); } }
+@keyframes sway { 50% { transform: rotate(3deg); } }
+@keyframes rise { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-5rem); opacity: 0; } }
+@keyframes scuttle { 0%, 100% { transform: translateX(0); } 40%, 60% { transform: translateX(1.4rem); } }
+@keyframes turn { to { transform: rotate(360deg); } }
+.swim { animation: swim 28s ease-in-out infinite; }
+.bob { animation: bob 16s ease-in-out infinite; }
+.sway { transform-origin: 50% 100%; animation: sway 11s ease-in-out infinite; }
+.rise { animation: rise 14s ease-in infinite; }
+.scuttle { animation: scuttle 34s ease-in-out infinite; }
+.turn { animation: turn 120s linear infinite; }
+:root[data-ocean-motion="off"] .sea *, :root[data-ocean-motion="off"] .floor *, :root[data-ocean-motion="off"] .perch * { animation: none !important; }
+.perch { display: none; }
+:root[data-ocean="on"] .perch { display: block; position: absolute; z-index: 2; pointer-events: none; fill: none; stroke: var(--line); stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; overflow: visible; opacity: .6; }
+:root[data-ocean="on"] footer, :root[data-ocean="on"] .show { position: relative; }
+/* the slideshow sits in front of the timeline's submarine, which dives behind it */
+.show { position: relative; z-index: 1; }
+/* in Submarine mode the slideshow is a little see-through, so the sub shows faintly as it passes behind */
+:root:has(.works.light) .show .plate { background: color-mix(in oklab, var(--well) 82%, transparent); }
+/* the page in front of the sea (theme.yml, ocean.blocks): each block of words stands on a soft, frosted ground the
+   colour of the page, its edge fading out, so a creature behind it is hidden or only glimpsed. Not in Selected work
+   (Parker: no shading there), nor the introduction, so the sun's rays fall across it. Translucent, so it still
+   sits on the deepening water. */
+:root { --veil: color-mix(in oklab, var(--paper) 82%, transparent); --rim: rgba(255, 255, 255, .95); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --rim: rgba(255, 255, 255, .22); } }
+:root[data-theme="dark"] { --rim: rgba(255, 255, 255, .22); }
+:root[data-ocean="on"][data-blocks="soft"] :is(.view p:not(.feed p, .intro p), .eyebrow, .page-title, .byline, .lede, .view:not([data-page="home"]) h2,
+  .facts, .findings, .links, .related a, .mentions) {
+  background: var(--veil); box-shadow: 0 0 16px 10px var(--veil); border-radius: 10px;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.wrap { max-width: var(--col); margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 6rem; }
+a { color: inherit; text-decoration: none; }
+a:hover, a:focus-visible { color: var(--shu); }
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 1px solid var(--shu); outline-offset: 3px; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-block: 2.5rem; flex-wrap: wrap; }
+.mark { display: flex; align-items: center; gap: .7rem; font: 600 1.05rem var(--display); letter-spacing: .06em; }
+.mark span { color: var(--shu); }
+nav { display: flex; gap: 1.5rem; font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; }
+nav a[aria-current] { color: var(--shu); }
+h2 { font: 400 .78rem var(--body); letter-spacing: .2em; text-transform: uppercase; color: var(--mute); margin: 6rem 0 1.25rem; }
+/* accent bars (theme.yml, accent_bars): under the header, and above each section heading */
+:root[data-header-bar="thin"] header { border-bottom: 2px solid var(--shu); }
+:root[data-header-bar="thick"] header { border-bottom: 5px solid var(--shu); }
+:root[data-header-bar="band"] header { border-bottom: 4px solid var(--shu); border-image: linear-gradient(var(--shu) 0 0) 0 0 1 0 / 0 0 4px 0 / 0 100vw; }
+h2::before { content: ""; display: none; background: var(--shu); margin-bottom: 1.1rem; }
+:root[data-section-bar="short"] h2::before { display: block; width: 2.5rem; height: 2px; }
+:root[data-section-bar="full"] h2::before { display: block; height: 1px; }
+.eyebrow { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--shu); margin: 0; }
+.page-title { font: 400 clamp(1.8rem, 5vw, 2.6rem)/1.3 var(--display); margin: 1rem 0 1.25rem; text-wrap: balance; }
+.byline { color: var(--mute); font-size: .9rem; margin: 0 0 4rem; }
+.lede { font: 400 1.25rem/1.75 var(--display); margin: 4rem 0; }
+.plate { aspect-ratio: 3/2; max-width: 100%; background: var(--well); display: grid; place-items: center; color: var(--mute); font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; position: relative; }
+.plate svg { width: 38%; opacity: .55 }
+.plate.wide { aspect-ratio: 16/9; }
+.badge { position: absolute; left: 1rem; bottom: .9rem; font-size: .65rem; letter-spacing: .16em; display: flex; align-items: center; gap: .45rem; }
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--shu); animation: blink 2.4s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .25 } }
+.caption { font-size: .75rem; color: var(--mute); padding-block: .75rem 0; display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.caption .t { font: 400 .95rem/1.4 var(--display); color: var(--ink); }
+.t { font: 400 1.12rem/1.45 var(--display); min-width: 0; }
+.kind { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); }
+.yr { font-variant-numeric: tabular-nums; color: var(--mute); font-size: .85rem; }
+/* small line icons, one per kind of work, shared by the timeline and the list */
+.ico { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+/* home */
+.intro { padding-block: 3rem 5rem; }
+.intro h1 { font: 400 clamp(2rem, 6vw, 3.1rem)/1.25 var(--display); margin: 0 0 1.5rem; text-wrap: balance; }
+.intro p { color: var(--mute); max-width: 32rem; margin: 0; }
+/* slideshow: swipe (or wait) to move through featured works, each snaps into place */
+.frames { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; overscroll-behavior-x: contain; scrollbar-width: none; max-width: 100%; cursor: grab; }
+.frames::-webkit-scrollbar { display: none; }
+.frame { flex: 0 0 100%; scroll-snap-align: start; scroll-snap-stop: always; }
+.show .caption { align-items: center; }
+/* every picture sunk into the page (slides, timeline thumbnails, related work): a thin white border round it, a fine light
+   edge just inside, and a soft inner shadow, drawn over the picture so a real photo or video sits in it the same way */
+.plate { border: 1px solid var(--rim); border-radius: 8px; }
+.plate.thumb { border-radius: 6px; }
+.plate.thumb::after { box-shadow: inset 0 2px 6px rgba(0, 0, 0, .16), inset 0 0 0 1px var(--rim) !important; }
+.plate::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 3px 12px rgba(0, 0, 0, .16), inset 0 0 0 1px var(--rim); }
+.ctl { display: flex; align-items: center; gap: 1rem; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+button { background: none; border: 0; color: var(--mute); font: inherit; cursor: pointer; padding: .25rem; }
+button:hover { color: var(--shu); }
+.bar { height: 1px; background: var(--rule); margin-top: .75rem; }
+.bar i { display: block; height: 100%; width: 0; background: var(--shu); }
+.bar i.run { animation: fill var(--slide) linear forwards; }
+@keyframes fill { to { width: 100% } }
+/* selected work: one entry per work, newest first */
+.feed { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.feed a { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1.5rem; align-items: center; padding-block: 1.5rem; border-bottom: 1px solid var(--rule); transition: padding .4s ease; }
+.feed a:hover, .feed li.on a { padding-left: .6rem; }
+.feed li.on .t, .feed li.on .wm { color: var(--shu); }
+.feed .txt { display: grid; gap: .35rem; min-width: 0; }
+.feed p { margin: 0; color: var(--mute); font-size: .9rem; line-height: 1.6; }
+.wm { display: inline-flex; align-items: center; margin-right: .6rem; font-variant-numeric: tabular-nums; letter-spacing: .04em; transition: color .3s ease; }
+.wm .ico { width: 14px; height: 14px; }
+.plate.thumb { aspect-ratio: 1; font-size: .6rem; text-align: center; }
+.plate.thumb svg { width: 60%; }
+@media (max-width: 520px) { .feed a { grid-template-columns: 5rem minmax(0, 1fr); gap: 1rem; } }
+/* timeline: the work list is the timeline. A spine runs down the middle,
+   the works hang off it on alternating sides, and a node on the spine, placed by date, joins each one with a curve.
+   Phones: the spine runs down the left and every work sits to its right. */
+.works { position: relative; }
+.ct { display: none; }
+.works.center { --spine: 50%; --gutter: 4.5rem; width: min(64rem, calc(100vw - 4rem)); margin-left: 50%; transform: translateX(-50%); }
+.works.center .feed { position: relative; border-top: 0; }
+.works.center .feed li { position: absolute; width: calc(50% - var(--gutter)); }
+.works.center .feed li.r { left: calc(50% + var(--gutter)); }
+.works.center .feed a { grid-template-columns: 5.5rem minmax(0, 1fr); gap: 1.25rem; padding-block: .5rem; border-bottom: 0; }
+.works.center .feed a:hover, .works.center .feed li.on a { padding-left: 0; }
+.works.center .feed li.l a { grid-template-columns: minmax(0, 1fr) 5.5rem; text-align: right; }
+.works.center .feed li.l .plate { order: 2; }
+.works.center .ct { display: block; position: absolute; inset: 0; pointer-events: none; }
+.ct::before { content: ""; position: absolute; top: 0; bottom: 0; left: var(--spine); border-left: 1px solid var(--rule); }
+.ct-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.ct-lines g { opacity: calc(.2 * var(--u, 1)); transition: opacity .4s ease; }
+.ct-lines g.on { opacity: calc(.8 * var(--u, 1)); }
+.ct-lines path { fill: none; stroke: var(--shu); stroke-width: 1; }
+.ct-lines circle { display: none; }
+.ct-node { position: absolute; left: var(--spine); width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 1px solid var(--ink); background: var(--paper); transform: translate(-50%, -50%) scale(var(--u, 1)); pointer-events: auto; transition: transform .3s ease, background .3s ease, border-color .3s ease; }
+.ct-node::before { content: ""; position: absolute; inset: -8px; }
+.ct-node:hover, .ct-node:focus-visible, .ct-node.on { background: var(--shu); border-color: var(--shu); transform: translate(-50%, -50%) scale(1.4); outline: none; }
+.ct-year { position: absolute; left: var(--spine); transform: translate(-50%, -50%); padding: .2rem .45rem; background: var(--paper); font-size: .7rem; color: var(--mute); font-variant-numeric: tabular-nums; letter-spacing: .06em; }
+@media (max-width: 720px) {
+  .works.center { --spine: .9rem; width: auto; margin-left: 0; transform: none; }
+  .works.center .feed li, .works.center .feed li.r { left: 2.75rem; width: calc(100% - 2.75rem); }
+  .works.center .feed a { grid-template-columns: 5rem minmax(0, 1fr); gap: 1rem; }
+  .ct-year { font-size: .6rem; padding-inline: .15rem; writing-mode: vertical-rl; transform: translate(-50%, -50%) rotate(180deg); }
+}
+[hidden] { display: none !important; }
+/* the spine as a kelp stalk (theme.yml, timeline.spine: kelp) replaces the straight line */
+/* the stalk is drawn in the text colour (white on a dark page) so it is easy to follow, and is never faded with the curves */
+.ct-lines g.lanes { opacity: 1 !important; }
+.ct-lines .lanes path { fill: none; stroke: var(--ink); stroke-width: 1.25; opacity: .45; }
+.works.stem .ct::before { display: none; }
+/* unfolding (theme.yml, timeline.unfold). Fold: each card is hinged on its top edge and folds down open as it comes up
+   the screen, an origami crease across its middle flattening as it opens. */
+.works.fold .feed li > a { position: relative; transform-origin: 50% 0;
+  transform: perspective(900px) rotateX(calc((1 - var(--u, 1)) * -92deg)); opacity: calc(.1 + .9 * var(--u, 1)); }
+.works.fold .feed li > a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, .16), transparent 46%, rgba(255, 255, 255, .5) 49.5%, rgba(0, 0, 0, .14) 50.5%, transparent 70%);
+  opacity: calc(1 - var(--u, 1)); }
+/* Light: a submarine travels down beside the spine to the work being read and lights it with its lamp (it swims behind
+   everything on the page, the stalk, its curves and the cards, while its light falls in front of them; Parker,
+   2026-10-25); the others wait
+   in the dark. It rides the kelp line just below the work's node, clear of the nodes, and turns to shine straight at the work. */
+:root { --beam: color-mix(in oklab, #ffd36a 34%, transparent); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --beam: color-mix(in oklab, #ffe6a0 20%, transparent); } }
+:root[data-theme="dark"] { --beam: color-mix(in oklab, #ffe6a0 20%, transparent); }
+.sub { display: none; }
+.works.light .sub { display: block; position: absolute; width: 60px; height: 32px; z-index: -1; pointer-events: none; color: var(--line);
+  transform: translate(-50%, -50%) rotate(var(--tilt, 0deg)); transition: top .9s ease, left .9s ease, transform .9s ease; }
+.works.light .sub.lamp { z-index: 3; }
+.works.light .sub.west { transform: translate(-50%, -50%) scaleX(-1) rotate(var(--tilt, 0deg)); }
+.works.light .sub { scale: 1.3; }
+.works.light .sub.dive { transition: none; }
+.works.light .sub.dive .beam { opacity: .85; }
+.works.light .sub.small { scale: .9; }
+.sub .hull { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.2;
+  stroke-linecap: round; stroke-linejoin: round; animation: hover 6s ease-in-out infinite; }
+.sub .hull path:first-child { fill: var(--paper); }
+.sub .beam { position: absolute; left: 90%; top: 50%; width: var(--beamw, 26rem); height: var(--beamh, 170px); transform: translateY(-50%); fill: url(#beamFade); }
+@keyframes hover { 50% { transform: translateY(-3px); } }
+.works.light .feed li { opacity: .14; transition: opacity .7s ease; }
+.works.light .feed li.on { opacity: 1; }
+/* shadows cast by the lamp, away from the submarine (--sx, --sy: the way the light travels) */
+.works.light .feed li.on > a { text-shadow: var(--sx, 0) var(--sy, 0) 3px rgba(0, 0, 0, .2); }
+.works.light .feed li.on .plate { box-shadow: calc(var(--sx, 0px) * 3) calc(var(--sy, 0px) * 3) 10px rgba(0, 0, 0, .2); }
+/* Fade: each work fades in slowly as it comes up the screen, rising a little; the stalk's leaves fade in as it's passed */
+.works.fade .feed li > a { opacity: var(--u, 1); transform: translateY(calc((1 - var(--u, 1)) * 16px)); }
+.works.fade .ct-lines .lanes path.leaf { transition: opacity 1.6s ease; }
+/* Grow: each work grows out from the spine like a leaf as it comes up the screen: its node appears (the first quarter of
+   --u), its line draws out to the work (to .6), then the card grows outward from its spine side and fades in */
+.works.grow .ct-node { transform: translate(-50%, -50%) scale(clamp(0, var(--u, 1) * 4, 1)); }
+.works.grow .ct-node.on { transform: translate(-50%, -50%) scale(calc(1.4 * clamp(0, var(--u, 1) * 4, 1))); }
+.works.grow .ct-lines g { opacity: .2; }
+.works.grow .ct-lines g.on { opacity: .8; }
+.works.grow .ct-lines g path { stroke-dasharray: 1; stroke-dashoffset: calc(1 - clamp(0, (var(--u, 1) - .25) / .35, 1)); }
+.works.grow .ct-lines g circle { opacity: clamp(0, (var(--u, 1) - .55) / .08, 1); }
+.works.grow .feed li { --k: clamp(0, (var(--u, 1) - .6) / .4, 1); }
+.works.grow .feed li > a { transform-origin: 0 50%; transform: scale(calc(.94 + .06 * var(--k))); opacity: var(--k); }
+.works.grow .feed li.l > a { transform-origin: 100% 50%; }
+.works.grow .ct-lines .lanes path.leaf { transition: opacity 1.6s ease; }
+/* Focus: a vignette. The work in the middle of the screen is sharp and solid; the further a work is from the middle,
+   the more it fades and blurs, its node and line with it (--f: 0 in the middle, 1 at the screen's edge) */
+.works.focus .feed li > a { opacity: calc(1 - .8 * var(--f, 0)); filter: blur(calc(var(--f, 0) * 1.6px)); }
+.works.focus .ct-node { opacity: calc(1 - .75 * var(--f, 0)); }
+.works.focus .ct-lines g { opacity: calc(.2 * (1 - var(--f, 0))); }
+.works.focus .ct-lines g.on { opacity: calc(.8 * (1 - var(--f, 0))); }
+/* Scroll: the timeline unrolls like a paper scroll as the reader goes down. What is
+   still rolled up is hidden below the roll, a paper cylinder that travels down the page ahead of the reader (--reach,
+   set by the page); the stalk's leaves open as it grows past them */
+.works.scroll .feed, .works.scroll .ct { clip-path: polygon(-50vw -2rem, 150vw -2rem, 150vw var(--reach, 100%), -50vw var(--reach, 100%)); }
+.roll { display: none; }
+.works.scroll .roll { display: block; position: absolute; left: -1rem; right: -1rem; height: 22px; z-index: 2; transform: translateY(-50%);
+  pointer-events: none; border-radius: 11px; transition: opacity .5s ease;
+  background: linear-gradient(to bottom, color-mix(in oklab, var(--paper), #000 9%), var(--paper) 32%, var(--paper) 52%, color-mix(in oklab, var(--paper), #000 20%));
+  box-shadow: 0 7px 12px -5px rgba(0, 0, 0, .28), 0 0 0 1px var(--rule); }
+/* the paper just above the roll curls toward it */
+.works.scroll .roll::before { content: ""; position: absolute; left: 1rem; right: 1rem; bottom: 100%; height: 2.5rem; background: linear-gradient(transparent, rgba(0, 0, 0, .05)); }
+.works.scroll .roll.done { opacity: 0; }
+.works.unfold .ct-lines .lanes path.leaf { transition: opacity .8s ease; }
+.ct-lines .lanes path.stem { stroke-width: 1.5; opacity: .5; }
+.ct-lines .lanes path.leaf { stroke-width: 1.1; opacity: .38; }
+/* work pages */
+.facts { display: grid; grid-template-columns: 7rem 1fr; gap: .5rem 1.5rem; margin: 0; font-size: .9rem; }
+.facts dt { font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--mute); padding-top: .2rem; }
+.facts dd { margin: 0; min-width: 0; }
+.findings { list-style: none; padding: 0; margin: 0; display: grid; gap: 2rem; }
+.findings li { display: grid; grid-template-columns: 2.5rem 1fr; gap: 1rem; }
+.findings b { font: 400 1.4rem var(--display); color: var(--shu); }
+.links { display: flex; flex-wrap: wrap; gap: .75rem 2rem; font-size: .85rem; letter-spacing: .1em; text-transform: uppercase; }
+.links a { border-bottom: 1px solid var(--rule); padding-bottom: .2rem; }
+/* QR codes to open a page on a phone: dark squares on a light ground in either theme, so every camera reads them */
+.qr { display: flex; align-items: center; gap: 1rem; margin: 2.5rem 0 0; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); --qbg: var(--paper); --qfg: var(--ink); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .qr { --qbg: var(--ink); --qfg: var(--paper); } }
+:root[data-theme="dark"] .qr { --qbg: var(--ink); --qfg: var(--paper); }
+/* sunk into the page: an inner shadow round the tile, with the code kept clear of it */
+.qr svg { width: 6.5rem; height: 6.5rem; flex: none; padding: .8rem; background: var(--qbg); color: var(--qfg); border-radius: 6px;
+  box-shadow: inset 0 2px 7px rgba(0, 0, 0, .28), inset 0 0 0 1px rgba(0, 0, 0, .08); }
+footer .qr { margin: 0; }
+.code { background: var(--well); padding: 1.25rem 1.5rem; font: .8rem/1.6 var(--mono); overflow-x: auto; white-space: pre; }
+.related { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; }
+.related a { display: grid; gap: .6rem; min-width: 0; }
+.related .plate { aspect-ratio: 1; }
+.related a:hover .t { color: var(--shu); }
+@media (max-width: 520px) { .related { grid-template-columns: 1fr 1fr; } .related a:last-child { display: none; } }
+.mentions { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.mentions li { display: grid; grid-template-columns: 4.5rem 1fr auto; gap: 1rem; padding-block: .9rem; border-bottom: 1px solid var(--rule); align-items: baseline; font-size: .92rem; }
+/* citation map: what the paper cites on the left, the paper in the middle, what cites it on the right; stacked on phones */
+.note { margin: -.5rem 0 2rem; color: var(--mute); font-size: .85rem; }
+.cmap { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 7rem minmax(0, 1fr); gap: 0 2rem; align-items: center; }
+.cmap-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.cmap-lines path { fill: none; stroke: var(--rule); stroke-width: 1; transition: stroke .3s ease; }
+.cmap-lines path.demo { stroke-dasharray: 3 4; }
+.cmap-lines path.on { stroke: var(--shu); }
+.cmap-col { display: grid; gap: .35rem; align-content: center; min-width: 0; }
+.cmap-col[data-side="refs"] { text-align: right; }
+.cn { display: grid; gap: .1rem; padding-block: .45rem; min-width: 0; font-size: .75rem; color: var(--mute); }
+.cn .ct { font: 400 .95rem/1.35 var(--display); color: var(--ink); }
+.cn:hover .ct, .cn:focus-visible .ct, .cn.on .ct { color: var(--shu); }
+.cn.demo .ct { font-style: italic; color: var(--mute); }
+.cn .ex { color: var(--shu); letter-spacing: .14em; text-transform: uppercase; font-size: .62rem; }
+.cmap-me { display: grid; justify-items: center; gap: .3rem; text-align: center; }
+.cmap-me .t { font-size: 1rem; }
+.cmap-node { width: 15px; height: 15px; border-radius: 50%; background: var(--shu); }
+.cmap-empty { margin: 0; padding: 1rem; border: 1px dashed var(--rule); color: var(--mute); font-size: .8rem; line-height: 1.6; }
+@media (max-width: 640px) {
+  .cmap { grid-template-columns: minmax(0, 1fr); gap: 1.75rem; }
+  .cmap-lines { display: none; }
+  .cmap-me { order: -1; display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .75rem; text-align: left; }
+  .cmap-col, .cmap-col[data-side="refs"] { text-align: left; margin-left: 7px; padding-left: 1.25rem; border-left: 1px solid var(--rule); }
+}
+/* about */
+.about { display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: 2.5rem; align-items: start; padding-block: 3rem 0; }
+.about .plate { aspect-ratio: 4/5; }
+@media (max-width: 560px) { .about { grid-template-columns: 1fr; } .about .plate { max-width: 13rem; } }
+.contact { font-size: .95rem; }
+.contact dd { font-family: var(--mono); font-size: .85rem; user-select: all; }
+footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); font-size: .75rem; color: var(--mute); display: grid; gap: 1rem; }
+/* playground: footer buttons for trying the options in theme.yml during this visit */
+.play { display: flex; flex-wrap: wrap; gap: .5rem 1.75rem; }
+.grp { display: flex; flex-wrap: wrap; align-items: center; gap: 0 .2rem; }
+.grp b { font-weight: 400; font-size: .62rem; letter-spacing: .16em; text-transform: uppercase; margin-right: .3rem; }
+.grp button { font-size: .75rem; display: flex; align-items: center; gap: .35rem; }
+.grp button[style]::before { content: ""; width: 9px; height: 9px; border-radius: 1px; background: var(--sw); }
+.grp button[aria-pressed="true"] { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--shu); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } .frames { scroll-behavior: auto } .bar { display: none } }

@@ -1,0 +1,44 @@
+<!doctype html>
+{%- comment -%}
+  The site's own page shell, overriding al_folio_core's default layout. It keeps al-folio's metadata (title, Open
+  Graph, schema.org, favicon) and replaces the rest of its look with the sea design from concepts/ma-slideshow: the
+  styles and behaviour live in assets/sea/, the settings in _data/theme.yml, hand-placed creatures in
+  _data/placements.yml. Each page sets data-page on its .view, which keys its placements.
+{%- endcomment -%}
+<html lang="{{ site.lang }}">
+  <head>
+    {% include metadata.liquid %}
+    <link rel="stylesheet" id="fonts" href="https://fonts.googleapis.com/css2?family=Newsreader:wght@400;600&family=Hanken+Grotesk:wght@400;500&display=swap">
+    <link rel="stylesheet" href="{{ '/assets/sea/sea.css' | relative_url | bust_file_cache }}">
+  </head>
+  <body>
+    <div class="sea" id="sea" aria-hidden="true"></div>
+
+    <div class="wrap">
+      <header>
+        <a class="mark" href="{{ '/' | relative_url }}">{{ site.first_name }} {{ site.last_name }}<span>.</span></a>
+        <nav>
+          <a href="{{ '/' | relative_url }}"{% unless page.nav == 'about' %} aria-current="page"{% endunless %}>Work</a>
+          <a href="{{ '/about/' | relative_url }}"{% if page.nav == 'about' %} aria-current="page"{% endif %}>About</a>
+        </nav>
+      </header>
+
+      {{ content }}
+
+      <footer>
+        <span>{{ site.footer_text }}</span>
+        <figure class="qr" data-qr="home"></figure>
+      </footer>
+    </div>
+
+    <div class="floor" id="floor" aria-hidden="true"></div>
+
+    <script>
+      window.SITE_THEME = {{ site.data.theme | jsonify }};
+      window.SITE_PLACEMENTS = {{ site.data.placements | jsonify }};
+      window.PAGE_CITES = {{ page.cites | jsonify }};
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script src="{{ '/assets/sea/sea.js' | relative_url | bust_file_cache }}"></script>
+  </body>
+</html>

@@ -1,0 +1,1060 @@
+// Made from concepts/ma-slideshow/index.html; change the concept and remake this, or edit here once the concept is retired.
+// Settings: _data/theme.yml, written into the page by the layout, is applied once the page has loaded and handed to
+// every part of the page that uses it.
+// These defaults cover only behaviour; fonts and colours fall back to the stylesheet above.
+const site = (() => {
+  const defaults = {
+    slideshow: { seconds_per_slide: 6, autoplay: true, resume_after_touch_seconds: 4 },
+    timeline: { spine: 'kelp', marks: 'number', unfold: 'light' },
+    citation_map: { demo: true },
+    ocean: { enabled: true, motion: true, light_shafts: true, blocks: 'none', line_color: 'muted' },
+    qr: { site_url: '' },
+    accent_bars: { header: 'thin', sections: 'short' },
+    playground: true,
+  };
+  const merge = (a, b) => {
+    if (!b || typeof b !== 'object' || Array.isArray(b)) return b ?? a;
+    const out = { ...a };
+    for (const k in b) out[k] = merge(a?.[k], b[k]);
+    return out;
+  };
+  const hooks = [];
+  const s = {
+    cfg: defaults,
+    use(fn) { hooks.push(fn); fn(s.cfg); },
+    set(change) { s.cfg = merge(s.cfg, change); hooks.forEach(fn => fn(s.cfg)); },
+  };
+  addEventListener('load', () => { if (window.SITE_THEME) s.set(window.SITE_THEME); });
+  return s;
+})();
+
+const ICONS = {
+  Paper: '<path d="M4 1.5h5.5L12 4v10.5H4z M9.5 1.5V4H12 M6 7.5h4 M6 10h4 M6 12.5h2.5"/>',
+  Talk: '<path d="M1.5 2.5h13 M2.5 2.5v7.5h11V2.5 M8 10v2 M5.5 14.5 8 12l2.5 2.5"/>',
+  Tool: '<path d="M5.5 4 2 8l3.5 4 M10.5 4 14 8l-3.5 4 M9 2.5l-2 11"/>',
+  Method: '<path d="M6 1.5h4 M6.5 1.5v4.5L3 13a1 1 0 0 0 .9 1.5h8.2A1 1 0 0 0 13 13L9.5 6V1.5 M4.6 10.5h6.8"/>',
+  Poster: '<path d="M3 1.5h10v9H3z M5 4h6 M5 6h6 M5 8h3.5 M8 10.5v4 M5.5 14.5h5"/>',
+  Dataset: '<ellipse cx="8" cy="3.5" rx="5" ry="2"/><path d="M3 3.5v9c0 1.1 2.2 2 5 2s5-.9 5-2v-9 M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>',
+};
+const icon = kind => `<svg class="ico" viewBox="0 0 16 16" aria-hidden="true">${ICONS[kind] || '<circle cx="8" cy="8" r="3"/>'}</svg>`;
+
+// Look: fonts, colours, column width and slideshow speed from theme.yml, written as a stylesheet after the one above.
+site.use(cfg => {
+  const f = cfg.fonts;
+  const rules = [];
+  const root = {};
+  if (f) {
+    const fam = (name, w) => 'family=' + name.trim().replace(/ /g, '+') + (w ? ':wght@' + [].concat(w).join(';') : '');
+    document.getElementById('fonts').href = 'https://fonts.googleapis.com/css2?' + [fam(f.display, f.display_weights), fam(f.body, f.body_weights)].join('&') + '&display=swap';
+    const stack = (name, fb) => `"${name}", ${String(fb || 'serif').split(',').map(s => s.trim()).map(s => /\s/.test(s) && !/^["']/.test(s) ? `"${s}"` : s).join(', ')}`;
+    root['--display'] = stack(f.display, f.display_fallback);
+    root['--body'] = stack(f.body, f.body_fallback);
+    if (f.base_size) root['--base'] = f.base_size;
+  }
+  if (cfg.layout?.column_width) root['--col'] = cfg.layout.column_width;
+  document.documentElement.dataset.headerBar = cfg.accent_bars?.header || 'none';
+  document.documentElement.dataset.sectionBar = cfg.accent_bars?.sections || 'none';
+  if (cfg.slideshow?.seconds_per_slide) root['--slide'] = cfg.slideshow.seconds_per_slide + 's';
+  const p = (cfg.palettes || []).find(x => x.name === cfg.palette);
+  if (p) {
+    const tokens = t => t ? { '--paper': t.background, '--ink': t.text, '--mute': t.muted, '--rule': t.rule, '--well': t.panel, '--shu': t.accent } : {};
+    Object.assign(root, tokens(p.light));
+    const dark = Object.entries(tokens(p.dark)).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join('; ');
+    if (dark) rules.push(`@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ${dark}; color-scheme: dark } }`, `:root[data-theme="dark"] { ${dark}; color-scheme: dark }`);
+  }
+  rules.unshift(':root { ' + Object.entries(root).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join('; ') + ' }');
+  let tag = document.getElementById('theme');
+  if (!tag) { tag = document.createElement('style'); tag.id = 'theme'; document.head.append(tag); }
+  tag.textContent = rules.join('\n');
+});
+
+// Ocean: the sea is in the page itself. Creatures swim in the reading column, light shafts fall from the surface and
+// fade as the reader sinks, and the sea floor closes every page.
+// A SEA entry: [drawing, where, size in px, motion, delay in s, nearness, turn in degrees]. "where" is x, a share of the
+// column's width, and y, a share of the page's height or a fixed distance from the top (such as '3rem'); the page
+// moves each creature to the nearest open water clear of the words, and hides one that finds none. Nearness runs from
+// 0 (far off, faint) to 1 (close, clearer). FLOOR entries are [drawing, place, size, motion, delay, nearness].
+// Placed by hand: Arrange (in the footer) lets an editor drag, resize, turn, hide and copy each drawing. A placement is kept
+// per page and per screen size (wide or narrow), pinned to the piece of the page above it, so it survives edits to the
+// text; it overrides the place written here. Placements come from _data/placements.yml (written into the page),
+// then from this browser, where Arrange saves; Arrange is offered when the address ends in ?arrange.
+(() => {
+  const urchin = () => {
+    let s = '<path d="M14 28 a8 8 0 0 1 16 0"/>';
+    for (let a = 195; a <= 345; a += 15) {
+      const r = a * Math.PI / 180, c = Math.cos(r), n = Math.sin(r);
+      s += `<path d="M${22 + 8.5 * c} ${28 + 8.5 * n} L${22 + 17 * c} ${28 + 17 * n}"/>`;
+    }
+    return s;
+  };
+  // a moon jellyfish (Aurelia): a wide, shallow bell, its four horseshoe stomachs in a ring at the top of the bell,
+  // and a fringe of short wavy tentacles round the rim. It pulses: the bell squeezes in quickly and the jellyfish
+  // lurches forward along its own slant, then the bell relaxes slowly (.beat)
+  const moon = () => {
+    let s = '<path d="M4 20 Q6 5 30 4 Q54 5 56 20 Q30 25 4 20 Z"/><g transform="translate(30 10.5) scale(1 .6)" stroke-width=".8">';
+    for (const a of [45, 135, 225, 315]) s += `<path transform="rotate(${a})" d="M-2.2 -3.4 A2.4 2.4 0 1 1 2.2 -3.4"/>`;
+    s += '</g>';
+    // tentacles that vary, as real ones do: uneven spacing, length, curl and drift. The "random" numbers are fixed
+    // (a hash of each tentacle's number), so every jellyfish and every visit looks the same
+    const rnd = k => { const v = Math.sin(k * 12.9898) * 43758.5453; return v - Math.floor(v); };
+    for (let x = 6, k = 1; x <= 54; x += 2.2 + rnd(k) * 1.6, k++) {
+      const curl = (rnd(k + 7) - .5) * 3.4, h = 2 + rnd(k + 13) * 2.6, drift = (rnd(k + 21) - .5) * 1.8, f = n => n.toFixed(2);
+      s += `<path stroke-width=".7" d="M${f(x)} ${f(21 + (x - 30) ** 2 / 900)} q${f(curl)} ${f(h / 2)} ${f(drift)} ${f(h)} t${f(drift)} ${f(h)}"/>`;
+    }
+    return `<g class="beat">${s}</g>`;
+  };
+  // a fish; its tail is drawn apart so it can flick now and then (.tail)
+  const fish = '<path d="M4 10 Q14 1 26 10 Q14 19 4 10 Z"/><path class="tail" d="M26 10 L36 4 L34 10 L36 16 Z"/><circle cx="9" cy="9" r=".8"/>';
+  const ART = {
+    fish: [40, 20, fish],
+    fishBack: [40, 20, `<g transform="translate(40 0) scale(-1 1)">${fish}</g>`],
+    school: [80, 40, [[0, 8, .7], [26, 0, .55], [30, 22, .6]].map(([x, y, s], i) => `<g transform="translate(${x} ${y}) scale(${s})" style="--o:${-i * 2.3}s">${fish}</g>`).join('')],
+    jelly: [60, 32, moon()],
+    robot: [100, 100, '<circle cx="50" cy="50" r="6"/><path d="M50 44 Q48 25 40 10 M56 50 Q75 48 90 40 M50 56 Q52 75 60 90 M44 50 Q25 52 10 60 M54 46 Q68 32 80 18"/>'],
+    bubbles: [16, 30, '<circle cx="8" cy="26" r="2.4"/><circle cx="4" cy="16" r="1.6"/><circle cx="10" cy="7" r="1.2"/>'],
+    kelp: [30, 120, '<path d="M15 120 C6 100 24 84 14 62 S22 26 15 2"/><path d="M14 92 q-9 -3 -11 -11 M17 70 q9 -2 11 -10 M14 46 q-8 -2 -10 -10 M17 24 q8 -2 9 -9"/>'],
+    grass: [40, 50, '<path d="M8 50 Q3 32 10 12 M16 50 Q19 30 13 16 M24 50 Q29 34 33 22 M31 50 Q33 40 38 34"/>'],
+    crab: [60, 36, '<ellipse cx="30" cy="22" rx="13" ry="8"/><path d="M18 24 l-8 6 M19 27 l-6 7 M42 24 l8 6 M41 27 l6 7 M26 15 v-5 M34 15 v-5"/>' +
+      '<path class="claw left" d="M20 17 q-8 -7 -12 -3 M8 14 l2 -5 l4 4"/><path class="claw right" d="M40 17 q8 -7 12 -3 M52 14 l-2 -5 l-4 4"/><circle cx="26" cy="9" r="1"/><circle cx="34" cy="9" r="1"/>'],
+    urchin: [44, 30, urchin()],
+    rocks: [80, 30, '<path d="M3 30 Q1 15 15 10 Q29 4 40 13 Q48 21 46 30 M44 30 Q45 20 55 19 Q66 19 68 30 M66 30 q1 -6 7 -5 q6 1 5 5 M14 18 q6 -4 12 -2"/>'],
+    rock: [40, 22, '<path d="M2 22 Q3 9 15 6 Q28 3 34 12 Q38 17 37 22 M12 12 q5 -3 10 -1"/>'],
+  };
+  const SEA = [
+    // just under the surface, round the name; "surface" bubbles rise through the swell and vanish at it
+    ['fish', { x: 40, y: '4.6rem' }, 48, 'swim', -3, .75],
+    ['bubbles', { x: 22, y: '5rem' }, 18, 'surface', -1, .6],
+    ['bubbles', { x: 56, y: '5.4rem' }, 13, 'surface', -7, .45],
+    ['school', { x: 66, y: '4.5rem' }, 64, 'swim', -10, .3],
+    ['jelly', { x: 88, y: '7.5rem' }, 56, 'bob', -4, .5, 35],
+    // the water column
+    ['fishBack', { x: 85, y: .1 }, 64, 'swim', -6, .9],
+    ['jelly', { x: 12, y: .16 }, 88, 'bob', 0, .8, 35],
+    ['school', { x: 75, y: .23 }, 96, 'swim', -14, .5],
+    ['bubbles', { x: 50, y: .29 }, 20, 'rise', -7, .6],
+    ['fish', { x: 22, y: .35 }, 32, 'swim', -9, .25],
+    ['robot', { x: 82, y: .43 }, 120, 'turn', 0, .7],
+    ['jelly', { x: 30, y: .51 }, 42, 'bob', -5, .3, 35],
+    ['fish', { x: 68, y: .59 }, 72, 'swim', -18, .9],
+    ['bubbles', { x: 15, y: .65 }, 16, 'rise', -3, .45],
+    ['school', { x: 25, y: .73 }, 78, 'swim', -4, .45],
+    ['jelly', { x: 78, y: .8 }, 72, 'bob', -9, .7, 35],
+    ['fishBack', { x: 40, y: .88 }, 38, 'swim', -12, .3],
+  ];
+  // far ones sit a little higher up the sand, near ones on the front edge
+  const FLOOR = [
+    ['grass', { left: '4%' }, 62, 'sway', -2, .8],
+    ['kelp', { left: '9%' }, 40, 'sway', -6, .8],
+    ['rocks', { left: '14%' }, 124, '', 0, .9],
+    ['grass', { left: '33%', bottom: '2.6rem' }, 30, 'sway', -8, .3],
+    ['crab', { left: '27%' }, 72, 'scuttle', 0, .9],
+    ['rock', { left: '44%' }, 58, '', 0, .7],
+    ['urchin', { left: '52%', bottom: '2.6rem' }, 30, '', 0, .3],
+    ['urchin', { left: '60%' }, 60, '', 0, .85],
+    ['bubbles', { left: '63%', bottom: '5.5rem' }, 14, 'rise', -4, .6],
+    ['rocks', { left: '70%' }, 92, '', 0, .75],
+    ['crab', { left: '84%', bottom: '2.6rem' }, 34, 'scuttle', -17, .3],
+    ['grass', { left: '79%' }, 48, 'sway', -5, .7],
+    ['kelp', { left: '89%' }, 34, 'sway', -1, .6],
+    ['rock', { left: '94%' }, 44, '', 0, .6],
+  ];
+  const fade = near => near === undefined ? '' : `;opacity:${(.2 + .45 * near).toFixed(2)}`;
+  const draw = ([name, at, size, motion, delay, near], cls) => {
+    const [w, h, art] = ART[name];
+    const style = Object.entries(at).map(([k, v]) => `${k}:${v}`).join(';') + `;width:${size}px;height:${size * h / w}px;animation-delay:${delay}s` + fade(near);
+    return `<svg class="life ${cls} ${motion}" viewBox="0 0 ${w} ${h}" style="${style}">${art}</svg>`;
+  };
+  // a drawing that can be placed: a box that is moved, sized and turned, holding the drawing that moves within it
+  // each creature keeps its own time: a pace between .75 and 1.35, fixed by its name, slows or quickens its pulse and flicks
+  const pace = id => {
+    let h = 7;
+    for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 100003;
+    const v = Math.sin(h * 78.233) * 43758.5453; // spread names that differ by one letter far apart
+    return (.75 + (v - Math.floor(v)) * .6).toFixed(2);
+  };
+  const critter = (id, [name, , , motion, delay, near]) => {
+    const [w, h, art] = ART[name];
+    return `<div class="critter${id.startsWith('perch') ? ' perch' : ''}" data-id="${id}" style="--d:${delay - (id.includes('+') ? pace(id) * 9 : 0)}s;--pace:${pace(id)};${fade(near).slice(1)}"><svg class="life ${motion}" viewBox="0 0 ${w} ${h}" style="animation-delay:${delay}s">${art}</svg></div>`;
+  };
+  // the surface: one swell drifting slowly; it is two identical halves, so the loop is seamless
+  const swell = (amp, half) => {
+    let d = `M0 20`;
+    for (let x = 0; x < 1600; x += half) d += ` Q${x + half / 2} ${20 + (x / half % 2 ? amp : -amp)} ${x + half} 20`;
+    return `<svg class="swell" viewBox="0 0 1600 40" preserveAspectRatio="none"><path vector-effect="non-scaling-stroke" d="${d}"/></svg>`;
+  };
+  // light shafts from a sun above and to the right, brightest at the surface, each shimmering slowly on its own
+  const rays = () => {
+    let s = '';
+    for (const [x, w, d] of [[-160, 80, 0], [40, 140, -5], [250, 60, -11], [420, 170, -3], [660, 90, -8], [870, 150, -14], [1110, 70, -6], [1290, 110, -10]])
+      s += `<path style="animation-delay:${d}s;animation-duration:${13 + (w % 9)}s" d="M${1250 + x * .2} -80 L${1250 + (x + w) * .2} -80 L${x + w} 900 L${x} 900 Z"/>`;
+    // glints: specks of light that twinkle now and then in the shafts
+    for (const [x, y, d] of [[1180, 60, 0], [990, 140, -1.3], [760, 230, -2.9], [1320, 120, -.7], [560, 330, -3.6], [1080, 300, -2.1], [880, 420, -4.4], [1400, 260, -1.8], [420, 480, -3.1]])
+      s += `<ellipse class="glint" cx="${x}" cy="${y}" rx="3.2" ry="5" style="animation-delay:${d}s"/>`;
+    return '<div class="rays"><svg viewBox="0 0 1600 900" preserveAspectRatio="none"><defs><linearGradient id="ray" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="900">' +
+      `<stop offset="0" style="stop-color:var(--ray)"/><stop offset="1" style="stop-color:var(--ray);stop-opacity:0"/></linearGradient></defs>${s}</svg></div>`;
+  };
+  // sailboats on the swell, crossing left to right now and then and rocking as they go: [size in px, seconds for one
+  // crossing and the wait after it, delay in s, nearness]
+  const BOATS = [[40, 150, -40, .8], [24, 230, -170, .35]];
+  const boat = '<path d="M4 30 L36 30 L31 36 L9 36 Z M20 30 V4"/><path d="M21 5 Q31 17 33 28 L21 28 Z M19 9 Q12 19 9 28 L19 28 Z"/>';
+  const boats = () => BOATS.map(([size, secs, delay, near]) =>
+    `<div class="sail" style="--boat:${size}px;animation-duration:${secs}s;animation-delay:${delay}s${fade(near)}"><svg class="boat" viewBox="0 0 40 40" style="animation-delay:${delay / 7}s">${boat}</svg></div>`).join('');
+  const sea = document.getElementById('sea'), floor = document.getElementById('floor');
+  sea.innerHTML = rays() + swell(16, 50) + boats() + SEA.map((e, i) => critter(`sea-${i}`, e)).join('');
+  floor.innerHTML =
+    '<svg class="sand" viewBox="0 0 1600 160" preserveAspectRatio="none"><path vector-effect="non-scaling-stroke" d="M0 122 Q200 108 400 118 T800 114 T1200 121 T1600 112"/></svg>' +
+    FLOOR.map((e, i) => critter(`floor-${i}`, e)).join('') +
+    // an explorer submarine, patrolling just above the sand and turning its lamp down over the creatures
+    '<div class="explorer"><div class="facing"><svg class="lamp" viewBox="0 0 200 100" preserveAspectRatio="none"><defs><linearGradient id="exBeam">' +
+    '<stop offset="0" style="stop-color:var(--beam)"/><stop offset="1" style="stop-color:var(--beam);stop-opacity:0"/></linearGradient></defs>' +
+    '<path d="M0 46 L200 0 L200 100 L0 54 Z"/></svg>' +
+    '<svg class="hull" viewBox="0 0 60 32"><path d="M8 20 Q8 12 20 12 L44 12 Q54 12 54 20 Q54 28 44 28 L20 28 Q8 28 8 20 Z"/>' +
+    '<path d="M24 12 L26 5 L36 5 L38 12 M31 5 V1 h4 M8 20 l-5 -5 v10 z"/><circle cx="25" cy="20" r="2.2"/><circle cx="34" cy="20" r="2.2"/><circle cx="43" cy="20" r="2.2"/></svg></div></div>';
+  // the page as part of the sea: drawings perched on the page itself, in front of it and never in the way of a click
+  const PERCH = [
+    ['footer', ['crab', { bottom: '100%', right: '14%' }, 54, 'scuttle', -8]],
+    ['.show', ['bubbles', { top: '40%', right: '-1.4rem' }, 16, 'rise', 0]],
+    ['.show', ['bubbles', { top: '75%', right: '-.6rem' }, 11, 'rise', -6]],
+  ];
+  PERCH.forEach(([where, e], i) => document.querySelector(where)?.insertAdjacentHTML('beforeend', critter(`perch-${i}`, e)));
+
+  const critters = new Map([...document.querySelectorAll('.critter')].map(el => {
+    const [kind, i] = el.dataset.id.split('-');
+    return [el.dataset.id, { el, kind, e: { sea: SEA, floor: FLOOR, perch: PERCH.map(x => x[1]) }[kind][i] }];
+  }));
+  // a copy (made with Arrange) is named after its original, as sea-6+k3x, and exists only where it was placed
+  function ensure(id) {
+    if (critters.has(id) || !id.includes('+')) return critters.get(id);
+    const base = critters.get(id.split('+')[0]), home = base && ({ sea, floor }[base.kind] || base.el.parentElement);
+    if (!base) return null;
+    home.insertAdjacentHTML('beforeend', critter(id, base.e));
+    const c = { el: home.lastElementChild, kind: base.kind, e: base.e, copy: true };
+    critters.set(id, c);
+    return c;
+  }
+  const wrap = document.querySelector('.wrap');
+  const rem = () => parseFloat(getComputedStyle(document.documentElement).fontSize);
+  let placements = {}, arranging = false;
+
+  // the page as it is now: the reading column, the page shown, and whether the screen is wide or narrow
+  function frame() {
+    const page = sea.getBoundingClientRect(), box = wrap.getBoundingClientRect(), cs = getComputedStyle(wrap);
+    const colL = box.left - page.left + parseFloat(cs.paddingLeft), colW = wrap.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const view = document.querySelector('.view:not([hidden])')?.dataset.page || 'home', size = colW < 500 ? 'narrow' : 'wide';
+    return { page, colL, colW, H: sea.clientHeight - floor.offsetHeight, key: `${view}~${size}`, floorKey: `floor~${size}`, perchKey: `perch~${size}`, scale: size === 'narrow' ? .7 : 1 };
+  }
+  // the pieces of the page a placement is pinned to, each named so the name survives edits elsewhere on the page
+  function landmarks(f) {
+    const v = document.querySelector('.view:not([hidden])'), out = [];
+    const add = (key, el) => el?.offsetParent && out.push({ key, top: el.getBoundingClientRect().top - f.page.top });
+    add('header', document.querySelector('header'));
+    v?.querySelectorAll('h1, h2').forEach(h => add(`${h.tagName.toLowerCase()}:${h.textContent.trim().slice(0, 40)}`, h));
+    add('slideshow', v?.querySelector('.show'));
+    v?.querySelectorAll('.feed > li').forEach(li => add(`work:${li.dataset.date}:${li.dataset.kind}`, li));
+    add('footer', document.querySelector('footer'));
+    return out.sort((a, b) => a.top - b.top);
+  }
+  const put = (el, l, t, w, h, r) => Object.assign(el.style, { left: l + 'px', top: t + 'px', width: w + 'px', height: h + 'px', transform: r ? `rotate(${r}deg)` : '' });
+
+  function settle() {
+    if (document.documentElement.dataset.ocean !== 'on') return;
+    const f = frame(), marks = landmarks(f), mine = placements[f.key] || {}, floorMine = placements[f.floorKey] || {}, perchMine = placements[f.perchKey] || {};
+    [...Object.keys(mine), ...Object.keys(floorMine), ...Object.keys(perchMine)].forEach(ensure);
+    const busy = [...wrap.querySelectorAll('*')].filter(el => el.offsetParent && !el.closest('svg') && (
+      [...el.childNodes].some(n => n.nodeType === 3 && n.textContent.trim()) || el.matches('img, video, button, input') ||
+      getComputedStyle(el).backgroundColor !== 'rgba(0, 0, 0, 0)'))
+      .map(el => el.getBoundingClientRect()).filter(r => r.width && r.height)
+      .map(r => ({ l: r.left - f.page.left, t: r.top - f.page.top, r: r.right - f.page.left, b: r.bottom - f.page.top }));
+    // and the accent bar under the header
+    const bar = document.querySelector('header').getBoundingClientRect();
+    busy.push({ l: bar.left - f.page.left, t: bar.bottom - f.page.top - 14, r: bar.right - f.page.left, b: bar.bottom - f.page.top + 14 });
+    const free = (l, t, r, b) => !busy.some(o => l < o.r && r > o.l && t < o.b && b > o.t);
+    const surface = 3.4 * rem(); // the middle of the swell
+    for (const [id, c] of critters) {
+      const [name, where, size, motion, , , turn = 0] = c.e, [aw, ah] = ART[name];
+      const p = { sea: mine, floor: floorMine, perch: perchMine }[c.kind][id];
+      c.el.classList.toggle('absent', !!c.copy && !p);
+      if (c.copy && !p) continue;
+      c.el.classList.toggle('gone', !!p?.hide);
+      c.el.classList.toggle('crowded', false);
+      if (c.kind === 'perch') {
+        // perched on a piece of the page: across its width, and down from its top
+        const w = p?.w ?? size, h = w * ah / aw, at = p ? { left: p.x * 100 + '%', top: p.y + 'px' } : where;
+        Object.assign(c.el.style, { left: '', top: '', right: '', bottom: '' }, at, { width: w + 'px', height: h + 'px', transform: (p?.r ?? 0) ? `rotate(${p.r}deg)` : '' });
+        continue;
+      }
+      if (c.kind === 'floor') {
+        const w = p?.w ?? size, h = w * ah / aw;
+        Object.assign(c.el.style, { left: p ? p.x * 100 + '%' : where.left, bottom: p ? p.b + 'px' : (where.bottom || ''), top: '', width: w + 'px', height: h + 'px', transform: (p?.r ?? 0) ? `rotate(${p.r}deg)` : '' });
+        continue;
+      }
+      const anchor = p && marks.find(m => m.key === p.a);
+      if (anchor) {
+        const w = p.w, h = w * ah / aw;
+        put(c.el, f.colL + p.x * f.colW, anchor.top + p.dy, w, h, p.r);
+      } else {
+        // not placed by hand on this page: the nearest open water to its written place
+        const w = size * f.scale, h = w * ah / aw;
+        const y0 = typeof where.y === 'string' ? parseFloat(where.y) * rem() : where.y * f.H, x0 = f.colL + where.x / 100 * (f.colW - w);
+        let spot = null;
+        search: for (const dy of [0, 30, -30, 70, -70, 120, -120]) for (const dx of [0, .12, -.12, .25, -.25, .45, -.45, .7, -.7, 1, -1]) {
+          const x = Math.min(f.colL + f.colW - w, Math.max(f.colL, x0 + dx * f.colW)), y = y0 + dy;
+          if (y > 0 && y + h < f.H && free(x - 12, y - 12, x + w + 40, y + h + 12)) { spot = [x, y]; break search; }
+        }
+        // while arranging, one with no room is shown at its written place so it can be moved
+        if (!spot) c.el.classList.toggle('crowded', true);
+        put(c.el, ...(spot || [x0, y0]), w, h, turn);
+      }
+      if (motion === 'surface') c.el.style.setProperty('--rise', `${surface - parseFloat(c.el.style.top) - 4}px`);
+    }
+  }
+  let later = 0;
+  const resettle = () => { clearTimeout(later); later = setTimeout(settle, 120); };
+  addEventListener('resize', resettle);
+  addEventListener('hashchange', resettle);
+  document.fonts.ready.then(resettle);
+
+  // the light fades as the reader sinks, gone a little under a screen down
+  const light = sea.querySelector('.rays');
+  const dim = () => { light.style.opacity = Math.max(0, 1 - scrollY / (innerHeight * .9)).toFixed(3); };
+  addEventListener('scroll', dim, { passive: true });
+  dim();
+
+  site.use(cfg => {
+    document.documentElement.dataset.ocean = cfg.ocean?.enabled === false ? 'off' : 'on';
+    document.documentElement.dataset.oceanMotion = cfg.ocean?.motion === false ? 'off' : 'on';
+    document.documentElement.dataset.rays = cfg.ocean?.light_shafts === false ? 'off' : 'on';
+    document.documentElement.dataset.blocks = cfg.ocean?.blocks || 'soft';
+    const line = cfg.ocean?.line_color || 'muted';
+    document.documentElement.dataset.line = line;
+    document.documentElement.style.setProperty('--line', { muted: 'var(--mute)', accent: 'var(--shu)', white: '#fff', ink: 'var(--ink)' }[line] || line);
+    resettle();
+  });
+
+  // Placements: the file first, then the Artifact's store or this browser on top
+  let store = null, undone = null, backups = {};
+  const merge = more => { for (const [k, v] of Object.entries(more || {})) placements[k] = { ...placements[k], ...v }; };
+  merge(window.SITE_PLACEMENTS || {});
+  const asked = new URLSearchParams(location.search).has('arrange');
+  (async () => {
+    const db = window.claude?.use ? await claude.use('db') : null;
+    if (db) {
+      const user = await claude.use('user');
+      store = db.collection('placements');
+      undone = db.collection('placements-undone');
+      undone.onSnapshot(snap => { backups = {}; for (const d of snap.docs) backups[d.id] = { ...d.data().items }; offerBack(); }, () => {});
+      store.onSnapshot(snap => {
+        if (arranging) return; // this editor's own moves are already on screen
+        for (const d of snap.docs) placements[d.id] = { ...d.data().items };
+        resettle();
+      }, () => {});
+      if (await user?.canEdit()) offerArrange();
+    } else if (!window.claude) {
+      if (asked) try { merge(JSON.parse(localStorage.getItem('placements') || '{}')); } catch {}
+      try { backups = JSON.parse(localStorage.getItem('placements-undone') || '{}'); } catch {}
+      resettle();
+      if (asked) offerArrange();
+    }
+  })();
+
+  // Arrange: drag a drawing to move it, its corner to size it, its knob to turn it (Shift snaps to 15 degrees), and
+  // the cross to hide it on this page, and the plus to copy it (a copy's cross removes it). Each change is saved as it
+  // is made.
+  let bar = null, sel = null, saving = 0;
+  function offerArrange() {
+    const b = document.createElement('button');
+    b.className = 'arrange-open';
+    b.textContent = 'Arrange the sea';
+    b.onclick = () => arrange(true);
+    document.querySelector('footer').append(b);
+  }
+  function arrange(on) {
+    arranging = on;
+    document.documentElement.dataset.arrange = on ? 'on' : 'off';
+    if (on && !bar) {
+      bar = document.createElement('div');
+      bar.className = 'arrange-bar';
+      bar.innerHTML = '<span class="where"></span><span class="said" aria-live="polite"></span>' +
+        '<button data-act="reset">Undo this page</button><button data-act="back">Bring back</button>' + (store ? '' : '<button data-act="file">Download placements.yml</button>') + '<button data-act="done">Done</button>';
+      bar.onclick = e => {
+        const act = e.target.dataset.act;
+        if (act === 'done') arrange(false);
+        if (act === 'reset') undo(e.target);
+        if (act === 'back') bringBack();
+        if (act === 'file') download();
+      };
+      document.body.append(bar);
+    }
+    if (bar) bar.hidden = !on;
+    // room below the page for the bar, so the sea floor can be scrolled up above it
+    document.body.style.paddingBottom = on ? bar.offsetHeight + 40 + 'px' : '';
+    if (!on) select(null);
+    offerBack();
+    tell();
+    settle();
+  }
+  // Undo this page asks first: the first click arms it for a few seconds, the second undoes. What it removes is kept,
+  // and Bring back puts it back (the last undo of each page and screen size)
+  let armed = 0, note = ''; // note: said in place of "Saved" once the undo or bring-back is saved
+  const pageKeys = () => { const f = frame(); return [f.key, f.floorKey, f.perchKey]; };
+  function undo(button) {
+    if (!armed) {
+      button.textContent = 'Undo this page? Click again';
+      armed = setTimeout(() => { armed = 0; button.textContent = 'Undo this page'; }, 4000);
+      return;
+    }
+    clearTimeout(armed); armed = 0;
+    button.textContent = 'Undo this page';
+    const kept = pageKeys().filter(k => placements[k] && Object.keys(placements[k]).length);
+    if (!kept.length) return tell('Nothing placed on this page yet');
+    for (const k of kept) { backups[k] = placements[k]; keepBackup(k); delete placements[k]; save(k); }
+    settle();
+    offerBack();
+    note = 'Undone: Bring back restores it';
+  }
+  function bringBack() {
+    const ks = pageKeys().filter(k => backups[k]);
+    if (!ks.length) return tell('Nothing to bring back');
+    for (const k of ks) { placements[k] = { ...backups[k] }; save(k); }
+    resettle();
+    note = 'Brought back';
+  }
+  function keepBackup(k) {
+    if (undone) undone.doc(k).set({ items: backups[k] }).catch(e => tell(`Undo not kept (${e.code || e.message})`));
+    else try { localStorage.setItem('placements-undone', JSON.stringify(backups)); } catch {}
+  }
+  function offerBack() {
+    const b = bar?.querySelector('[data-act="back"]');
+    if (b) b.disabled = !pageKeys().some(k => backups[k]);
+  }
+  function tell(said = '') {
+    if (!bar) return;
+    const f = frame();
+    bar.querySelector('.where').textContent = `Arranging (${f.key.split('~')[1]} screens): drag, corner sizes, knob turns`;
+    bar.querySelector('.said').textContent = said;
+  }
+  function select(el) {
+    sel?.querySelectorAll('.handle').forEach(h => h.remove());
+    sel?.classList.remove('sel');
+    sel = el;
+    if (!el) return;
+    el.classList.add('sel');
+    el.insertAdjacentHTML('beforeend', '<i class="handle turn" title="Turn"></i><i class="handle size" title="Size"></i><i class="handle hide" title="Hide or show on this page">×</i><i class="handle copy" title="Copy">+</i>');
+  }
+  // the record kept for a drawing: where it is now, pinned to the piece of the page above it
+  function record(c) {
+    const f = frame(), s = c.el.style, w = parseFloat(s.width), r = Math.round(parseFloat((s.transform.match(/-?[\d.]+/) || [0])[0]));
+    const hide = c.el.classList.contains('gone');
+    if (c.kind === 'perch') {
+      const pw = c.el.parentElement.clientWidth, left = s.left.endsWith('%') ? parseFloat(s.left) / 100 * pw : c.el.offsetLeft;
+      return [f.perchKey, { x: +(left / pw).toFixed(4), y: Math.round(c.el.offsetTop), w: Math.round(w), r, hide }];
+    }
+    if (c.kind === 'floor') {
+      const fw = floor.clientWidth, box = c.el.getBoundingClientRect(), fl = floor.getBoundingClientRect();
+      const left = s.left.endsWith('%') ? parseFloat(s.left) / 100 * fw : parseFloat(s.left);
+      return [f.floorKey, { x: +(left / fw).toFixed(4), b: Math.round(fl.bottom - box.bottom + (box.height - parseFloat(s.height)) / 2), w: Math.round(w), r, hide }];
+    }
+    const top = parseFloat(s.top), marks = landmarks(f);
+    const a = marks.filter(m => m.top <= top).pop() || marks[0];
+    return [f.key, { a: a.key, x: +((parseFloat(s.left) - f.colL) / f.colW).toFixed(4), dy: Math.round(top - a.top), w: Math.round(w), r, hide }];
+  }
+  function keep(c) {
+    const [key, rec] = record(c);
+    (placements[key] ||= {})[c.el.dataset.id] = rec;
+    save(key);
+  }
+  // a copy starts just below and to the right of its original
+  function duplicate(c) {
+    const twin = ensure(`${c.el.dataset.id.split('+')[0]}+${Date.now().toString(36)}`), s = c.el.style;
+    // its place and size from the original, but its own time (pace and start), so the two never move as one
+    const own = ['--d', '--pace'].map(k => [k, twin.el.style.getPropertyValue(k)]);
+    twin.el.style.cssText = s.cssText;
+    own.forEach(([k, v]) => twin.el.style.setProperty(k, v));
+    twin.el.classList.remove('gone');
+    if (c.kind === 'floor') twin.el.style.left = parseFloat(s.left) + 3 + '%';
+    else if (c.kind === 'perch') Object.assign(twin.el.style, { left: c.el.offsetLeft + 24 + 'px', top: c.el.offsetTop + 24 + 'px', right: '', bottom: '' });
+    else Object.assign(twin.el.style, { left: parseFloat(s.left) + 24 + 'px', top: parseFloat(s.top) + 24 + 'px' });
+    keep(twin);
+    select(twin.el);
+  }
+  function forget(c) {
+    const [key] = record(c);
+    delete placements[key]?.[c.el.dataset.id];
+    save(key);
+    select(null);
+    c.el.remove();
+    critters.delete(c.el.dataset.id);
+  }
+  const pending = new Set();
+  function save(key) {
+    pending.add(key);
+    clearTimeout(saving);
+    saving = setTimeout(async () => {
+      const keys = [...pending];
+      pending.clear();
+      try {
+        if (store) for (const k of keys) {
+          if (placements[k]) await store.doc(k).set({ items: placements[k] });
+          else await store.doc(k).delete();
+        }
+        else localStorage.setItem('placements', JSON.stringify(placements));
+        tell(note || 'Saved');
+        note = '';
+      } catch (e) { tell(`Not saved (${e.code || e.message})`); }
+    }, 400);
+  }
+  function download() {
+    const text = '# Where the sea creatures sit, placed by hand with Arrange: save as _data/placements.yml. Keyed by page~screen (wide or narrow), then drawing.\n' + JSON.stringify(placements, null, 1);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'text/yaml' }));
+    a.download = 'placements.yml';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  // dragging: one pointer at a time, on the drawing (move), its corner (size) or its knob (turn)
+  addEventListener('pointerdown', e => {
+    if (!arranging) return;
+    const el = e.target.closest('.critter');
+    if (!el) { if (!e.target.closest('.arrange-bar')) select(null); return; }
+    e.preventDefault();
+    const c = critters.get(el.dataset.id);
+    if (el !== sel) select(el);
+    const how = ['turn', 'size', 'hide', 'copy'].find(k => e.target.classList.contains(k)) || 'move';
+    if (how === 'hide' && c.copy) { forget(c); return; }
+    if (how === 'hide') { el.classList.toggle('gone'); keep(c); return; }
+    if (how === 'copy') { duplicate(c); return; }
+    const s = el.style, box = el.getBoundingClientRect(), cx = box.left + box.width / 2, cy = box.top + box.height / 2;
+    const start = { x: e.clientX, y: e.clientY, w: parseFloat(s.width), h: parseFloat(s.height), l: el.offsetLeft, t: el.offsetTop };
+    const isFloor = c.kind === 'floor', ratio = start.h / start.w;
+    if (c.kind !== 'sea') Object.assign(s, { left: start.l + 'px', top: start.t + 'px', right: '', bottom: '' });
+    el.setPointerCapture(e.pointerId);
+    const move = m => {
+      const dx = m.clientX - start.x, dy = m.clientY - start.y;
+      if (how === 'move') Object.assign(s, { left: start.l + dx + 'px', top: start.t + dy + 'px' });
+      if (how === 'size') {
+        const w = Math.max(10, start.w + (dx + dy) / 2);
+        Object.assign(s, { width: w + 'px', height: w * ratio + 'px' });
+      }
+      if (how === 'turn') {
+        let r = Math.atan2(m.clientY - cy, m.clientX - cx) * 180 / Math.PI + 90;
+        if (m.shiftKey) r = Math.round(r / 15) * 15;
+        s.transform = `rotate(${Math.round(r)}deg)`;
+      }
+    };
+    const up = () => {
+      el.removeEventListener('pointermove', move);
+      el.removeEventListener('pointerup', up);
+      el.removeEventListener('pointercancel', up);
+      if (isFloor) {
+        // back to a place on the sand: a share of the floor's width, and a height above its foot
+        const fw = floor.clientWidth, b = floor.clientHeight - parseFloat(s.top) - parseFloat(s.height);
+        Object.assign(s, { left: parseFloat(s.left) / fw * 100 + '%', top: '', bottom: b + 'px' });
+      }
+      if (c.kind === 'perch') s.left = parseFloat(s.left) / el.parentElement.clientWidth * 100 + '%';
+      keep(c);
+    };
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', up);
+  });
+})();
+
+// QR codes: one at the foot of every page for the site, and one on each work's own page for that work, so it can be
+// opened on a phone. They point at theme.yml's qr.site_url, or at this page's own address when that is empty.
+(() => {
+  site.use(cfg => {
+    const base = cfg.qr?.site_url || location.origin + '/';
+    for (const fig of document.querySelectorAll('.qr')) {
+      fig.hidden = typeof qrcode !== 'function';
+      if (fig.hidden) continue;
+      const page = fig.dataset.qr, url = page === 'home' ? base : location.href.split(/[?#]/)[0];
+      const q = qrcode(0, 'M');
+      q.addData(url);
+      q.make();
+      const n = q.getModuleCount();
+      let d = '';
+      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) d += `M${c} ${r}h1v1h-1z`;
+      fig.innerHTML = `<svg viewBox="0 0 ${n} ${n}" role="img" aria-label="QR code for ${url}" shape-rendering="crispEdges"><path fill="currentColor" d="${d}"/></svg>` +
+        `<figcaption>Scan to open ${page === 'home' ? 'this site' : fig.dataset.name || 'this page'} on your phone</figcaption>`;
+    }
+  });
+})();
+
+// Pages: each work and the about page are pages of their own; a link to #works scrolls to the timeline.
+if (location.hash === '#works') addEventListener('load', () => document.getElementById('works')?.scrollIntoView());
+
+// Slideshow: touch swiping is native scrolling with snap points; this keeps the caption in step,
+// advances on its own at the pace set in theme.yml, and adds mouse dragging and arrow buttons for desktop.
+(() => {
+  const show = document.querySelector('.show'), box = document.getElementById('frames');
+  if (!box) return;
+  const frames = [...box.querySelectorAll('.frame')];
+  const bar = document.getElementById('bar'), cap = document.getElementById('cap');
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let i = 0, timer = null, paused = false, opts = {};
+  const go = n => box.scrollTo({ left: ((n + frames.length) % frames.length) * box.clientWidth });
+  function settle() {
+    if (!box.clientWidth) return;
+    const n = Math.round(box.scrollLeft / box.clientWidth);
+    if (n === i) return;
+    i = n;
+    const f = frames[i];
+    cap.href = f.getAttribute('href');
+    document.getElementById('capT').textContent = f.dataset.t;
+    document.getElementById('capK').textContent = f.dataset.k;
+    document.getElementById('count').textContent = (i + 1) + ' / ' + frames.length;
+    restart();
+  }
+  function restart() {
+    clearTimeout(timer);
+    bar.classList.remove('run'); void bar.offsetWidth;
+    if (still || paused || !opts.autoplay) return;
+    bar.classList.add('run');
+    timer = setTimeout(() => { if (box.clientWidth) go(i + 1); else restart(); }, opts.seconds_per_slide * 1000);
+  }
+  site.use(cfg => { opts = cfg.slideshow; restart(); });
+  let t; box.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(settle, 80); });
+  document.getElementById('prev').onclick = () => go(i - 1);
+  document.getElementById('next').onclick = () => go(i + 1);
+  const hold = on => () => { paused = on; restart(); };
+  show.addEventListener('mouseenter', hold(true));
+  show.addEventListener('mouseleave', hold(false));
+  show.addEventListener('focusin', hold(true));
+  show.addEventListener('focusout', hold(false));
+  box.addEventListener('touchstart', hold(true), { passive: true });
+  box.addEventListener('touchend', () => setTimeout(hold(false), opts.resume_after_touch_seconds * 1000), { passive: true });
+  let x0 = null, dragged = false;
+  box.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') { x0 = e.clientX; dragged = false; } });
+  addEventListener('pointerup', e => {
+    if (x0 === null) return;
+    const dx = e.clientX - x0; x0 = null;
+    if (Math.abs(dx) > 30) { dragged = true; go(i + (dx < 0 ? 1 : -1)); }
+  });
+  box.addEventListener('click', e => { if (dragged) { e.preventDefault(); dragged = false; } });
+  box.addEventListener('dragstart', e => e.preventDefault());
+  addEventListener('resize', () => box.scrollTo({ left: i * box.clientWidth, behavior: 'instant' }));
+})();
+
+// Citation map: the paper's reference list as deposited with Crossref (its `cites:` front matter), newest first,
+// each joined to the paper by a curve. Works that cite it are still to come (from Crossref or OpenAlex at build time).
+// Demo mode (theme.yml, citation_map.demo) fills the empty "cited by" side with made-up papers marked "Example".
+(() => {
+  // [doi, year, title, authors, journal], from the work's `cites:` front matter
+  const refs = window.PAGE_CITES || [];
+  const examples = [
+    ['Arm-sweep kinematics of free-swimming feather stars', 'A. Author et al.', 'Journal name'],
+    ['Few-motor soft robots that switch between swimming, crawling and climbing', 'B. Author and C. Author', 'Journal name'],
+    ['Bioinspired multimodal swimmers: a review', 'D. Author', 'Review journal'],
+  ];
+  const map = document.getElementById('cmap');
+  if (!map) return;
+  const svg = map.querySelector('.cmap-lines'), node = map.querySelector('.cmap-node');
+  const refCol = map.querySelector('[data-side="refs"]'), byCol = map.querySelector('[data-side="by"]');
+  let cards = [], paths = [];
+  const card = (tag, title, meta) => {
+    const a = document.createElement(tag);
+    a.className = 'cn';
+    a.innerHTML = '<span class="ct"></span><span></span>';
+    a.firstChild.textContent = title;
+    a.lastChild.textContent = meta;
+    return a;
+  };
+  document.getElementById('refsHead').textContent = 'It cites · ' + refs.length;
+  for (const [doi, yr, t, who, j] of refs) {
+    const a = card('a', t, `${who} · ${j} · ${yr}`);
+    a.href = 'https://doi.org/' + doi;
+    refCol.append(a);
+  }
+  site.use(cfg => {
+    const demo = !!cfg.citation_map?.demo;
+    byCol.querySelectorAll('.cn').forEach(c => c.remove());
+    document.getElementById('byEmpty').hidden = demo;
+    document.getElementById('byHead').textContent = demo ? `Cited by · ${examples.length} examples` : 'Cited by · 0';
+    if (demo) for (const [t, who, j] of examples) {
+      const c = card('div', t, `${who} · ${j} · `);
+      c.classList.add('demo');
+      c.tabIndex = 0;
+      c.lastChild.insertAdjacentHTML('beforeend', '<span class="ex">Example</span>');
+      byCol.append(c);
+    }
+    draw();
+  });
+  function draw() {
+    cards = [...map.querySelectorAll('.cn')];
+    const box = map.getBoundingClientRect();
+    if (!box.width || getComputedStyle(svg).display === 'none') return;
+    const n = node.getBoundingClientRect(), nx = n.left + n.width / 2 - box.left, ny = n.top + n.height / 2 - box.top;
+    svg.innerHTML = cards.map(c => {
+      const r = c.getBoundingClientRect(), left = refCol.contains(c);
+      const x = (left ? r.right + 8 : r.left - 8) - box.left, y = r.top + r.height / 2 - box.top;
+      const ex = left ? nx - 12 : nx + 12, mx = (x + ex) / 2;
+      return `<path${c.classList.contains('demo') ? ' class="demo"' : ''} d="M${x} ${y} C${mx} ${y} ${mx} ${ny} ${ex} ${ny}"/>`;
+    }).join('');
+    paths = [...svg.children];
+  }
+  const hl = on => e => {
+    const c = e.target.closest?.('.cn');
+    if (!c) return;
+    c.classList.toggle('on', on);
+    paths[cards.indexOf(c)]?.classList.toggle('on', on);
+  };
+  map.addEventListener('mouseover', hl(true)); map.addEventListener('mouseout', hl(false));
+  map.addEventListener('focusin', hl(true)); map.addEventListener('focusout', hl(false));
+  new ResizeObserver(draw).observe(map);
+  document.fonts.ready.then(draw);
+})();
+
+// Timeline: the work list is the timeline. The works sit in order, newest first, evenly spaced down the spine on
+// alternating sides (what matters is the order and the year, not the true gaps between dates: Parker, 2026-10-25); a
+// year label marks where each year begins, and a curve joins each work to its node on the spine. The spine is a kelp
+// stalk or a straight line (timeline.spine). As the reader scrolls, the work nearest the middle of the screen is
+// marked; a node scrolls to its work. Cards carry an icon or a number (timeline.marks); numbers count from the
+// oldest work, like a reference list, so adding a new work never renumbers the others.
+(() => {
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const NS = 'http://www.w3.org/2000/svg';
+  const feed = document.getElementById('feed');
+  if (!feed) return;
+  const items = [...feed.children];
+  const wrap = document.getElementById('worksWrap'), ct = document.getElementById('ct'), ctSvg = ct.querySelector('.ct-lines');
+  const narrow = matchMedia('(max-width: 720px)'), still = matchMedia('(prefers-reduced-motion: reduce)');
+  const works = items.map((li, i) => {
+    const [y, m] = li.dataset.date.split('-').map(Number);
+    return { li, n: items.length - i, d: y + (m - .5) / 12, date: `${MONTHS[m - 1]} ${y}`, k: li.dataset.kind, t: li.querySelector('.t').textContent };
+  });
+  const y0 = Math.floor(Math.min(...works.map(w => w.d))), y1 = Math.ceil(Math.max(...works.map(w => w.d)) + .01);
+  let stem = true, folding = 'light', active = -1, geo = null;
+
+  const roll = document.createElement('div');
+  roll.className = 'roll';
+  wrap.append(roll);
+  // the submarine (unfold: light): a line drawing on the spine with a lamp that lights the work being read
+  const sub = document.createElement('div');
+  sub.className = 'sub';
+  sub.innerHTML = '<svg class="beam" viewBox="0 0 400 160" preserveAspectRatio="none"><defs><linearGradient id="beamFade">' +
+    '<stop offset="0" style="stop-color:var(--beam)"/><stop offset="1" style="stop-color:var(--beam);stop-opacity:0"/></linearGradient></defs>' +
+    '<path d="M0 80 L400 0 L400 160 Z"/></svg>' +
+    '<svg class="hull" viewBox="0 0 60 32"><path d="M8 20 Q8 12 20 12 L44 12 Q54 12 54 20 Q54 28 44 28 L20 28 Q8 28 8 20 Z"/>' +
+    '<path d="M24 12 L26 5 L36 5 L38 12 M31 5 V1 h4 M8 20 l-5 -5 v10 z"/><circle cx="25" cy="20" r="2.2"/><circle cx="34" cy="20" r="2.2"/><circle cx="43" cy="20" r="2.2"/></svg>';
+  // the body swims behind the page and the light shines in front of it: the beam is a twin of the sub, in front,
+  // that copies the body's place, classes and settings whenever they change
+  const lamp = sub.cloneNode(true);
+  lamp.classList.add('lamp');
+  lamp.querySelector('.hull').remove();
+  sub.querySelector('.beam').remove();
+  wrap.append(sub, lamp);
+  new MutationObserver(() => { lamp.className = sub.className + ' lamp'; lamp.style.cssText = sub.style.cssText; })
+    .observe(sub, { attributes: true, attributeFilter: ['class', 'style'] });
+  const lanesG = document.createElementNS(NS, 'g');
+  lanesG.setAttribute('class', 'lanes');
+  ctSvg.append(lanesG);
+  const nodes = works.map((w, i) => {
+    const b = document.createElement('button');
+    b.className = 'ct-node';
+    b.setAttribute('aria-label', `${w.date}, ${w.k}: ${w.t}. Scroll to it`);
+    b.onclick = () => goTo(i);
+    ct.append(b);
+    return b;
+  });
+  const curves = works.map(() => {
+    const g = document.createElementNS(NS, 'g');
+    g.innerHTML = '<path pathLength="1"/><circle r="2.5"/>';
+    ctSvg.append(g);
+    return g;
+  });
+  const years = [];
+  for (let yr = y1 - 1; yr >= y0; yr--) {
+    const s = document.createElement('span');
+    s.className = 'ct-year';
+    s.textContent = yr;
+    ct.append(s);
+    years.push([yr, s]);
+  }
+
+  function render(cfg) {
+    const style = cfg.timeline?.marks || 'icon';
+    stem = cfg.timeline?.spine !== 'straight';
+    const u = cfg.timeline?.unfold;
+    folding = u === false || u === 'off' ? 'off' : ['fold', 'scroll', 'focus', 'fade', 'grow'].includes(u) ? u : 'light';
+    for (const w of works) {
+      // the work's mark in its card, before "Paper · 2026"
+      w.li.querySelector('.wm')?.remove();
+      if (style !== 'dot') w.li.querySelector('.kind').insertAdjacentHTML('afterbegin', `<span class="wm">${style === 'number' ? `[${w.n}]` : icon(w.k)}</span>`);
+    }
+    place();
+    const n = active; active = -1; mark(n);
+  }
+
+  function place() {
+    wrap.classList.toggle('stem', stem);
+    if (!feed.clientWidth) return;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize), one = narrow.matches;
+    works.forEach((w, i) => { const r = one || i % 2 === 1; w.li.classList.toggle('r', r); w.li.classList.toggle('l', !r); });
+    const gap = rem, tallest = Math.max(...works.map(w => w.li.offsetHeight));
+    // an even step from each work to the next: on alternating sides two steps must clear a card, on a phone one step
+    const step = one ? tallest + 1.5 * gap : Math.max(tallest / 2 + gap, 5.5 * rem), pad = 2.5 * rem + step * .5;
+    const ys = works.map((w, i) => pad + i * step);
+    // the kelp stalk sways gently, and each work's node sits on it
+    const spineX = one ? .9 * rem : ct.clientWidth / 2;
+    const wob = y => stem ? 7 * Math.sin(y / 240 * 2 * Math.PI) : 0;
+    works.forEach((w, i) => {
+      w.li.style.top = Math.max(0, ys[i] - w.li.offsetHeight / 2) + 'px';
+      nodes[i].style.top = ys[i] + 'px';
+      nodes[i].style.left = stem ? spineX + wob(ys[i]) + 'px' : '';
+    });
+    // a year's label sits halfway between the last work of the year before and its own first work (above the first
+    // work for the newest year); a year with no work has no label
+    years.forEach(([yr, el]) => {
+      const i = works.findIndex(w => Math.floor(w.d) === yr);
+      el.hidden = i < 0;
+      if (i >= 0) el.style.top = (i ? (ys[i - 1] + ys[i]) / 2 : ys[0] - step * .5) + 'px';
+    });
+    const height = ys[ys.length - 1] + tallest / 2 + 2.5 * rem;
+    feed.style.height = height + 'px';
+    geo = { height, spineX, wob, tops: ys };
+    draw();
+    unfold();
+  }
+
+  // where an element sits in the timeline's own frame, from the layout alone (transforms don't move it)
+  function offsetIn(el) {
+    let x = feed.offsetLeft - ct.offsetLeft, y = feed.offsetTop - ct.offsetTop;
+    for (; el && el !== feed; el = el.offsetParent) { x += el.offsetLeft; y += el.offsetTop; }
+    return { x, y };
+  }
+  function draw() {
+    // the stalk, from a holdfast at the bottom to its tip above the newest work, with a leaf every so often on
+    // alternating sides, kept clear of the works' nodes
+    let lines = '';
+    if (geo && stem) {
+      const { spineX: x, wob, height: h, tops } = geo, tip = Math.max(0, Math.min(...tops) - 30);
+      let d = `M${x + wob(h)} ${h}`;
+      for (let y = h - 8; y > tip; y -= 8) d += ` L${(x + wob(y)).toFixed(1)} ${y}`;
+      lines += `<path class="stem" pathLength="1" d="${d}"/>`;
+      lines += `<path class="leaf" data-y="${h}" d="M${x + wob(h)} ${h} q-10 2 -16 9 M${x + wob(h)} ${h} q9 3 14 10 M${x + wob(h)} ${h} q1 6 -2 11"/>`;
+      let side = 1;
+      for (let y = h - 80; y > tip + 50; y -= 115) {
+        if (tops.some(n => Math.abs(n - y) < 36)) continue;
+        const sx = x + wob(y), s = side;
+        lines += `<path class="leaf" data-y="${y}" d="M${sx} ${y} q${24 * s} -7 ${41 * s} -31 q${-20 * s} 3 ${-41 * s} 31"/>`;
+        side = -side;
+      }
+    }
+    lanesG.innerHTML = lines;
+    const box = ct.getBoundingClientRect();
+    works.forEach((w, i) => {
+      // the curve runs from the node into the edge of the work's picture frame, level with its middle, so it joins the
+      // frame as part of it. Measured from the layout, not the screen, so a card caught mid-animation doesn't throw it off
+      const n = nodes[i].getBoundingClientRect(), left = w.li.classList.contains('l');
+      const pic = w.li.querySelector('.plate') || w.li.querySelector('a'), at = offsetIn(pic);
+      const sx = n.left + n.width / 2 - box.left + (left ? -8 : 8), sy = n.top + n.height / 2 - box.top;
+      const ex = left ? at.x + pic.offsetWidth : at.x, ey = at.y + pic.offsetHeight / 2, mx = (sx + ex) / 2;
+      // it arches up on its way, like a leaf's stalk, even when the node and the frame are level
+      const dx = ex - sx, bow = 10 + Math.abs(dx) * .12;
+      curves[i].firstChild.setAttribute('d', `M${sx} ${sy} C${sx + dx * .35} ${sy - bow} ${sx + dx * .7} ${ey - bow * .5} ${ex} ${ey}`);
+      curves[i].lastChild.setAttribute('cx', ex);
+      curves[i].lastChild.setAttribute('cy', ey);
+    });
+  }
+
+  // Unfolding (timeline.unfold). Fold: each card folds down open as it comes up the screen. Light: a submarine lights the
+  // work being read and the rest stay dim. Fade: works fade in slowly, and the stalk's leaves with them. Grow: each work grows out like a leaf, its node first,
+  // then its line, then the card. Focus: a vignette, the middle of the screen sharp and the rest fading and blurring. Scroll: the timeline unrolls like a paper scroll: it shows down to a paper roll that travels down
+  // ahead of the reader, each work's curve and node fading in as it comes up (--u runs 0 to 1), and the stalk grows with it,
+  // opening its leaves as it reaches them. Everything is simply open for viewers who ask for less motion, or with the sea still.
+  // where the diving sub starts, on the page: in the open water just right of the end of the headline, level with its middle
+  function besideHeadline() {
+    const h1 = [...document.querySelectorAll('h1')].find(h => h.getClientRects().length);
+    if (!h1) return [innerWidth * .8, 150 + scrollY, innerWidth * .1, 80];
+    const r = document.createRange();
+    r.selectNodeContents(h1);
+    const last = [...r.getClientRects()].pop() || h1.getBoundingClientRect();
+    const all = h1.getBoundingClientRect();
+    // and what its lamp must cover: from the headline's left edge, the headline's height
+    return [Math.min(innerWidth - 60, last.right + Math.max(170, innerWidth * .22)), all.top + all.height / 2 + scrollY, all.left, all.height];
+  }
+  // the diving sub eases toward where it should be, a little behind the scroll; chase(null) stops it
+  let held = null, aim = null, chasing = 0;
+  function chase(x, y) {
+    if (x === null) { cancelAnimationFrame(chasing); chasing = 0; held = null; return; }
+    aim = [x, y];
+    held ||= [x, y];
+    if (chasing) return;
+    const step = () => {
+      held = held.map((v, i) => v + (aim[i] - v) * .1);
+      Object.assign(sub.style, { left: held[0] + 'px', top: held[1] + 'px' });
+      chasing = Math.hypot(aim[0] - held[0], aim[1] - held[1]) > .3 ? requestAnimationFrame(step) : 0;
+    };
+    step();
+  }
+  function unfold() {
+    if (!geo) return;
+    const on = folding !== 'off' && !still.matches && document.documentElement.dataset.oceanMotion !== 'off';
+    wrap.classList.toggle('unfold', on);
+    wrap.classList.toggle('fold', on && folding === 'fold');
+    wrap.classList.toggle('scroll', on && folding === 'scroll');
+    wrap.classList.toggle('light', on && folding === 'light');
+    wrap.classList.toggle('fade', on && folding === 'fade');
+    wrap.classList.toggle('grow', on && folding === 'grow');
+    wrap.classList.toggle('focus', on && folding === 'focus');
+    if (on && folding === 'light') {
+      // the submarine swims beside the kelp, across the stalk from the work being read and level with its node (on a
+      // phone it rides the line, at the clear spot nearest the node, clear of every node and year label), and turns
+      // nose and lamp straight at the middle of that work
+      // past the timeline (its foot above the reading line) it waits at the foot of the kelp
+      const past = ct.getBoundingClientRect().top + geo.height < innerHeight * .45;
+      const n = past ? works.length - 1 : Math.max(active, 0), west = works[n].li.classList.contains('l'), gap = narrow.matches ? 16 : 22;
+      // what it keeps clear of, and by how much: nodes, and the year labels (which are taller)
+      const taken = [...nodes.map(b => [parseFloat(b.style.top), gap]), ...years.map(([, el]) => [parseFloat(el.style.top), gap + 14])].filter(([v]) => !isNaN(v));
+      // the nearest clear spot to its node, below it if that is as near as above
+      const at = parseFloat(nodes[n].style.top) || geo.tops[n], clear = v => !taken.some(([t, r]) => Math.abs(t - v) < r);
+      let y = at + gap + 6;
+      for (let k = 0; k < 30; k++) {
+        if (clear(at + gap + 6 + 8 * k)) { y = at + gap + 6 + 8 * k; break; }
+        if (clear(at - gap - 6 - 8 * k)) { y = at - gap - 6 - 8 * k; break; }
+      }
+      // beside the kelp: across the stalk from the work, level with its node, clear of the stalk and the leaves
+      const beside = !narrow.matches;
+      if (beside) y = at;
+      if (past) y = geo.height - 1.5 * gap;
+      const x = geo.spineX + geo.wob(y) + (past ? (beside ? 70 : 40) : beside ? (west ? 1 : -1) * 92 : 0);
+      const home = ct.getBoundingClientRect(), card = works[n].li.querySelector('a').getBoundingClientRect();
+      const dx = Math.abs(card.left + card.width / 2 - home.left - x), dy = card.top + card.height / 2 - home.top - y;
+      sub.classList.toggle('small', narrow.matches);
+      // before the reader reaches the timeline the sub is diving: it starts in the open water just right of the headline,
+      // facing it with its lamp on it; as the reader scrolls toward the slideshow it sinks down the right side behind the
+      // slideshow and comes out below it, where it waits (in the gap above "Selected work") until the first work comes
+      // up, then glides across to its spot by that work, arriving as the work comes 65% of the way down the screen. It
+      // eases after the scroll rather than moving with it. Positions here are on the page, so it moves with the page.
+      const line = innerHeight * .65, ctTop = home.top + scrollY, spot = ctTop + y;
+      const handover = spot - line, diving = n === 0 && scrollY < handover;
+      sub.classList.toggle('dive', diving);
+      if (diving) {
+        const [startX, startY, textL, textH] = besideHeadline(), smooth = t => t * t * (3 - 2 * t), clamp = t => Math.min(1, Math.max(0, t));
+        const show = document.querySelector('.show')?.getBoundingClientRect(), head = document.getElementById('works')?.getBoundingClientRect();
+        const below = show && head ? (show.bottom + head.top) / 2 + scrollY : startY;
+        // down behind the slideshow, evenly with the scroll, arriving below it as that spot comes halfway down the screen
+        // (or a little before the handover, if that comes first)
+        const landed = Math.max(1, Math.min(below - innerHeight * .5, handover - innerHeight * .2)), sink = clamp(scrollY / landed);
+        // then straight on to the first work, no pause: it sets off at the speed it sank and slows as it arrives
+        const from = landed, cross = clamp((scrollY - from) / Math.max(1, handover - from));
+        const py = startY + (below - startY) * sink, px = startX;
+        const glide = 1 - (1 - cross) ** 2, vx = px + (home.left + x - px) * glide, pageY = py + (spot - py) * glide;
+        chase(vx - home.left, pageY - ctTop);
+        sub.classList.add('west');
+        sub.style.setProperty('--tilt', '0deg');
+        // the lamp floods the headline at first (its length and spread measured on screen, so undone by the sub's
+        // scale) and keeps that shape, reaching to the left edge of the page, all the way down to the first work
+        const big = sub.classList.contains('small') ? .9 : 1.3, spread = textH * 3.2 / big;
+        sub.style.setProperty('--beamw', startX * 1.3 / big + 'px');
+        sub.style.setProperty('--beamh', spread + 'px');
+      } else {
+      chase(null);
+      Object.assign(sub.style, { left: x + 'px', top: y + 'px' });
+      if (past) {
+        // waiting at the foot of the stalk, facing it, lamp low
+        sub.classList.add('west');
+        sub.style.setProperty('--tilt', '0deg');
+        sub.style.setProperty('--beamw', '80px');
+        sub.style.setProperty('--beamh', '50px');
+      } else {
+      sub.classList.toggle('west', west);
+      sub.style.setProperty('--tilt', Math.atan2(dy, dx) * 180 / Math.PI + 'deg');
+      // the lit work casts its shadows away from the lamp, the way the light travels
+      const far = Math.hypot(dx, dy) || 1;
+      works[n].li.style.setProperty('--sx', (west ? -dx : dx) / far * 3 + 'px');
+      works[n].li.style.setProperty('--sy', dy / far * 3 + 'px');
+      // the light pools on the work: the beam ends a little past its middle and spreads to about its size
+      sub.style.setProperty('--beamw', Math.hypot(dx, dy) + card.height * .6 + 'px');
+      sub.style.setProperty('--beamh', Math.max(card.width, card.height) * .8 + 'px');
+      }
+      }
+    }
+    const shown = on && !['light', 'focus'].includes(folding);
+    const box = ct.getBoundingClientRect(), edge = innerHeight * .92;
+    works.forEach((w, i) => {
+      const u = shown ? Math.min(1, Math.max(0, (edge - w.li.getBoundingClientRect().top) / (innerHeight * (['fade', 'grow'].includes(folding) ? .5 : .3)))) : 1;
+      for (const el of [w.li, nodes[i], curves[i]]) el.style.setProperty('--u', u.toFixed(3));
+      // focus: sharp within the middle 40% of the screen, softening from there to the top or bottom edge (0 to 1)
+      const r = w.li.getBoundingClientRect(), off = Math.abs(r.top + r.height / 2 - innerHeight / 2) / innerHeight;
+      const f = on && folding === 'focus' ? Math.min(1, Math.max(0, (off - .2) / .3)) : 0;
+      for (const el of [w.li, nodes[i], curves[i]]) el.style.setProperty('--f', f.toFixed(3));
+    });
+    const reach = edge - box.top, grown = shown && !['fade', 'grow'].includes(folding) ? Math.min(1, Math.max(0, reach / geo.height)) : 1;
+    wrap.style.setProperty('--reach', on ? Math.max(0, reach) + 'px' : '100%');
+    roll.style.top = Math.max(0, Math.min(reach, geo.height)) + 'px';
+    roll.classList.toggle('done', reach >= geo.height);
+    const stalk = lanesG.querySelector('.stem');
+    if (stalk) Object.assign(stalk.style, { strokeDasharray: `${grown} 1`, strokeDashoffset: -(1 - grown) });
+    lanesG.querySelectorAll('.leaf').forEach(l => { l.style.opacity = !shown || +l.dataset.y < reach ? '' : 0; });
+  }
+  function mark(n) {
+    if (n === active) return;
+    active = n;
+    works.forEach((w, i) => { for (const el of [w.li, nodes[i], curves[i]]) el.classList.toggle('on', i === n); });
+  }
+  let lockUntil = 0;
+  function update() {
+    if (!feed.offsetParent || performance.now() < lockUntil) return;
+    // read at 45% of the screen; over the last half screen of the page that line slides to the bottom, so the last works can be reached
+    const left = document.documentElement.scrollHeight - innerHeight - scrollY, near = innerHeight / 2;
+    const r = feed.getBoundingClientRect(), mid = innerHeight * (.45 + .5 * Math.max(0, 1 - left / near));
+    if (r.top > innerHeight * .75 || r.bottom < innerHeight * .25) return mark(-1);
+    let best = 0, gap = Infinity;
+    items.forEach((li, i) => { const b = li.getBoundingClientRect(), d = Math.abs((b.top + b.bottom) / 2 - mid); if (d < gap) { gap = d; best = i; } });
+    mark(best);
+  }
+  // a clicked work stays marked while the page scrolls to it
+  function goTo(n) {
+    mark(n);
+    lockUntil = performance.now() + 1000;
+    items[n].scrollIntoView({ behavior: still.matches ? 'auto' : 'smooth', block: 'center' });
+  }
+
+  site.use(render);
+  let raf = 0;
+  addEventListener('scroll', () => { raf ||= requestAnimationFrame(() => { raf = 0; update(); unfold(); }); }, { passive: true });
+  addEventListener('resize', () => { place(); update(); });
+  document.fonts.ready.then(place);
+  update();
+})();
+
+// Playground: footer buttons that try the options from theme.yml for this visit only (nothing is remembered,
+// so the file stays the one place the look is decided). Hidden when theme.yml sets playground: false.
+(() => {
+  const play = document.getElementById('play');
+  if (!play) return;
+  const group = (label, options, current, pick) => {
+    const g = document.createElement('span');
+    g.className = 'grp';
+    g.innerHTML = `<b>${label}</b>`;
+    for (const [name, value, swatch] of options) {
+      const b = document.createElement('button');
+      b.textContent = name;
+      if (swatch) b.style.setProperty('--sw', swatch);
+      b.setAttribute('aria-pressed', value === current);
+      b.onclick = () => pick(value);
+      g.append(b);
+    }
+    return g;
+  };
+  site.use(cfg => {
+    play.hidden = !cfg.playground;
+    play.replaceChildren();
+    if (!cfg.playground) return;
+    if (cfg.palettes?.length) play.append(group('Palette', cfg.palettes.map(p => [p.name, p.name, p.light?.accent]), cfg.palette, v => site.set({ palette: v })));
+    play.append(
+      group('Ocean', [['On', true], ['Still', 'still'], ['Off', false]], cfg.ocean.enabled === false ? false : cfg.ocean.motion === false ? 'still' : true,
+        v => site.set({ ocean: { enabled: v !== false, motion: v === true } })),
+      group('Line colour', [['Muted', 'muted'], ['White', 'white'], ['Accent', 'accent'], ['Ink', 'ink']], cfg.ocean.line_color, v => site.set({ ocean: { line_color: v } })),
+      group('Blocks', [['Soft', 'soft'], ['None', 'none']], cfg.ocean.blocks, v => site.set({ ocean: { blocks: v } })),
+      group('Light shafts', [['On', true], ['Off', false]], cfg.ocean.light_shafts !== false, v => site.set({ ocean: { light_shafts: v } })),
+      group('Header bar', [['None', 'none'], ['Thin', 'thin'], ['Thick', 'thick'], ['Full width', 'band']], cfg.accent_bars.header, v => site.set({ accent_bars: { header: v } })),
+      group('Section bars', [['None', 'none'], ['Short', 'short'], ['Full', 'full']], cfg.accent_bars.sections, v => site.set({ accent_bars: { sections: v } })),
+      group('Spine', [['Kelp', 'kelp'], ['Straight', 'straight']], cfg.timeline.spine, v => site.set({ timeline: { spine: v } })),
+      group('Unfold', [['Fold', 'fold'], ['Scroll', 'scroll'], ['Submarine', 'light'], ['Fade', 'fade'], ['Grow', 'grow'], ['Focus', 'focus'], ['Off', 'off']], { true: 'light', false: 'off' }[cfg.timeline.unfold] || cfg.timeline.unfold, v => site.set({ timeline: { unfold: v } })),
+      group('Card marks', [['None', 'dot'], ['Numbers', 'number'], ['Icons', 'icon']], cfg.timeline.marks, v => site.set({ timeline: { marks: v } })),
+      group('Example citations', [['On', true], ['Off', false]], cfg.citation_map.demo, v => site.set({ citation_map: { demo: v } })),
+    );
+  });
+})();

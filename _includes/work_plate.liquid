@@ -1,0 +1,16 @@
+{%- comment -%}
+  A work's picture, sunk into the page: its image if it has one, else its line drawing (_includes/drawings/), else a
+  label naming what will go there. thumb=true draws the small version used in the timeline.
+{%- endcomment -%}
+{%- assign w = include.work -%}
+<div class="plate{% if include.thumb %} thumb{% endif %}">
+  {%- if w.image -%}
+    <img src="{{ w.image | relative_url }}" alt="{{ w.image_alt | escape }}" loading="lazy">
+  {%- elsif w.drawing -%}
+    {%- capture drawing_file %}drawings/{{ w.drawing }}.liquid{% endcapture -%}
+    {%- include {{ drawing_file }} stroke=include.thumb -%}
+  {%- else -%}
+    <span>{{ w.plate_label | default: w.kind }}</span>
+  {%- endif -%}
+  {%- if w.badge and include.thumb == nil %}<span class="badge">{{ w.badge }}</span>{% endif -%}
+</div>

@@ -1,0 +1,48 @@
+---
+layout: default
+---
+{%- comment -%}
+  Home: the introduction, a slideshow of the featured works, and "Selected work", the timeline of every work, newest
+  first. Both are drawn from the works in _projects/ (one file each); a work with `featured: true` is in the slideshow.
+{%- endcomment -%}
+{%- assign works = site.projects | sort: 'date' | reverse -%}
+{%- assign featured = works | where: 'featured', true -%}
+<section class="view" data-page="home">
+  <div class="intro">
+    <h1>{{ page.headline }}</h1>
+    {{ content }}
+  </div>
+
+  {% if featured.size > 0 %}
+    {%- assign first = featured | first -%}
+    <section class="show" aria-label="Featured work" aria-roledescription="slideshow">
+      <div class="frames" id="frames">
+        {%- for w in featured %}
+          <a class="frame" href="{{ w.url | relative_url }}" data-t="{{ w.short_title | default: w.title | escape }}" data-k="{{ w.kind }} · {{ w.date | date: '%Y' }}">
+            {%- include work_plate.liquid work=w -%}
+          </a>
+        {%- endfor %}
+      </div>
+      <div class="bar"><i id="bar"></i></div>
+      <div class="caption" aria-live="polite">
+        <a id="cap" href="{{ first.url | relative_url }}"><span class="t" id="capT">{{ first.short_title | default: first.title }}</span> <span class="kind" id="capK">{{ first.kind }} · {{ first.date | date: '%Y' }}</span></a>
+        <span class="ctl"><button id="prev" aria-label="Previous work">←</button><span id="count">1 / {{ featured.size }}</span><button id="next" aria-label="Next work">→</button></span>
+      </div>
+    </section>
+  {% endif %}
+
+  <h2 id="works">Selected work</h2>
+  <div class="works center" id="worksWrap">
+    <ol class="feed" id="feed">
+      {%- for w in works %}
+        <li data-date="{{ w.date | date: '%Y-%m' }}" data-kind="{{ w.kind }}">
+          <a href="{{ w.url | relative_url }}">
+            {%- include work_plate.liquid work=w thumb=true -%}
+            <div class="txt"><span class="kind">{{ w.kind }} · {{ w.date | date: '%Y' }}</span><span class="t">{{ w.title }}</span><p>{{ w.blurb }}</p></div>
+          </a>
+        </li>
+      {%- endfor %}
+    </ol>
+    <div class="ct" id="ct"><svg class="ct-lines" aria-hidden="true"></svg></div>
+  </div>
+</section>

@@ -1,0 +1,78 @@
+# The site's look and behaviour, read by every page (the layout writes it into the page for assets/sea/sea.js).
+# Started from concepts/ma-slideshow/theme.yml on 2026-10-25; this file now decides the site, the concept's only the concept.
+# The look and feel of the site. Change a value, save, and reload the page.
+#
+# The concept page reads this file each time it loads. On the real site (al-folio, which is Jekyll) the same
+# file would live at _data/theme.yml and be read when the site is built, so nothing here is concept-only
+# except the `playground` switch at the bottom.
+#
+# Colours are hex codes in quotes.
+
+fonts:
+  # Any family on Google Fonts (fonts.google.com), spelled exactly as it is there.
+  display: Newsreader                 # headings, titles, the name in the header
+  display_weights: [400, 600]
+  display_fallback: Georgia, serif    # used while the font loads, or if it can't
+  body: Hanken Grotesk                # running text, labels, dates
+  body_weights: [400, 500]
+  body_fallback: Helvetica Neue, Arial, sans-serif
+  base_size: 16px                     # everything else scales from this
+
+palette: Journal Light                # one of the palettes listed below
+
+# Each palette has a light and a dark version; the site follows the viewer's light or dark setting.
+#   background  the page
+#   text        body text and headings
+#   muted       dates, captions, labels
+#   rule        hairlines and dividers
+#   panel       image placeholders, code blocks
+#   accent      the one colour: links, the active timeline mark, numbers, highlights
+# The two Journal palettes are copied from the comps deck's palettes
+# (PhD-Comps-Exam/Code/themes/palettes, 25 October 2026): text, muted, panel and accent as they are there;
+# rule is their "border" colour. If those change, copy them again here.
+palettes:
+  - name: Journal Light               # journal-light.json, dark version from journal-dark.json
+    light: { background: "#FFFFFF", text: "#16191D", muted: "#545C66", rule: "#D5DAE0", panel: "#F3F5F8", accent: "#0B5CAD" }
+    dark:  { background: "#17191C", text: "#ECEEF0", muted: "#A7ADB5", rule: "#34383E", panel: "#22252A", accent: "#5AA8E8" }
+  - name: Journal Crimson             # journal-crimson.json and journal-crimson-dark.json
+    light: { background: "#FFFFFF", text: "#1A1A1A", muted: "#5B6168", rule: "#DADDE1", panel: "#F2F5F8", accent: "#B31B1B" }
+    dark:  { background: "#11151A", text: "#ECEEF0", muted: "#A7ADB5", rule: "#2C343E", panel: "#1A2028", accent: "#F2827A" }
+  - name: Warm paper                  # the concept's first look: off-white paper and vermilion
+    light: { background: "#f6f5f1", text: "#1d1e1f", muted: "#74757a", rule: "#d9d8d2", panel: "#e9e7e0", accent: "#a8432f" }
+    dark:  { background: "#151617", text: "#e7e5df", muted: "#94959a", rule: "#2c2d2f", panel: "#202123", accent: "#d0705a" }
+
+layout:
+  column_width: 44rem                 # width of the reading column; 44rem is about 700 pixels
+
+ocean:                                # scrolling down the page sinks through the water to the sea floor
+  enabled: true                       # the deepening shade, the creatures in the page and the sea floor
+  motion: true                        # very slow drifting; always still for viewers who ask their device for less motion
+  light_shafts: true                  # sun rays at the top that fade as the reader scrolls down
+  line_color: muted                  # the drawings' colour: muted, white, accent, ink, or a colour code in quotes
+  blocks: none                        # the ground under each block of words, hiding what swims behind: soft (frosted) or none
+
+qr:                                   # QR codes to open the site, or a paper, talk or tool, on a phone
+  site_url: "https://parker-mcdonnell.github.io/"   # the address the QR codes at the foot of each page point to
+
+accent_bars:                          # lines in the accent colour that break the page into sections
+  header: thin                        # under the name and menu: none, thin, thick, or band (the full window width)
+  sections: short                     # above each section heading: none, short (a short dash) or full (across the column)
+
+slideshow:
+  seconds_per_slide: 6
+  autoplay: true                      # false: only moves when swiped or the arrows are pressed
+  resume_after_touch_seconds: 4       # after a swipe, wait this long before moving on again
+
+# "Selected work" is a timeline: works in order, evenly spaced down a spine in the middle, on alternating sides,
+# with a label where each year begins
+timeline:
+  spine: kelp                         # kelp (a swaying stalk with leaves, rising from a holdfast) or straight
+  marks: number                       # in each card: icon (one per kind of work), number (like a reference list) or dot (none)
+  unfold: light                       # as the reader scrolls: fold (each card folds down open, with an origami crease), scroll (unrolls like a paper scroll), light (a submarine lights one work at a time), fade (works and kelp leaves fade in), grow (node, then line, then card, like a leaf), focus (sharp in the middle of the screen, fading and blurring above and below) or off
+
+citation_map:
+  demo: false                         # true shows made-up citing papers, marked "Example" (for the concept only)
+
+# Footer buttons for trying palettes, timeline styles and the demo while designing.
+# They change the page for that visit only. Turn off for the real site.
+playground: false                     # the concept's footer buttons for trying options; off on the site
