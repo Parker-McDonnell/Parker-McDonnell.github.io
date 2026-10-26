@@ -718,14 +718,14 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
 })();
 
 // Bubbles: now and then one or two small bubbles leave the top of a submarine's periscope and drift up, wobbling,
-// until they fade; and while it moves, its propeller leaves a wake of tiny ones (Parker, 2026-10-26). They are left in
-// the water, in the sub's parent, so they stay where it was and trail behind it rather than travelling with it. live()
-// says whether the sub is out; a sub taken off the page stops making them.
+// until they fade; and while it moves, its propeller leaves a pale wake behind it that spreads and fades as the sub
+// draws away (Parker, 2026-10-26). Both are left in the water, in the sub's parent, so they stay where it was rather
+// than travelling with it. live() says whether the sub is out; a sub taken off the page stops making them.
 function bubbles(sub, live) {
-  let last = null, wait = 0;
-  const blow = (home, x, y, r, rise, secs, delay = 0, cls = '') => {
+  let last = null, prop = null, wait = 0;
+  const blow = (home, x, y, r, rise, secs, delay = 0) => {
     const b = document.createElement('i');
-    b.className = 'bub' + cls;
+    b.className = 'bub';
     b.style.cssText = `left:${x}px;top:${y}px;width:${r}px;height:${r}px;--rise:${rise}px;--dx:${(Math.random() - .5) * 16}px;` +
       `animation-duration:${secs}s;animation-delay:${delay}s`;
     b.addEventListener('animationend', () => b.remove());
@@ -733,27 +733,37 @@ function bubbles(sub, live) {
   };
   const tick = () => {
     if (!sub.isConnected) return;
-    setTimeout(tick, 120);
+    setTimeout(tick, 40);
     const home = sub.offsetParent;
-    if (document.hidden || !home || !live()) { last = null; return; }
+    if (document.hidden || !home || !live()) { last = prop = null; return; }
     // a point on the hull, from its middle, turned and mirrored as the sub is
     const box = sub.getBoundingClientRect(), at = home.getBoundingClientRect(), cs = getComputedStyle(sub);
     const m = new DOMMatrix(cs.transform === 'none' ? undefined : cs.transform), k = parseFloat(cs.scale) || 1;
     const cx = box.left + box.width / 2 - at.left, cy = box.top + box.height / 2 - at.top;
     const on = (px, py) => [cx + m.a * px * k + m.c * py * k, cy + m.b * px * k + m.d * py * k];
-    const moving = last && Math.hypot(cx - last[0], cy - last[1]) > 1.5;
+    const moving = last && Math.hypot(cx - last[0], cy - last[1]) > .6;
     last = [cx, cy];
     // the periscope's tip (3px toward the nose, 15px up): one or two every half second to a second
-    if ((wait -= 120) <= 0) {
+    if ((wait -= 40) <= 0) {
       wait = 400 + Math.random() * 700;
       const [x, y] = on(3, -15);
       for (let i = Math.random() < .4 ? 2 : 1; i--;) blow(home, x + (Math.random() - .5) * 4, y, 2 + Math.random() * 3, 50 + Math.random() * 50, 2.4 + Math.random() * 1.6, i * .3);
     }
-    // the propeller (26px behind the middle), while it moves: a tiny bubble on most ticks, short-lived, so they trail
-    if (moving && Math.random() < .7) {
-      const [x, y] = on(-26 - Math.random() * 3, (Math.random() - .5) * 6);
-      blow(home, x, y, 1 + Math.random() * 2, 12 + Math.random() * 22, 1.1 + Math.random() * .9, 0, ' wake');
+    // the wake: while it moves, a short pale stroke from where the propeller (27px behind the middle) was to where it is,
+    // each spreading and fading over a second and a half, so the trail is brightest at the sub and gone further back
+    const [x, y] = on(-27, 2);
+    if (moving && prop) {
+      const len = Math.hypot(x - prop[0], y - prop[1]);
+      if (len > 1) {
+        const w = document.createElement('i');
+        w.className = 'wake';
+        w.style.cssText = `left:${(x + prop[0]) / 2}px;top:${(y + prop[1]) / 2}px;width:${len + 3}px;` +
+          `rotate:${Math.atan2(y - prop[1], x - prop[0])}rad`;
+        w.addEventListener('animationend', () => w.remove());
+        home.append(w);
+      }
     }
+    prop = moving ? [x, y] : null;
   };
   setTimeout(tick, 1500);
 }
