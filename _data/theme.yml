@@ -56,7 +56,7 @@ qr:                                   # QR codes to open the site, or a paper, t
 
 accent_bars:                          # lines in the accent colour that break the page into sections
   header: thin                        # under the name and menu: none, thin, thick, or band (the full window width)
-  sections: short                     # above each section heading: none, short (a short dash) or full (across the column)
+  sections: full                      # above each section heading: none, short (a short dash) or full (across the column)
 
 slideshow:
   seconds_per_slide: 6

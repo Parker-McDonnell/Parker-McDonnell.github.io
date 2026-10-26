@@ -71,6 +71,9 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 .handle.size { right: -12px; bottom: -12px; border-radius: 2px; cursor: nwse-resize; }
 .handle.hide { right: -12px; top: -12px; cursor: pointer; }
 .handle.copy { left: -12px; top: -12px; cursor: copy; }
+.handle.flip { left: -12px; bottom: -12px; cursor: pointer; }
+/* a drawing mirrored with Arrange (the scale property, so it never fights the drawing's own movement) */
+.critter.flip > svg.life { scale: -1 1; }
 .critter.absent { display: none !important; }
 :root[data-ocean="on"] .critter.perch { pointer-events: none; }
 :root[data-arrange="on"] .critter.perch { pointer-events: auto; }
@@ -155,7 +158,7 @@ h2 { font: 400 .78rem var(--body); letter-spacing: .2em; text-transform: upperca
 :root[data-header-bar="band"] header { border-bottom: 4px solid var(--shu); border-image: linear-gradient(var(--shu) 0 0) 0 0 1 0 / 0 0 4px 0 / 0 100vw; }
 h2::before { content: ""; display: none; background: var(--shu); margin-bottom: 1.1rem; }
 :root[data-section-bar="short"] h2::before { display: block; width: 2.5rem; height: 2px; }
-:root[data-section-bar="full"] h2::before { display: block; height: 1px; }
+:root[data-section-bar="full"] h2::before { display: block; height: 2px; }
 .eyebrow { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--shu); margin: 0; }
 .page-title { font: 400 clamp(1.8rem, 5vw, 2.6rem)/1.3 var(--display); margin: 1rem 0 1.25rem; text-wrap: balance; }
 .byline { color: var(--mute); font-size: .9rem; margin: 0 0 4rem; }
@@ -284,6 +287,14 @@ button:hover { color: var(--shu); }
 .view.lit > .sub .beam { fill: url(#pageBeam); }
 .view.lit > * { transition: opacity .6s ease; }
 .view.lit > .unlit { opacity: .35; }
+/* bubbles from a submarine's periscope: they rise, wobbling a little, and fade (--rise, --dx: set as each is made) */
+.bub { position: absolute; z-index: -1; box-sizing: border-box; border: 1px solid var(--line); border-radius: 50%; pointer-events: none;
+  opacity: 0; translate: -50% -50%; animation: bub 3s ease-out forwards; }
+@keyframes bub { 15% { opacity: .7; } 50% { transform: translate(calc(var(--dx) * -.4), calc(-.45 * var(--rise))); }
+  100% { opacity: 0; transform: translate(var(--dx), calc(-1 * var(--rise))); } }
+/* the propeller's wake: tiny and faint, spreading little */
+.bub.wake { animation-name: wake; }
+@keyframes wake { 10% { opacity: .55; } 100% { opacity: 0; transform: translate(calc(var(--dx) * .4), calc(-1 * var(--rise))); } }
 /* shadows cast by the lamp, away from the submarine (--sx, --sy: the way the light travels) */
 .works.light .feed li.on > a { text-shadow: var(--sx, 0) var(--sy, 0) 3px rgba(0, 0, 0, .2); }
 .works.light .feed li.on .plate { box-shadow: calc(var(--sx, 0px) * 3) calc(var(--sy, 0px) * 3) 10px rgba(0, 0, 0, .2); }

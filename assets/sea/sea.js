@@ -9,7 +9,7 @@ const site = (() => {
     citation_map: { demo: true },
     ocean: { enabled: true, motion: true, light_shafts: true, blocks: 'none', line_color: 'muted' },
     qr: { site_url: '' },
-    accent_bars: { header: 'thin', sections: 'short' },
+    accent_bars: { header: 'thin', sections: 'full' },
     page_sub: true,
     playground: true,
   };
@@ -286,6 +286,7 @@ site.use(cfg => {
       c.el.classList.toggle('absent', !!c.copy && !p);
       if (c.copy && !p) continue;
       c.el.classList.toggle('gone', !!p?.hide);
+      c.el.classList.toggle('flip', !!p?.m);
       c.el.classList.toggle('crowded', false);
       if (c.kind === 'perch') {
         // perched on a piece of the page: across its width, and down from its top
@@ -368,8 +369,8 @@ site.use(cfg => {
   })();
 
   // Arrange: drag a drawing to move it, its corner to size it, its knob to turn it (Shift snaps to 15 degrees), and
-  // the cross to hide it on this page, and the plus to copy it (a copy's cross removes it). Each change is saved as it
-  // is made.
+  // the cross to hide it on this page, the plus to copy it (a copy's cross removes it) and the arrows to mirror it.
+  // Each change is saved as it is made.
   let bar = null, sel = null, saving = 0;
   function offerArrange() {
     const b = document.createElement('button');
@@ -440,7 +441,7 @@ site.use(cfg => {
   function tell(said = '') {
     if (!bar) return;
     const f = frame();
-    bar.querySelector('.where').textContent = `Arranging (${f.key.split('~')[1]} screens): drag, corner sizes, knob turns`;
+    bar.querySelector('.where').textContent = `Arranging (${f.key.split('~')[1]} screens): drag, corner sizes, knob turns, arrows mirror`;
     bar.querySelector('.said').textContent = said;
   }
   function select(el) {
@@ -449,24 +450,24 @@ site.use(cfg => {
     sel = el;
     if (!el) return;
     el.classList.add('sel');
-    el.insertAdjacentHTML('beforeend', '<i class="handle turn" title="Turn"></i><i class="handle size" title="Size"></i><i class="handle hide" title="Hide or show on this page">×</i><i class="handle copy" title="Copy">+</i>');
+    el.insertAdjacentHTML('beforeend', '<i class="handle turn" title="Turn"></i><i class="handle size" title="Size"></i><i class="handle hide" title="Hide or show on this page">×</i><i class="handle copy" title="Copy">+</i><i class="handle flip" title="Mirror">&harr;</i>');
   }
   // the record kept for a drawing: where it is now, pinned to the piece of the page above it
   function record(c) {
     const f = frame(), s = c.el.style, w = parseFloat(s.width), r = Math.round(parseFloat((s.transform.match(/-?[\d.]+/) || [0])[0]));
-    const hide = c.el.classList.contains('gone');
+    const hide = c.el.classList.contains('gone'), m = c.el.classList.contains('flip') ? { m: true } : {};
     if (c.kind === 'perch') {
       const pw = c.el.parentElement.clientWidth, left = s.left.endsWith('%') ? parseFloat(s.left) / 100 * pw : c.el.offsetLeft;
-      return [f.perchKey, { x: +(left / pw).toFixed(4), y: Math.round(c.el.offsetTop), w: Math.round(w), r, hide }];
+      return [f.perchKey, { x: +(left / pw).toFixed(4), y: Math.round(c.el.offsetTop), w: Math.round(w), r, hide, ...m }];
     }
     if (c.kind === 'floor') {
       const fw = floor.clientWidth, box = c.el.getBoundingClientRect(), fl = floor.getBoundingClientRect();
       const left = s.left.endsWith('%') ? parseFloat(s.left) / 100 * fw : parseFloat(s.left);
-      return [f.floorKey, { x: +(left / fw).toFixed(4), b: Math.round(fl.bottom - box.bottom + (box.height - parseFloat(s.height)) / 2), w: Math.round(w), r, hide }];
+      return [f.floorKey, { x: +(left / fw).toFixed(4), b: Math.round(fl.bottom - box.bottom + (box.height - parseFloat(s.height)) / 2), w: Math.round(w), r, hide, ...m }];
     }
     const top = parseFloat(s.top), marks = landmarks(f);
     const a = marks.filter(m => m.top <= top).pop() || marks[0];
-    return [f.key, { a: a.key, x: +((parseFloat(s.left) - f.colL) / f.colW).toFixed(4), dy: Math.round(top - a.top), w: Math.round(w), r, hide }];
+    return [f.key, { a: a.key, x: +((parseFloat(s.left) - f.colL) / f.colW).toFixed(4), dy: Math.round(top - a.top), w: Math.round(w), r, hide, ...m }];
   }
   function keep(c) {
     const [key, rec] = record(c);
@@ -481,6 +482,7 @@ site.use(cfg => {
     twin.el.style.cssText = s.cssText;
     own.forEach(([k, v]) => twin.el.style.setProperty(k, v));
     twin.el.classList.remove('gone');
+    twin.el.classList.toggle('flip', c.el.classList.contains('flip'));
     if (c.kind === 'floor') twin.el.style.left = parseFloat(s.left) + 3 + '%';
     else if (c.kind === 'perch') Object.assign(twin.el.style, { left: c.el.offsetLeft + 24 + 'px', top: c.el.offsetTop + 24 + 'px', right: '', bottom: '' });
     else Object.assign(twin.el.style, { left: parseFloat(s.left) + 24 + 'px', top: parseFloat(s.top) + 24 + 'px' });
@@ -529,7 +531,8 @@ site.use(cfg => {
     e.preventDefault();
     const c = critters.get(el.dataset.id);
     if (el !== sel) select(el);
-    const how = ['turn', 'size', 'hide', 'copy'].find(k => e.target.classList.contains(k)) || 'move';
+    const how = e.target.classList.contains('handle') && ['turn', 'size', 'hide', 'copy', 'flip'].find(k => e.target.classList.contains(k)) || 'move';
+    if (how === 'flip') { el.classList.toggle('flip'); keep(c); return; }
     if (how === 'hide' && c.copy) { forget(c); return; }
     if (how === 'hide') { el.classList.toggle('gone'); keep(c); return; }
     if (how === 'copy') { duplicate(c); return; }
@@ -714,6 +717,47 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
   document.fonts.ready.then(draw);
 })();
 
+// Bubbles: now and then one or two small bubbles leave the top of a submarine's periscope and drift up, wobbling,
+// until they fade; and while it moves, its propeller leaves a wake of tiny ones (Parker, 2026-10-26). They are left in
+// the water, in the sub's parent, so they stay where it was and trail behind it rather than travelling with it. live()
+// says whether the sub is out; a sub taken off the page stops making them.
+function bubbles(sub, live) {
+  let last = null, wait = 0;
+  const blow = (home, x, y, r, rise, secs, delay = 0, cls = '') => {
+    const b = document.createElement('i');
+    b.className = 'bub' + cls;
+    b.style.cssText = `left:${x}px;top:${y}px;width:${r}px;height:${r}px;--rise:${rise}px;--dx:${(Math.random() - .5) * 16}px;` +
+      `animation-duration:${secs}s;animation-delay:${delay}s`;
+    b.addEventListener('animationend', () => b.remove());
+    home.append(b);
+  };
+  const tick = () => {
+    if (!sub.isConnected) return;
+    setTimeout(tick, 120);
+    const home = sub.offsetParent;
+    if (document.hidden || !home || !live()) { last = null; return; }
+    // a point on the hull, from its middle, turned and mirrored as the sub is
+    const box = sub.getBoundingClientRect(), at = home.getBoundingClientRect(), cs = getComputedStyle(sub);
+    const m = new DOMMatrix(cs.transform === 'none' ? undefined : cs.transform), k = parseFloat(cs.scale) || 1;
+    const cx = box.left + box.width / 2 - at.left, cy = box.top + box.height / 2 - at.top;
+    const on = (px, py) => [cx + m.a * px * k + m.c * py * k, cy + m.b * px * k + m.d * py * k];
+    const moving = last && Math.hypot(cx - last[0], cy - last[1]) > 1.5;
+    last = [cx, cy];
+    // the periscope's tip (3px toward the nose, 15px up): one or two every half second to a second
+    if ((wait -= 120) <= 0) {
+      wait = 400 + Math.random() * 700;
+      const [x, y] = on(3, -15);
+      for (let i = Math.random() < .4 ? 2 : 1; i--;) blow(home, x + (Math.random() - .5) * 4, y, 2 + Math.random() * 3, 50 + Math.random() * 50, 2.4 + Math.random() * 1.6, i * .3);
+    }
+    // the propeller (26px behind the middle), while it moves: a tiny bubble on most ticks, short-lived, so they trail
+    if (moving && Math.random() < .7) {
+      const [x, y] = on(-26 - Math.random() * 3, (Math.random() - .5) * 6);
+      blow(home, x, y, 1 + Math.random() * 2, 12 + Math.random() * 22, 1.1 + Math.random() * .9, 0, ' wake');
+    }
+  };
+  setTimeout(tick, 1500);
+}
+
 // Timeline: the work list is the timeline. The works sit in order, newest first, evenly spaced down the spine on
 // alternating sides (what matters is the order and the year, not the true gaps between dates: Parker, 2026-10-25); a
 // year label marks where each year begins, and a curve joins each work to its node on the spine. The spine is a kelp
@@ -755,6 +799,7 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
   wrap.append(sub, lamp);
   new MutationObserver(() => { lamp.className = sub.className + ' lamp'; lamp.style.cssText = sub.style.cssText; })
     .observe(sub, { attributes: true, attributeFilter: ['class', 'style'] });
+  bubbles(sub, () => wrap.classList.contains('light'));
   const lanesG = document.createElementNS(NS, 'g');
   lanesG.setAttribute('class', 'lanes');
   ctSvg.append(lanesG);
@@ -1080,6 +1125,7 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
     view.append(body, lamp);
     parts = [body, lamp];
     view.classList.add('lit');
+    bubbles(body, () => on);
     update();
   }
   function update() {
