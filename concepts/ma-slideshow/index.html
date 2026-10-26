@@ -258,10 +258,10 @@ button:hover { color: var(--shu); }
 .works.light .sub { display: block; position: absolute; width: 60px; height: 32px; z-index: 3; pointer-events: none; color: var(--line);
   transform: translate(-50%, -50%) rotate(var(--tilt, 0deg)); transition: top .9s ease, left .9s ease, transform .9s ease; }
 .works.light .sub.west { transform: translate(-50%, -50%) scaleX(-1) rotate(var(--tilt, 0deg)); }
-.works.light .sub { scale: .8; }
-.works.light .sub.dive { transition: transform .9s ease; }
-.works.light .sub.dive .beam { opacity: .5; }
-.works.light .sub.small { scale: .6; }
+.works.light .sub { scale: 1.15; }
+.works.light .sub.dive { transition: none; }
+.works.light .sub.dive .beam { opacity: .85; }
+.works.light .sub.small { scale: .8; }
 .sub .hull { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.2;
   stroke-linecap: round; stroke-linejoin: round; animation: hover 6s ease-in-out infinite; }
 .sub .hull path:first-child { fill: var(--paper); }
@@ -1459,14 +1459,16 @@ site.use(cfg => {
   // then its line, then the card. Focus: a vignette, the middle of the screen sharp and the rest fading and blurring. Scroll: the timeline unrolls like a paper scroll: it shows down to a paper roll that travels down
   // ahead of the reader, each work's curve and node fading in as it comes up (--u runs 0 to 1), and the stalk grows with it,
   // opening its leaves as it reaches them. Everything is simply open for viewers who ask for less motion, or with the sea still.
-  // where the diving sub starts, on the page: in the open water just right of the end of the headline, level with its last line
+  // where the diving sub starts, on the page: in the open water just right of the end of the headline, level with its middle
   function besideHeadline() {
     const h1 = [...document.querySelectorAll('h1')].find(h => h.getClientRects().length);
-    if (!h1) return [innerWidth * .8, 150 + scrollY];
+    if (!h1) return [innerWidth * .8, 150 + scrollY, innerWidth * .1, 80];
     const r = document.createRange();
     r.selectNodeContents(h1);
     const last = [...r.getClientRects()].pop() || h1.getBoundingClientRect();
-    return [Math.min(innerWidth - 50, last.right + Math.max(90, innerWidth * .14)), last.top + last.height / 2 + scrollY];
+    const all = h1.getBoundingClientRect();
+    // and what its lamp must cover: from the headline's left edge, the headline's height
+    return [Math.min(innerWidth - 60, last.right + Math.max(110, innerWidth * .15)), all.top + all.height / 2 + scrollY, all.left, all.height];
   }
   // the diving sub eases toward where it should be, a little behind the scroll; chase(null) stops it
   let held = null, aim = null, chasing = 0;
@@ -1517,13 +1519,16 @@ site.use(cfg => {
       const dive = n === 0 && left > 0 ? Math.min(1, scrollY / (scrollY + left)) : 1;
       sub.classList.toggle('dive', dive < 1);
       if (dive < 1) {
-        const g = Math.max(0, (dive - .8) / .2), ease = g * g * (3 - 2 * g), [startX, startY] = besideHeadline();
+        const g = Math.max(0, (dive - .8) / .2), ease = g * g * (3 - 2 * g), [startX, startY, textL, textH] = besideHeadline();
         const vx = startX + (home.left + x - startX) * ease, k = 1 - (1 - dive) ** 3, vy = (startY - scrollY) * (1 - k) + line * k;
         chase(vx - home.left, vy - home.top);
         sub.classList.add('west');
         sub.style.setProperty('--tilt', '0deg');
-        sub.style.setProperty('--beamw', '7rem');
-        sub.style.setProperty('--beamh', '60px');
+        // the lamp first floods the headline (its length and spread measured on screen, so undone by the sub's scale),
+        // then narrows to a short glow ahead of it as it sinks
+        const big = sub.classList.contains('small') ? .8 : 1.15, reach = Math.max(0, vx - textL) * 1.5 / big, spread = textH * 2 / big;
+        sub.style.setProperty('--beamw', reach + (112 - reach) * k + 'px');
+        sub.style.setProperty('--beamh', spread + (60 - spread) * k + 'px');
       } else {
       chase(null);
       Object.assign(sub.style, { left: x + 'px', top: y + 'px' });
