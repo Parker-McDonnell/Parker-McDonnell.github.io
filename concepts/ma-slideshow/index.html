@@ -590,7 +590,7 @@ sigshep</div>
 const site = (() => {
   const defaults = {
     slideshow: { seconds_per_slide: 6, autoplay: true, resume_after_touch_seconds: 4 },
-    timeline: { spine: 'kelp', marks: 'icon', unfold: 'focus' },
+    timeline: { spine: 'kelp', marks: 'icon', unfold: 'light' },
     citation_map: { demo: true },
     ocean: { enabled: true, motion: true, light_shafts: true, blocks: 'soft', line_color: 'muted' },
     qr: { site_url: '' },
@@ -1332,7 +1332,7 @@ site.use(cfg => {
     return { li, n: items.length - i, d: y + (m - .5) / 12, date: `${MONTHS[m - 1]} ${y}`, k: li.dataset.kind, t: li.querySelector('.t').textContent };
   });
   const y0 = Math.floor(Math.min(...works.map(w => w.d))), y1 = Math.ceil(Math.max(...works.map(w => w.d)) + .01);
-  let stem = true, folding = 'focus', active = -1, geo = null;
+  let stem = true, folding = 'light', active = -1, geo = null;
 
   const roll = document.createElement('div');
   roll.className = 'roll';
@@ -1376,7 +1376,7 @@ site.use(cfg => {
     const style = cfg.timeline?.marks || 'icon';
     stem = cfg.timeline?.spine !== 'straight';
     const u = cfg.timeline?.unfold;
-    folding = u === false || u === 'off' ? 'off' : ['fold', 'scroll', 'light', 'fade', 'grow'].includes(u) ? u : 'focus';
+    folding = u === false || u === 'off' ? 'off' : ['fold', 'scroll', 'focus', 'fade', 'grow'].includes(u) ? u : 'light';
     for (const w of works) {
       // the work's mark in its card, before "Paper · 2026"
       w.li.querySelector('.wm')?.remove();
@@ -1652,7 +1652,7 @@ site.use(cfg => {
       group('Header bar', [['None', 'none'], ['Thin', 'thin'], ['Thick', 'thick'], ['Full width', 'band']], cfg.accent_bars.header, v => site.set({ accent_bars: { header: v } })),
       group('Section bars', [['None', 'none'], ['Short', 'short'], ['Full', 'full']], cfg.accent_bars.sections, v => site.set({ accent_bars: { sections: v } })),
       group('Spine', [['Kelp', 'kelp'], ['Straight', 'straight']], cfg.timeline.spine, v => site.set({ timeline: { spine: v } })),
-      group('Unfold', [['Fold', 'fold'], ['Scroll', 'scroll'], ['Submarine', 'light'], ['Fade', 'fade'], ['Grow', 'grow'], ['Focus', 'focus'], ['Off', 'off']], { true: 'focus', false: 'off' }[cfg.timeline.unfold] || cfg.timeline.unfold, v => site.set({ timeline: { unfold: v } })),
+      group('Unfold', [['Fold', 'fold'], ['Scroll', 'scroll'], ['Submarine', 'light'], ['Fade', 'fade'], ['Grow', 'grow'], ['Focus', 'focus'], ['Off', 'off']], { true: 'light', false: 'off' }[cfg.timeline.unfold] || cfg.timeline.unfold, v => site.set({ timeline: { unfold: v } })),
       group('Card marks', [['None', 'dot'], ['Numbers', 'number'], ['Icons', 'icon']], cfg.timeline.marks, v => site.set({ timeline: { marks: v } })),
       group('Example citations', [['On', true], ['Off', false]], cfg.citation_map.demo, v => site.set({ citation_map: { demo: v } })),
     );
