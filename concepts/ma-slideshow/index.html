@@ -1545,10 +1545,10 @@ site.use(cfg => {
         sub.classList.add('west');
         sub.style.setProperty('--tilt', '0deg');
         // the lamp floods the headline at first (its length and spread measured on screen, so undone by the sub's
-        // scale), and as it sinks it narrows but still reaches all the way to the left edge of the page
-        const k = smooth(sink), big = sub.classList.contains('small') ? .9 : 1.3, spread = textH * 3.2 / big;
-        sub.style.setProperty('--beamw', vx * 1.3 / big + 'px');
-        sub.style.setProperty('--beamh', spread + (90 - spread) * k + 'px');
+        // scale) and keeps that shape, reaching to the left edge of the page, all the way down to the first work
+        const big = sub.classList.contains('small') ? .9 : 1.3, spread = textH * 3.2 / big;
+        sub.style.setProperty('--beamw', startX * 1.3 / big + 'px');
+        sub.style.setProperty('--beamh', spread + 'px');
       } else {
       chase(null);
       Object.assign(sub.style, { left: x + 'px', top: y + 'px' });
