@@ -126,6 +126,8 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 .perch { display: none; }
 :root[data-ocean="on"] .perch { display: block; position: absolute; z-index: 2; pointer-events: none; fill: none; stroke: var(--line); stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; overflow: visible; opacity: .6; }
 :root[data-ocean="on"] footer, :root[data-ocean="on"] .show { position: relative; }
+/* the slideshow sits in front of the timeline's submarine, which dives behind it */
+.show { position: relative; z-index: 1; }
 /* the page in front of the sea (theme.yml, ocean.blocks): each block of words stands on a soft, frosted ground the
    colour of the page, its edge fading out, so a creature behind it is hidden or only glimpsed. Not in Selected work
    (Parker: no shading there), nor the introduction, so the sun's rays fall across it. Translucent, so it still
@@ -1512,21 +1514,29 @@ site.use(cfg => {
       const dx = Math.abs(card.left + card.width / 2 - home.left - x), dy = card.top + card.height / 2 - home.top - y;
       sub.classList.toggle('small', narrow.matches);
       // before the reader reaches the timeline the sub is diving: it starts in the open water just right of the headline,
-      // facing it, and sinks straight down the right side with the scroll, level, gliding across to its spot by the
-      // first work in the last stretch, as that work reaches the reading line (45% down the screen); its lamp is dimmed.
-      // It eases after the scroll rather than moving with it
-      const line = innerHeight * .45, left = home.top + y - line;
-      const dive = n === 0 && left > 0 ? Math.min(1, scrollY / (scrollY + left)) : 1;
-      sub.classList.toggle('dive', dive < 1);
-      if (dive < 1) {
-        const g = Math.max(0, (dive - .8) / .2), ease = g * g * (3 - 2 * g), [startX, startY, textL, textH] = besideHeadline();
-        const vx = startX + (home.left + x - startX) * ease, k = 1 - (1 - dive) ** 3, vy = (startY - scrollY) * (1 - k) + line * k;
-        chase(vx - home.left, vy - home.top);
+      // facing it with its lamp on it; as the reader scrolls toward the slideshow it sinks down the right side behind the
+      // slideshow and comes out below it, where it waits (in the gap above "Selected work") until the first work comes
+      // up, then glides across to its spot by that work as it reaches the reading line (45% down the screen). It eases
+      // after the scroll rather than moving with it. Positions here are on the page, so it moves with the page.
+      const line = innerHeight * .45, ctTop = home.top + scrollY, spot = ctTop + y;
+      const handover = spot - line, diving = n === 0 && scrollY < handover;
+      sub.classList.toggle('dive', diving);
+      if (diving) {
+        const [startX, startY, textL, textH] = besideHeadline(), smooth = t => t * t * (3 - 2 * t), clamp = t => Math.min(1, Math.max(0, t));
+        const show = document.querySelector('.show')?.getBoundingClientRect(), head = document.getElementById('works')?.getBoundingClientRect();
+        const below = show && head ? (show.bottom + head.top) / 2 + scrollY : startY;
+        // down behind the slideshow, arriving below it as that spot comes 70% of the way down the screen
+        const sink = clamp(scrollY / Math.max(1, below - innerHeight * .7));
+        // then across to the kelp line over the last stretch before the handover
+        const from = Math.max(below - innerHeight * .7, handover - innerHeight * .35), cross = clamp((scrollY - from) / Math.max(1, handover - from));
+        const py = startY + (below - startY) * smooth(sink), px = startX;
+        const vx = px + (home.left + x - px) * smooth(cross), pageY = py + (spot - py) * smooth(cross);
+        chase(vx - home.left, pageY - ctTop);
         sub.classList.add('west');
         sub.style.setProperty('--tilt', '0deg');
         // the lamp first floods the headline (its length and spread measured on screen, so undone by the sub's scale),
         // then narrows to a short glow ahead of it as it sinks
-        const big = sub.classList.contains('small') ? .8 : 1.15, reach = Math.max(0, vx - textL) * 1.5 / big, spread = textH * 3.2 / big;
+        const k = smooth(sink), big = sub.classList.contains('small') ? .8 : 1.15, reach = Math.max(0, startX - textL) * 1.5 / big, spread = textH * 3.2 / big;
         sub.style.setProperty('--beamw', reach + (112 - reach) * k + 'px');
         sub.style.setProperty('--beamh', spread + (60 - spread) * k + 'px');
       } else {
