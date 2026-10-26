@@ -6,9 +6,9 @@ Parker McDonnell's site: soft robots that swim the way sea animals do. Built on 
 
 | To change | Edit |
 |---|---|
-| A work (paper, talk, tool, dataset...) | its file in `_projects/`, one per work. It feeds the home page's slideshow (`featured: true`), the timeline and the work's own page |
+| A work (paper, talk, tool, dataset...) | its file in `_projects/`, one per work: settings at the top, the page's text below in Markdown. It feeds the home page's slideshow (`featured: true`), the timeline and the work's own page. To add one, copy `_projects/_template.md` |
 | The introduction on the home page | `_pages/home.md` |
-| About, contact, links, education | `_pages/about.md` |
+| About, contact, links, education | `_pages/about.md`, in Markdown: the bio first, then a `##` heading for each part |
 | Colours, fonts, the ocean, the timeline's motion | `_data/theme.yml` |
 | A journal's accent colour on its papers' pages | `_data/venues.yml` (a work names it with `venue_key:`) |
 | Where the sea creatures sit | open any page with `?arrange` at the end of its address, arrange, download, save as `_data/placements.yml` |

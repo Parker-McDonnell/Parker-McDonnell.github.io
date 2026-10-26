@@ -1024,7 +1024,7 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
 // Page sub: on a page without the timeline (a work's page, about), the submarine swims down the right margin and lights
 // one section at a time: the one being read, at 45% down the screen (a fifth of the way down at the very top, so it
 // starts at the title, and sliding to the bottom over the last half screen, so the last section can be reached); the
-// others wait in the dark. A section is the page's head (kind, title, byline),
+// others wait in the dark. A section is the page's head (kind, title, byline; on about, with the portrait and bio),
 // its picture, its summary, or a heading with what follows it. Beside a tall section the sub keeps to the reading line.
 // Off with theme.yml page_sub: false, the ocean off or still, or a viewer who asks for less motion.
 (() => {
@@ -1036,11 +1036,12 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
   const HULL = '<svg class="hull" viewBox="0 0 60 32"><path d="M8 20 Q8 12 20 12 L44 12 Q54 12 54 20 Q54 28 44 28 L20 28 Q8 28 8 20 Z"/>' +
     '<path d="M24 12 L26 5 L36 5 L38 12 M31 5 V1 h4 M8 20 l-5 -5 v10 z"/><circle cx="25" cy="20" r="2.2"/><circle cx="34" cy="20" r="2.2"/><circle cx="43" cy="20" r="2.2"/></svg>';
   let cfg = {}, view = null, groups = [], parts = null, on = false;
-  // a page's sections, in order: a new one starts at the first block, a heading, the wide picture, the summary or the portrait
+  // a page's sections, in order: a new one starts at the first block, a heading, the wide picture or the summary (on
+  // the about page the portrait and bio stay with the page's head)
   function sectionsOf(v) {
     const out = [];
     for (const el of v.children) {
-      if (!out.length || el.tagName === 'H2' || el.matches('.plate.wide, .lede, .about')) out.push([]);
+      if (!out.length || el.tagName === 'H2' || el.matches('.plate.wide, .lede')) out.push([]);
       out[out.length - 1].push(el);
     }
     return out;

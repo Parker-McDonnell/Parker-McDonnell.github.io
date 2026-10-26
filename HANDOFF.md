@@ -136,6 +136,19 @@ everything is.
   when there's no room) and lights the section being read; the rest dims to 35%. A section is the page's head, its
   picture, its summary, or a heading with what follows it. `page_sub` in `_data/theme.yml`; its beam has its own
   gradient (`#pageBeam`), since one in a hidden page isn't drawn. Checked on the built site (run 40266121581).
+- **Fixes of 2026-10-25, evening** (Parker's notes):
+  - *The timeline sub reached only every other work.* Beside the kelp it crosses the stalk at every work, and it eased
+    over 0.9 s while a work stays marked for about a third of a second at reading speed. It now follows with the
+    dive's frame-by-frame easing, quicker (`chase(x, y, true)`, 20% of the way each frame); turning still eases over 0.35 s.
+  - *The page sub started at the picture.* Its reading line starts a fifth of the way down the screen and settles at
+    45% over the first half screen, so it begins at the title. On about, the portrait and bio stay with the page's head.
+  - *Creatures moved or missing on the site:* the placements Parker arranged lived only in the concept Artifact's
+    store. `_data/placements.yml` now holds them (home, floor and perch, wide screens; phones still place themselves).
+  - *Easy editing* (Parker: "use Markdown for the text, links etc."): each work's text and the about page are plain
+    Markdown in the file's body. The first paragraph shows as the summary, a numbered list as findings, a definition
+    list as details, `{: .links}` under a paragraph of links as link buttons, a code block as the code panel
+    (`assets/sea/markdown.css`). The front matter keeps only what the layout draws. `_projects/_template.md`
+    (unpublished: its name starts with `_`) shows every field.
 - **Preview:** `python bin/preview.py` downloads the latest successful build of `redesign` and serves it at
   http://127.0.0.1:8000 (needs `gh`), so no Ruby is needed here.
 
