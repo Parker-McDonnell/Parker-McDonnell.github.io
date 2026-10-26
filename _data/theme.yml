@@ -75,4 +75,6 @@ citation_map:
 
 # Footer buttons for trying palettes, timeline styles and the demo while designing.
 # They change the page for that visit only. Turn off for the real site.
+page_sub: true                        # on a work's page and the about page, the submarine lights the section being read
+
 playground: false                     # the concept's footer buttons for trying options; off on the site

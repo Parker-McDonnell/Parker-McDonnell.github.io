@@ -271,6 +271,16 @@ button:hover { color: var(--shu); }
 @keyframes hover { 50% { transform: translateY(-3px); } }
 .works.light .feed li { opacity: .14; transition: opacity .7s ease; }
 .works.light .feed li.on { opacity: 1; }
+/* Page sub (theme.yml, page_sub): on a work's page and the about page the submarine swims down the right margin beside
+   the section being read and lights it; the others wait in the dark. Body behind the page, light in front. */
+.view.lit { position: relative; }
+.view.lit > .sub { display: block; position: absolute; width: 60px; height: 32px; z-index: -1; pointer-events: none; color: var(--line);
+  transform: translate(-50%, -50%) scaleX(-1); scale: 1.3; transition: top .9s ease, left .9s ease; }
+.view.lit > .sub.small { scale: .9; }
+.view.lit > .sub.lamp { z-index: 3; }
+.view.lit > .sub .beam { fill: url(#pageBeam); }
+.view.lit > * { transition: opacity .6s ease; }
+.view.lit > .unlit { opacity: .35; }
 /* shadows cast by the lamp, away from the submarine (--sx, --sy: the way the light travels) */
 .works.light .feed li.on > a { text-shadow: var(--sx, 0) var(--sy, 0) 3px rgba(0, 0, 0, .2); }
 .works.light .feed li.on .plate { box-shadow: calc(var(--sx, 0px) * 3) calc(var(--sy, 0px) * 3) 10px rgba(0, 0, 0, .2); }

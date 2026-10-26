@@ -10,6 +10,7 @@ const site = (() => {
     ocean: { enabled: true, motion: true, light_shafts: true, blocks: 'none', line_color: 'muted' },
     qr: { site_url: '' },
     accent_bars: { header: 'thin', sections: 'short' },
+    page_sub: true,
     playground: true,
   };
   const merge = (a, b) => {
@@ -1019,6 +1020,88 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
   update();
 })();
 
+// Page sub: on a page without the timeline (a work's page, about), the submarine swims down the right margin and lights
+// one section at a time: the one being read, at 45% down the screen (sliding to the bottom over the last half screen,
+// so the last section can be reached); the others wait in the dark. A section is the page's head (kind, title, byline),
+// its picture, its summary, or a heading with what follows it. Beside a tall section the sub keeps to the reading line.
+// Off with theme.yml page_sub: false, the ocean off or still, or a viewer who asks for less motion.
+(() => {
+  const still = matchMedia('(prefers-reduced-motion: reduce)'), narrow = matchMedia('(max-width: 720px)');
+  // its own gradient: one named beamFade may be in a hidden page, where the browser would not draw it
+  const BEAM = '<svg class="beam" viewBox="0 0 400 160" preserveAspectRatio="none"><defs><linearGradient id="pageBeam">' +
+    '<stop offset="0" style="stop-color:var(--beam)"/><stop offset="1" style="stop-color:var(--beam);stop-opacity:0"/></linearGradient></defs>' +
+    '<path d="M0 80 L400 0 L400 160 Z"/></svg>';
+  const HULL = '<svg class="hull" viewBox="0 0 60 32"><path d="M8 20 Q8 12 20 12 L44 12 Q54 12 54 20 Q54 28 44 28 L20 28 Q8 28 8 20 Z"/>' +
+    '<path d="M24 12 L26 5 L36 5 L38 12 M31 5 V1 h4 M8 20 l-5 -5 v10 z"/><circle cx="25" cy="20" r="2.2"/><circle cx="34" cy="20" r="2.2"/><circle cx="43" cy="20" r="2.2"/></svg>';
+  let cfg = {}, view = null, groups = [], parts = null, on = false;
+  // a page's sections, in order: a new one starts at the first block, a heading, the wide picture, the summary or the portrait
+  function sectionsOf(v) {
+    const out = [];
+    for (const el of v.children) {
+      if (!out.length || el.tagName === 'H2' || el.matches('.plate.wide, .lede, .about')) out.push([]);
+      out[out.length - 1].push(el);
+    }
+    return out;
+  }
+  const bounds = els => {
+    const r = els.map(el => el.getBoundingClientRect()).filter(b => b.height);
+    return r.length ? { top: Math.min(...r.map(b => b.top)), bottom: Math.max(...r.map(b => b.bottom)), left: Math.min(...r.map(b => b.left)) } : null;
+  };
+  function setup() {
+    parts?.forEach(p => p.remove());
+    parts = null;
+    view?.classList.remove('lit');
+    groups.flat().forEach(el => el.classList.remove('unlit'));
+    view = document.querySelector('.view:not([hidden])');
+    groups = [];
+    on = !!view && !view.querySelector('#feed') && cfg.page_sub !== false && cfg.ocean?.enabled !== false && cfg.ocean?.motion !== false && !still.matches;
+    if (!on) return;
+    groups = sectionsOf(view);
+    const body = document.createElement('div'), lamp = document.createElement('div');
+    body.className = 'sub';
+    body.innerHTML = HULL;
+    lamp.className = 'sub lamp';
+    lamp.innerHTML = BEAM;
+    view.append(body, lamp);
+    parts = [body, lamp];
+    view.classList.add('lit');
+    update();
+  }
+  function update() {
+    if (!on) return;
+    const left = document.documentElement.scrollHeight - innerHeight - scrollY;
+    const line = innerHeight * (.45 + .5 * Math.max(0, 1 - left / (innerHeight / 2)));
+    const boxes = groups.map(bounds);
+    let best = 0, gap = Infinity;
+    boxes.forEach((b, i) => {
+      if (!b) return;
+      const d = b.top <= line && b.bottom >= line ? 0 : Math.min(Math.abs(b.top - line), Math.abs(b.bottom - line));
+      if (d < gap) { gap = d; best = i; }
+    });
+    groups.forEach((g, i) => g.forEach(el => el.classList.toggle('unlit', i !== best)));
+    const b = boxes[best], home = view.getBoundingClientRect(), margin = innerWidth - home.right, small = narrow.matches || margin < 90;
+    // in the right margin when there is room, else just inside the column's right edge; level with the section, or
+    // with the reading line beside a tall one
+    const x = small ? home.width - 20 : home.width + Math.min(56, margin - 45);
+    const y = Math.min(Math.max(line, b.top + 30), Math.max(b.top + 30, b.bottom - 30)) - home.top;
+    const big = small ? .9 : 1.3;
+    for (const p of parts) {
+      p.classList.toggle('small', small);
+      p.style.left = x + 'px';
+      p.style.top = y + 'px';
+    }
+    // the light reaches across the section and spreads to about its height
+    parts[1].style.setProperty('--beamw', ((home.left + x - b.left) + 20) / big + 'px');
+    parts[1].style.setProperty('--beamh', Math.min(Math.max(b.bottom - b.top, 120), 360) / big + 'px');
+  }
+  site.use(c => { cfg = c; setup(); });
+  let raf = 0;
+  addEventListener('scroll', () => { raf ||= requestAnimationFrame(() => { raf = 0; update(); }); }, { passive: true });
+  addEventListener('resize', update);
+  addEventListener('hashchange', setup);
+  document.fonts.ready.then(update);
+})();
+
 // Playground: footer buttons that try the options from theme.yml for this visit only (nothing is remembered,
 // so the file stays the one place the look is decided). Hidden when theme.yml sets playground: false.
 (() => {
@@ -1053,6 +1136,7 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
       group('Section bars', [['None', 'none'], ['Short', 'short'], ['Full', 'full']], cfg.accent_bars.sections, v => site.set({ accent_bars: { sections: v } })),
       group('Spine', [['Kelp', 'kelp'], ['Straight', 'straight']], cfg.timeline.spine, v => site.set({ timeline: { spine: v } })),
       group('Unfold', [['Fold', 'fold'], ['Scroll', 'scroll'], ['Submarine', 'light'], ['Fade', 'fade'], ['Grow', 'grow'], ['Focus', 'focus'], ['Off', 'off']], { true: 'light', false: 'off' }[cfg.timeline.unfold] || cfg.timeline.unfold, v => site.set({ timeline: { unfold: v } })),
+      group('Page sub', [['On', true], ['Off', false]], cfg.page_sub !== false, v => site.set({ page_sub: v })),
       group('Card marks', [['None', 'dot'], ['Numbers', 'number'], ['Icons', 'icon']], cfg.timeline.marks, v => site.set({ timeline: { marks: v } })),
       group('Example citations', [['On', true], ['Off', false]], cfg.citation_map.demo, v => site.set({ citation_map: { demo: v } })),
     );
