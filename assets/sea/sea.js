@@ -720,11 +720,22 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
 // Bubbles: now and then one or two small bubbles leave the top of a submarine's periscope and drift up, wobbling,
 // until they fade (Parker, 2026-10-26). They are left in the water, in the sub's parent, so they rise from where it was
 // rather than travelling with it. live() says whether the sub is out; a sub taken off the page stops making them.
-// Its propeller leaves a wake: one smooth line tracing the path it has just swum, redrawn every frame, palest and
-// widest furthest back, gone after a second and a half (Parker, 2026-10-26: a continuous trail, not pieces or bubbles).
+// It leaves a wake, like water shed off its back: a soft, smooth trail tracing the path it has just swum, redrawn every
+// frame, brightest just behind it, then spreading, drifting a little and slowly fading, gone after three seconds
+// (Parker, 2026-10-26: a continuous trail, not pieces or bubbles, wide and steady, fading slowly). It follows the
+// middle of the hull, which glides, not the propeller, which swings as the sub turns; the trail is laid under the
+// hull, so it comes out from behind it.
 function bubbles(sub, live) {
-  const LIFE = 1500, trail = [];
+  const LIFE = 3000, LAYERS = 6, trail = [];
   let svg = null;
+  // a smooth curve through the points: straight to the first, then bends through the midpoints between them
+  const curve = pts => {
+    let d = `M${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+    for (let i = 1; i < pts.length - 1; i++)
+      d += ` Q${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)} ${((pts[i].x + pts[i + 1].x) / 2).toFixed(1)} ${((pts[i].y + pts[i + 1].y) / 2).toFixed(1)}`;
+    const z = pts[pts.length - 1];
+    return d + ` L${z.x.toFixed(1)} ${z.y.toFixed(1)}`;
+  };
   const wake = now => {
     if (!sub.isConnected) { svg?.remove(); return; }
     requestAnimationFrame(wake);
@@ -734,24 +745,31 @@ function bubbles(sub, live) {
       svg?.remove();
       svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.setAttribute('class', 'wakes');
-      home.append(svg);
+      home.insertBefore(svg, sub);
     }
-    // the propeller: 27px behind the middle of the hull, turned and mirrored as the sub is
-    const box = sub.getBoundingClientRect(), at = home.getBoundingClientRect(), cs = getComputedStyle(sub);
-    const m = new DOMMatrix(cs.transform === 'none' ? undefined : cs.transform), k = parseFloat(cs.scale) || 1, px = -27 * k, py = 2 * k;
-    const x = box.left + box.width / 2 - at.left + m.a * px + m.c * py, y = box.top + box.height / 2 - at.top + m.b * px + m.d * py;
-    const head = trail[trail.length - 1];
-    if (!head || Math.hypot(x - head.x, y - head.y) > .4) trail.push({ x, y, t: now });
+    const box = sub.getBoundingClientRect(), at = home.getBoundingClientRect();
+    const here = { x: box.left + box.width / 2 - at.left, y: box.top + box.height / 2 - at.top, t: now, ph: now / 350 };
+    const last = trail[trail.length - 1];
+    if (!last || Math.hypot(here.x - last.x, here.y - last.y) > 2) trail.push(here);
     while (trail.length && now - trail[0].t > LIFE) trail.shift();
-    // each short step of the line is drawn by itself, so it can grow paler and wider with its age; square-cut ends, so
-    // neighbouring steps never overlap into beads
+    // as the water ages it drifts: each point wanders a little, more the older it is, and rises a touch, so the far end
+    // loosens and spreads like a real wake rather than staying a rigid band. Neighbours wander together (their phase is
+    // the time they were laid), so the trail meanders gently instead of going lumpy
+    const drift = trail.map(p => {
+      const age = (now - p.t) / LIFE, w = 6 * age;
+      return { x: p.x + Math.sin(now / 900 + p.ph) * w, y: p.y + Math.cos(now / 1100 + p.ph) * w - 8 * age, t: p.t };
+    });
+    // drawn as a few curves laid over each other, each a single stroke (so it never beads): the whole trail widest and
+    // faintest, then shorter, narrower ones along its newer part, so it is brightest and narrowest just behind the sub
     let s = '';
-    for (let i = 1; i < trail.length; i++) {
-      const a = trail[i - 1], b = trail[i], age = Math.min(1, (now - b.t) / LIFE);
-      s += `<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" ` +
-        `stroke-opacity="${((1 - age) ** 1.6).toFixed(3)}" stroke-width="${(1.2 + 4 * age).toFixed(2)}"/>`;
+    for (let j = LAYERS; j >= 1; j--) {
+      const f = j / LAYERS, pts = [...drift.filter(p => now - p.t <= LIFE * f), here];
+      if (pts.length > 2) s += `<path d="${curve(pts)}" stroke-width="${(5 + 22 * f).toFixed(1)}"/>`;
     }
     svg.innerHTML = s;
+    // once the sub stops, the whole wake fades slowly where it lies rather than shrinking back into it
+    const still = trail.length ? (now - trail[trail.length - 1].t) / LIFE : 1;
+    svg.style.opacity = Math.max(0, 1 - Math.max(0, still - .1) * 1.4).toFixed(3);
   };
   requestAnimationFrame(wake);
   const tick = () => {
