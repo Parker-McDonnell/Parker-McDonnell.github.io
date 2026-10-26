@@ -40,7 +40,7 @@ One file holds all five pages (home, paper, talk, tool, about), and `#home`, `#p
 
 ## Still waiting on Parker
 
-1. Final yes on al-folio as the template. The other options were plain HTML or Quarto.
+1. ~~Final yes on al-folio as the template.~~ Parker chose al-folio on 2026-10-25 ("Build version 1 on the al-folio template, carrying this design into it").
 2. **The paper's figure licence.** Science Advances publishes some articles as CC BY and some as CC BY-NC, and Crossref listed none for this one. Check the article page before putting up any figure.
 3. Real content: summary, key findings, talk details, bio, portrait, email, ORCID, Scholar link, CV, and his list of works. Everything apart from the paper's details is placeholder.
 4. ~~Whether to keep the vertical name in the margin.~~ Removed 2026-10-25: the vertical timeline now uses that margin.
@@ -97,9 +97,35 @@ Parker: "the site is looking awesome". Then:
 - **Jellyfish pulse** (Parker, 2026-10-25): the bell squeezes in fast and the jellyfish lurches forward along its slant, then relaxes slowly, each on its own rhythm (`.beat`).
 - **Perched drawings can be arranged too:** the crab on the footer line and the bubbles by the slideshow (placements under `perch~wide` / `perch~narrow`, across and down from the piece they sit on).
 
+## Version 1 on al-folio (started 2026-10-25)
+
+Parker: "I'm happy with the site as is. Let's start building it out as the first version", on al-folio. The repository root
+is now the site; the 2024 Freelancer theme is gone from `redesign` (kept on `old-jekyll-site`). `README.md` says where
+everything is.
+
+- **al-folio 1.2**, whose layouts live in the `al_folio_core` gem. The site keeps al-folio's starter wiring (Gemfile,
+  `_config.yml`, the deploy workflow, `_bibliography/papers.bib`) and overrides its look with local layouts:
+  `_layouts/default.liquid` (page shell: al-folio's `metadata.liquid` for title, Open Graph and schema.org, then the sea,
+  header, footer and floor), `home.liquid`, `work.liquid`, `bio.liquid`. al-folio's Tailwind and Bootstrap styles are
+  not loaded.
+- **The design** is `assets/sea/sea.css` and `sea.js`, made from the concept by
+  a script that adapts it to separate pages: settings from `_data/theme.yml`, placements from
+  `_data/placements.yml`, a paper's citations from its front matter, each part runs only where its piece of page is.
+  Arrange is offered only with `?arrange` in the address. They sit outside `assets/css/`, so al-folio's CSS purge can't strip them.
+- **One file per work** in `_projects/` (published at `/work/<name>/`): `featured: true` puts it in the slideshow; the
+  timeline lists all, newest first; the page shows only the sections its front matter has. Only the Science Advances
+  paper is real; the rest are the concept's placeholders, marked `placeholder: true` and saying so on their pages.
+- **Journal accents:** a work's page takes its journal's accent from `_data/venues.yml` via `venue_key:` (Parker:
+  Science Advances crimson, PNAS blue). The colours are our picks, not the journals' official values.
+- **Defaults Parker set on 2026-10-25:** Submarine unfolding, numbered cards (icons still a choice), blocks: none, the
+  sub's body behind the page and its light in front.
+- **Building:** no Ruby here, so `.github/workflows/build-check.yml` builds every push to `redesign` without publishing
+  and keeps `_site` as a download. `deploy.yml` (al-folio's) publishes `main` to `gh-pages`; when going live, set
+  GitHub Pages to serve from `gh-pages`.
+
 ## Next steps
 
 1. ~~Fix and verify the page switching~~ Done 2026-10-25; the Artifact is linked in the table above.
 2. Keep refining the concept with Parker ("jam" on it); there's no rush to go live. Open choices: which header bar is the default (thin now, or full width), and the robot outlines to add to the ocean.
-3. Once Parker approves, build the real site on al-folio in this style on `redesign`. One file per work should feed the slideshow, the timeline and the list. Add schema.org metadata and links to Scholar and ORCID.
+3. ~~Build the real site on al-folio~~ Version 1 is on `redesign` (above). Still to do: the sub on the other pages, lighting each section in turn as the reader scrolls (Parker's idea, 2026-10-25); the citing papers from Crossref or OpenAlex at build time; links to Scholar and ORCID once Parker gives them; real content.
 4. Only with Parker's OK: merge to `main` to go live.
