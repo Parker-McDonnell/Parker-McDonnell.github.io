@@ -1077,8 +1077,9 @@ function shadows(lamp, live) {
       // beside the kelp: across the stalk from the work, level with its node, clear of the stalk and the leaves
       const beside = !narrow.matches;
       if (beside) y = at;
-      // the hull's keel (12px below its middle, scaled with it) on the footer's top line
-      if (past) y = document.querySelector('footer').getBoundingClientRect().top - ct.getBoundingClientRect().top - (narrow.matches ? 11 : 16);
+      // the hull's keel (12px below its middle, scaled with it) on the footer's top line, touching it at the bottom of
+      // its gentle bob
+      if (past) y = document.querySelector('footer').getBoundingClientRect().top - ct.getBoundingClientRect().top - (narrow.matches ? 8 : 12);
       const x = geo.spineX + geo.wob(y) + (past ? (beside ? 130 : 40) : beside ? (west ? 1 : -1) * 92 : 0);
       const home = ct.getBoundingClientRect(), card = works[n].li.querySelector('a').getBoundingClientRect();
       const dx = Math.abs(card.left + card.width / 2 - home.left - x), dy = card.top + card.height / 2 - home.top - y;
