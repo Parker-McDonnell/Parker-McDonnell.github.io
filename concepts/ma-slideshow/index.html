@@ -46,6 +46,16 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 .rays svg { inset: 0; width: 100%; height: 100%; }
 .rays path { fill: url(#ray); stroke: none; animation: shimmer 17s ease-in-out infinite alternate; }
 @keyframes shimmer { from { opacity: .25; } to { opacity: .7; } }
+.rays .glint { fill: color-mix(in oklab, var(--shu) 35%, transparent); stroke: none; opacity: 0; animation: twinkle 5.2s ease-in-out infinite; }
+@keyframes twinkle { 0%, 70%, 100% { opacity: 0; } 78% { opacity: .9; } 86% { opacity: .15; } 90% { opacity: .6; } }
+/* a fish's tail flicks now and then, turning in and out of the page; a crab's claws wave */
+.tail { transform-box: fill-box; transform-origin: 0 50%; animation: flick 7s ease-in-out infinite; animation-delay: var(--d, 0s); }
+@keyframes flick { 0%, 72%, 100% { transform: scaleX(1); } 76% { transform: scaleX(.25); } 80% { transform: scaleX(1); } 84% { transform: scaleX(.35); } 88% { transform: scaleX(1); } }
+.claw { transform-box: view-box; animation: wave 4.5s ease-in-out infinite; }
+.claw.left { transform-origin: 20px 17px; }
+.claw.right { transform-origin: 40px 17px; animation-name: wave-r; animation-delay: -1.2s; }
+@keyframes wave { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(16deg); } 50% { transform: rotate(-4deg); } 75% { transform: rotate(12deg); } }
+@keyframes wave-r { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-16deg); } 50% { transform: rotate(4deg); } 75% { transform: rotate(-12deg); } }
 .floor .critter { bottom: 1.6rem; }
 /* a drawing that can be placed (Arrange, in the footer): the box is moved, sized and turned; the drawing moves inside it */
 .critter { position: absolute; pointer-events: none; }
@@ -103,12 +113,12 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 :root[data-ocean="on"] footer, :root[data-ocean="on"] .show { position: relative; }
 /* the page in front of the sea (theme.yml, ocean.blocks): each block of words stands on a soft, frosted ground the
    colour of the page, its edge fading out, so a creature behind it is hidden or only glimpsed. Not in Selected work
-   (Parker: no shading there). Translucent, so it still
+   (Parker: no shading there), nor the introduction, so the sun's rays fall across it. Translucent, so it still
    sits on the deepening water. */
 :root { --veil: color-mix(in oklab, var(--paper) 82%, transparent); --rim: rgba(255, 255, 255, .95); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --rim: rgba(255, 255, 255, .22); } }
 :root[data-theme="dark"] { --rim: rgba(255, 255, 255, .22); }
-:root[data-ocean="on"][data-blocks="soft"] :is(.intro h1, .intro p, .view p:not(.feed p), .eyebrow, .page-title, .byline, .lede, .view:not([data-page="home"]) h2,
+:root[data-ocean="on"][data-blocks="soft"] :is(.view p:not(.feed p, .intro p), .eyebrow, .page-title, .byline, .lede, .view:not([data-page="home"]) h2,
   .facts, .findings, .links, .related a, .caption, .mentions) {
   background: var(--veil); box-shadow: 0 0 16px 10px var(--veil); border-radius: 10px;
   -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
@@ -654,7 +664,8 @@ site.use(cfg => {
     for (let x = 6; x <= 54; x += 3) s += `<path stroke-width=".7" d="M${x} ${21 + (x - 30) ** 2 / 900} q1.4 1.8 0 3.6 t0 3.6"/>`;
     return `<g class="beat">${s}</g>`;
   };
-  const fish = '<path d="M4 10 Q14 1 26 10 Q14 19 4 10 Z M26 10 L36 4 L34 10 L36 16 Z"/><circle cx="9" cy="9" r=".8"/>';
+  // a fish; its tail is drawn apart so it can flick now and then (.tail)
+  const fish = '<path d="M4 10 Q14 1 26 10 Q14 19 4 10 Z"/><path class="tail" d="M26 10 L36 4 L34 10 L36 16 Z"/><circle cx="9" cy="9" r=".8"/>';
   const ART = {
     fish: [40, 20, fish],
     fishBack: [40, 20, `<g transform="translate(40 0) scale(-1 1)">${fish}</g>`],
@@ -664,7 +675,8 @@ site.use(cfg => {
     bubbles: [16, 30, '<circle cx="8" cy="26" r="2.4"/><circle cx="4" cy="16" r="1.6"/><circle cx="10" cy="7" r="1.2"/>'],
     kelp: [30, 120, '<path d="M15 120 C6 100 24 84 14 62 S22 26 15 2"/><path d="M14 92 q-9 -3 -11 -11 M17 70 q9 -2 11 -10 M14 46 q-8 -2 -10 -10 M17 24 q8 -2 9 -9"/>'],
     grass: [40, 50, '<path d="M8 50 Q3 32 10 12 M16 50 Q19 30 13 16 M24 50 Q29 34 33 22 M31 50 Q33 40 38 34"/>'],
-    crab: [60, 36, '<ellipse cx="30" cy="22" rx="13" ry="8"/><path d="M18 24 l-8 6 M19 27 l-6 7 M42 24 l8 6 M41 27 l6 7 M20 17 q-8 -7 -12 -3 M8 14 l2 -5 l4 4 M40 17 q8 -7 12 -3 M52 14 l-2 -5 l-4 4 M26 15 v-5 M34 15 v-5"/><circle cx="26" cy="9" r="1"/><circle cx="34" cy="9" r="1"/>'],
+    crab: [60, 36, '<ellipse cx="30" cy="22" rx="13" ry="8"/><path d="M18 24 l-8 6 M19 27 l-6 7 M42 24 l8 6 M41 27 l6 7 M26 15 v-5 M34 15 v-5"/>' +
+      '<path class="claw left" d="M20 17 q-8 -7 -12 -3 M8 14 l2 -5 l4 4"/><path class="claw right" d="M40 17 q8 -7 12 -3 M52 14 l-2 -5 l-4 4"/><circle cx="26" cy="9" r="1"/><circle cx="34" cy="9" r="1"/>'],
     urchin: [44, 30, urchin()],
     rocks: [80, 30, '<path d="M3 30 Q1 15 15 10 Q29 4 40 13 Q48 21 46 30 M44 30 Q45 20 55 19 Q66 19 68 30 M66 30 q1 -6 7 -5 q6 1 5 5 M14 18 q6 -4 12 -2"/>'],
     rock: [40, 22, '<path d="M2 22 Q3 9 15 6 Q28 3 34 12 Q38 17 37 22 M12 12 q5 -3 10 -1"/>'],
@@ -728,7 +740,10 @@ site.use(cfg => {
   const rays = () => {
     let s = '';
     for (const [x, w, d] of [[-160, 80, 0], [40, 140, -5], [250, 60, -11], [420, 170, -3], [660, 90, -8], [870, 150, -14], [1110, 70, -6], [1290, 110, -10]])
-      s += `<path style="animation-delay:${d}s" d="M${1250 + x * .2} -80 L${1250 + (x + w) * .2} -80 L${x + w} 900 L${x} 900 Z"/>`;
+      s += `<path style="animation-delay:${d}s;animation-duration:${13 + (w % 9)}s" d="M${1250 + x * .2} -80 L${1250 + (x + w) * .2} -80 L${x + w} 900 L${x} 900 Z"/>`;
+    // glints: specks of light that twinkle now and then in the shafts
+    for (const [x, y, d] of [[1180, 60, 0], [990, 140, -1.3], [760, 230, -2.9], [1320, 120, -.7], [560, 330, -3.6], [1080, 300, -2.1], [880, 420, -4.4], [1400, 260, -1.8], [420, 480, -3.1]])
+      s += `<ellipse class="glint" cx="${x}" cy="${y}" rx="3.2" ry="5" style="animation-delay:${d}s"/>`;
     return '<div class="rays"><svg viewBox="0 0 1600 900" preserveAspectRatio="none"><defs><linearGradient id="ray" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="900">' +
       `<stop offset="0" style="stop-color:var(--ray)"/><stop offset="1" style="stop-color:var(--ray);stop-opacity:0"/></linearGradient></defs>${s}</svg></div>`;
   };

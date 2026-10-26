@@ -84,6 +84,7 @@ Parker: "the site is looking awesome". Then:
   - `grow` (Parker's idea): each work grows like a leaf: its node appears, then its line draws out, then the card grows outward from the spine and fades in.
   - `focus` (Parker's idea): a vignette. The work in the middle of the screen is sharp and solid; works further up or down fade and blur, their nodes and lines with them.
   Parker's verdict so far: Fold's 3D look and Scroll are out; Grow good but zoomed too much (now only 6%); Submarine loved. Fold is still the default until he picks. The kelp leaves were made bigger (and a little further apart) the same day, and Selected work has no soft grounds (Parker: no shading there).
+- **More life** (Parker, 2026-10-25): fish tails flick now and then, as if turning in and out of the page (`.tail`); crab claws wave back and forth (`.claw`); glints twinkle in the sun rays, and each ray shimmers at its own pace. The introduction has no soft ground, so the rays fall across it.
 - **Jellyfish pulse** (Parker, 2026-10-25): the bell squeezes in fast and the jellyfish lurches forward along its slant, then relaxes slowly, each on its own rhythm (`.beat`).
 - **Perched drawings can be arranged too:** the crab on the footer line and the bubbles by the slideshow (placements under `perch~wide` / `perch~narrow`, across and down from the piece they sit on).
 
