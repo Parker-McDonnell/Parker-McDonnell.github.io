@@ -65,7 +65,7 @@ slideshow:
 # with a label where each year begins
 timeline:
   spine: kelp                         # kelp (a swaying stalk with leaves, rising from a holdfast) or straight
-  marks: icon                         # in each card: icon (one per kind of work), number (like a reference list) or dot (none)
+  marks: number                       # in each card: icon (one per kind of work), number (like a reference list) or dot (none)
   unfold: light                       # as the reader scrolls: fold (each card folds down open, with an origami crease), scroll (unrolls like a paper scroll), light (a submarine lights one work at a time), fade (works and kelp leaves fade in), grow (node, then line, then card, like a leaf), focus (sharp in the middle of the screen, fading and blurring above and below) or off
 
 citation_map:
