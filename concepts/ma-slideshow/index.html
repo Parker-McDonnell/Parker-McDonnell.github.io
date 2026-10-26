@@ -128,6 +128,8 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 :root[data-ocean="on"] footer, :root[data-ocean="on"] .show { position: relative; }
 /* the slideshow sits in front of the timeline's submarine, which dives behind it */
 .show { position: relative; z-index: 1; }
+/* in Submarine mode the slideshow is a little see-through, so the sub shows faintly as it passes behind */
+:root:has(.works.light) .show .plate { background: color-mix(in oklab, var(--well) 70%, transparent); }
 /* the page in front of the sea (theme.yml, ocean.blocks): each block of words stands on a soft, frosted ground the
    colour of the page, its edge fading out, so a creature behind it is hidden or only glimpsed. Not in Selected work
    (Parker: no shading there), nor the introduction, so the sun's rays fall across it. Translucent, so it still
@@ -1497,8 +1499,9 @@ site.use(cfg => {
     wrap.classList.toggle('grow', on && folding === 'grow');
     wrap.classList.toggle('focus', on && folding === 'focus');
     if (on && folding === 'light') {
-      // the submarine rides the kelp line: it goes to the clear spot nearest the node of the work being read (clear of
-      // every node and year label), and turns nose and lamp straight at the middle of that work
+      // the submarine swims beside the kelp, across the stalk from the work being read and level with its node (on a
+      // phone it rides the line, at the clear spot nearest the node, clear of every node and year label), and turns
+      // nose and lamp straight at the middle of that work
       const n = Math.max(active, 0), west = works[n].li.classList.contains('l'), gap = narrow.matches ? 16 : 22;
       // what it keeps clear of, and by how much: nodes, and the year labels (which are taller)
       const taken = [...nodes.map(b => [parseFloat(b.style.top), gap]), ...years.map(([, el]) => [parseFloat(el.style.top), gap + 14])].filter(([v]) => !isNaN(v));
@@ -1509,7 +1512,10 @@ site.use(cfg => {
         if (clear(at + gap + 6 + 8 * k)) { y = at + gap + 6 + 8 * k; break; }
         if (clear(at - gap - 6 - 8 * k)) { y = at - gap - 6 - 8 * k; break; }
       }
-      const x = geo.spineX + geo.wob(y);
+      // beside the kelp: across the stalk from the work, level with its node, clear of the stalk and the leaves
+      const beside = !narrow.matches;
+      if (beside) y = at;
+      const x = geo.spineX + geo.wob(y) + (beside ? (west ? 1 : -1) * 92 : 0);
       const home = ct.getBoundingClientRect(), card = works[n].li.querySelector('a').getBoundingClientRect();
       const dx = Math.abs(card.left + card.width / 2 - home.left - x), dy = card.top + card.height / 2 - home.top - y;
       sub.classList.toggle('small', narrow.matches);
@@ -1534,11 +1540,11 @@ site.use(cfg => {
         chase(vx - home.left, pageY - ctTop);
         sub.classList.add('west');
         sub.style.setProperty('--tilt', '0deg');
-        // the lamp first floods the headline (its length and spread measured on screen, so undone by the sub's scale),
-        // then narrows to a short glow ahead of it as it sinks
-        const k = smooth(sink), big = sub.classList.contains('small') ? .8 : 1.15, reach = Math.max(0, startX - textL) * 1.5 / big, spread = textH * 3.2 / big;
-        sub.style.setProperty('--beamw', reach + (112 - reach) * k + 'px');
-        sub.style.setProperty('--beamh', spread + (60 - spread) * k + 'px');
+        // the lamp floods the headline at first (its length and spread measured on screen, so undone by the sub's
+        // scale), and as it sinks it narrows but still reaches all the way to the left edge of the page
+        const k = smooth(sink), big = sub.classList.contains('small') ? .8 : 1.15, spread = textH * 3.2 / big;
+        sub.style.setProperty('--beamw', vx * 1.3 / big + 'px');
+        sub.style.setProperty('--beamh', spread + (90 - spread) * k + 'px');
       } else {
       chase(null);
       Object.assign(sub.style, { left: x + 'px', top: y + 'px' });
