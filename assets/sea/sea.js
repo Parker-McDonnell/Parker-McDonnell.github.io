@@ -205,7 +205,7 @@ site.use(cfg => {
   };
   // sailboats on the swell, crossing left to right now and then and rocking as they go: [size in px, seconds for one
   // crossing and the wait after it, delay in s, nearness]
-  const BOATS = [[40, 150, -40, .8], [24, 230, -170, .35]];
+  const BOATS = [[52, 150, -40, .8], [31, 230, -170, .35]]; // a third bigger (Parker, 2026-10-26)
   const boat = '<path d="M4 30 L36 30 L31 36 L9 36 Z M20 30 V4"/><path d="M21 5 Q31 17 33 28 L21 28 Z M19 9 Q12 19 9 28 L19 28 Z"/>';
   const boats = () => BOATS.map(([size, secs, delay, near]) =>
     `<div class="sail" style="--boat:${size}px;animation-duration:${secs}s;animation-delay:${delay}s${fade(near)}"><svg class="boat" viewBox="0 0 40 40" style="animation-delay:${delay / 7}s">${boat}</svg></div>`).join('');
