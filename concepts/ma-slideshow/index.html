@@ -254,7 +254,8 @@ button:hover { color: var(--shu); }
   background: linear-gradient(to bottom, rgba(0, 0, 0, .16), transparent 46%, rgba(255, 255, 255, .5) 49.5%, rgba(0, 0, 0, .14) 50.5%, transparent 70%);
   opacity: calc(1 - var(--u, 1)); }
 /* Light: a submarine travels down beside the spine to the work being read and lights it with its lamp (it swims behind
-   everything on the page: the stalk, its curves and the cards; Parker, 2026-10-25); the others wait
+   everything on the page, the stalk, its curves and the cards, while its light falls in front of them; Parker,
+   2026-10-25); the others wait
    in the dark. It rides the kelp line just below the work's node, clear of the nodes, and turns to shine straight at the work. */
 :root { --beam: color-mix(in oklab, #ffd36a 34%, transparent); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --beam: color-mix(in oklab, #ffe6a0 20%, transparent); } }
@@ -262,6 +263,7 @@ button:hover { color: var(--shu); }
 .sub { display: none; }
 .works.light .sub { display: block; position: absolute; width: 60px; height: 32px; z-index: -1; pointer-events: none; color: var(--line);
   transform: translate(-50%, -50%) rotate(var(--tilt, 0deg)); transition: top .9s ease, left .9s ease, transform .9s ease; }
+.works.light .sub.lamp { z-index: 3; }
 .works.light .sub.west { transform: translate(-50%, -50%) scaleX(-1) rotate(var(--tilt, 0deg)); }
 .works.light .sub { scale: 1.3; }
 .works.light .sub.dive { transition: none; }
@@ -1346,7 +1348,15 @@ site.use(cfg => {
     '<path d="M0 80 L400 0 L400 160 Z"/></svg>' +
     '<svg class="hull" viewBox="0 0 60 32"><path d="M8 20 Q8 12 20 12 L44 12 Q54 12 54 20 Q54 28 44 28 L20 28 Q8 28 8 20 Z"/>' +
     '<path d="M24 12 L26 5 L36 5 L38 12 M31 5 V1 h4 M8 20 l-5 -5 v10 z"/><circle cx="25" cy="20" r="2.2"/><circle cx="34" cy="20" r="2.2"/><circle cx="43" cy="20" r="2.2"/></svg>';
-  wrap.append(sub);
+  // the body swims behind the page and the light shines in front of it: the beam is a twin of the sub, in front,
+  // that copies the body's place, classes and settings whenever they change
+  const lamp = sub.cloneNode(true);
+  lamp.classList.add('lamp');
+  lamp.querySelector('.hull').remove();
+  sub.querySelector('.beam').remove();
+  wrap.append(sub, lamp);
+  new MutationObserver(() => { lamp.className = sub.className + ' lamp'; lamp.style.cssText = sub.style.cssText; })
+    .observe(sub, { attributes: true, attributeFilter: ['class', 'style'] });
   const lanesG = document.createElementNS(NS, 'g');
   lanesG.setAttribute('class', 'lanes');
   ctSvg.append(lanesG);
