@@ -94,6 +94,17 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 .beat { transform-box: view-box; transform-origin: 30px 8px; animation: beat 3.2s cubic-bezier(.2, .7, .3, 1) infinite; animation-delay: var(--d, 0s); }
 .beat { animation-duration: calc(3.2s * var(--pace, 1)); }
 @keyframes beat { 0%, 100% { transform: translateY(0) scale(1, 1); } 20% { transform: translateY(-5px) scale(.84, 1.08); } }
+/* the explorer: patrols the floor slowly, stopping at each end to look around, its lamp sweeping down over the creatures */
+.explorer { position: absolute; bottom: 4.6rem; left: 3%; width: 54px; height: 29px; color: var(--line); animation: patrol 150s ease-in-out infinite; }
+.explorer .facing { position: absolute; inset: 0; animation: face 150s linear infinite; }
+.explorer svg { position: absolute; overflow: visible; }
+.explorer .hull { inset: 0; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; animation: hover 7s ease-in-out infinite; }
+.explorer .hull path:first-child { fill: var(--paper); }
+.explorer .lamp { left: 88%; top: 62%; width: 150px; height: 64px; transform-origin: 0 50%; transform: translateY(-50%) rotate(28deg); animation: sweep 11s ease-in-out infinite alternate; }
+.explorer .lamp path { fill: url(#exBeam); stroke: none; }
+@keyframes patrol { 0%, 8% { left: 3%; } 42%, 58% { left: calc(94% - 54px); } 92%, 100% { left: 3%; } }
+@keyframes face { 0%, 49.8% { transform: scaleX(1); } 50%, 99.8% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
+@keyframes sweep { from { transform: translateY(-50%) rotate(14deg); } to { transform: translateY(-50%) rotate(40deg); } }
 @keyframes surface { 0% { transform: translateY(0); opacity: 0; } 15%, 80% { opacity: 1; } 100% { transform: translateY(var(--rise, -3rem)); opacity: 0; } }
 .surface { animation: surface 12s ease-in infinite; }
 @keyframes drift { to { transform: translateX(-50%); } }
@@ -772,7 +783,13 @@ site.use(cfg => {
   sea.innerHTML = rays() + swell(16, 50) + boats() + SEA.map((e, i) => critter(`sea-${i}`, e)).join('');
   floor.innerHTML =
     '<svg class="sand" viewBox="0 0 1600 160" preserveAspectRatio="none"><path vector-effect="non-scaling-stroke" d="M0 122 Q200 108 400 118 T800 114 T1200 121 T1600 112"/></svg>' +
-    FLOOR.map((e, i) => critter(`floor-${i}`, e)).join('');
+    FLOOR.map((e, i) => critter(`floor-${i}`, e)).join('') +
+    // an explorer submarine, patrolling just above the sand and turning its lamp down over the creatures
+    '<div class="explorer"><div class="facing"><svg class="lamp" viewBox="0 0 200 100" preserveAspectRatio="none"><defs><linearGradient id="exBeam">' +
+    '<stop offset="0" style="stop-color:var(--beam)"/><stop offset="1" style="stop-color:var(--beam);stop-opacity:0"/></linearGradient></defs>' +
+    '<path d="M0 46 L200 0 L200 100 L0 54 Z"/></svg>' +
+    '<svg class="hull" viewBox="0 0 60 32"><path d="M8 20 Q8 12 20 12 L44 12 Q54 12 54 20 Q54 28 44 28 L20 28 Q8 28 8 20 Z"/>' +
+    '<path d="M24 12 L26 5 L36 5 L38 12 M31 5 V1 h4 M8 20 l-5 -5 v10 z"/><circle cx="25" cy="20" r="2.2"/><circle cx="34" cy="20" r="2.2"/><circle cx="43" cy="20" r="2.2"/></svg></div></div>';
   // the page as part of the sea: drawings perched on the page itself, in front of it and never in the way of a click
   const PERCH = [
     ['footer', ['crab', { bottom: '100%', right: '14%' }, 54, 'scuttle', -8]],
