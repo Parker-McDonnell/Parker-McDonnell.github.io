@@ -255,9 +255,15 @@ button:hover { color: var(--shu); }
 .works.grow .ct-lines g path { stroke-dasharray: 1; stroke-dashoffset: calc(1 - clamp(0, (var(--u, 1) - .25) / .35, 1)); }
 .works.grow .ct-lines g circle { opacity: clamp(0, (var(--u, 1) - .55) / .08, 1); }
 .works.grow .feed li { --k: clamp(0, (var(--u, 1) - .6) / .4, 1); }
-.works.grow .feed li > a { transform-origin: 0 50%; transform: scale(calc(.55 + .45 * var(--k))); opacity: var(--k); }
+.works.grow .feed li > a { transform-origin: 0 50%; transform: scale(calc(.94 + .06 * var(--k))); opacity: var(--k); }
 .works.grow .feed li.l > a { transform-origin: 100% 50%; }
 .works.grow .ct-lines .lanes path.leaf { transition: opacity 1.6s ease; }
+/* Focus: a vignette. The work in the middle of the screen is sharp and solid; the further a work is from the middle,
+   the more it fades and blurs, its node and line with it (--f: 0 in the middle, 1 at the screen's edge) */
+.works.focus .feed li > a { opacity: calc(1 - .85 * var(--f, 0)); filter: blur(calc(var(--f, 0) * 5px)); }
+.works.focus .ct-node { opacity: calc(1 - .75 * var(--f, 0)); }
+.works.focus .ct-lines g { opacity: calc(.2 * (1 - var(--f, 0))); }
+.works.focus .ct-lines g.on { opacity: calc(.8 * (1 - var(--f, 0))); }
 /* Scroll: the timeline unrolls like a paper scroll as the reader goes down. What is
    still rolled up is hidden below the roll, a paper cylinder that travels down the page ahead of the reader (--reach,
    set by the page); the stalk's leaves open as it grows past them */
@@ -1271,7 +1277,7 @@ site.use(cfg => {
     perYear = parseFloat(cfg.timeline?.space_per_year) || 16;
     stem = cfg.timeline?.spine !== 'straight';
     const u = cfg.timeline?.unfold;
-    folding = u === false || u === 'off' ? 'off' : ['scroll', 'light', 'fade', 'grow'].includes(u) ? u : 'fold';
+    folding = u === false || u === 'off' ? 'off' : ['scroll', 'light', 'fade', 'grow', 'focus'].includes(u) ? u : 'fold';
     for (const w of works) {
       // the work's mark in its card, before "Paper · 2026"
       w.li.querySelector('.wm')?.remove();
@@ -1347,7 +1353,7 @@ site.use(cfg => {
 
   // Unfolding (timeline.unfold). Fold: each card folds down open as it comes up the screen. Light: a submarine lights the
   // work being read and the rest stay dim. Fade: works fade in slowly, and the stalk's leaves with them. Grow: each work grows out like a leaf, its node first,
-  // then its line, then the card. Scroll: the timeline unrolls like a paper scroll: it shows down to a paper roll that travels down
+  // then its line, then the card. Focus: a vignette, the middle of the screen sharp and the rest fading and blurring. Scroll: the timeline unrolls like a paper scroll: it shows down to a paper roll that travels down
   // ahead of the reader, each work's curve and node fading in as it comes up (--u runs 0 to 1), and the stalk grows with it,
   // opening its leaves as it reaches them. Everything is simply open for viewers who ask for less motion, or with the sea still.
   function unfold() {
@@ -1359,6 +1365,7 @@ site.use(cfg => {
     wrap.classList.toggle('light', on && folding === 'light');
     wrap.classList.toggle('fade', on && folding === 'fade');
     wrap.classList.toggle('grow', on && folding === 'grow');
+    wrap.classList.toggle('focus', on && folding === 'focus');
     if (on && folding === 'light') {
       // the submarine rides the kelp line: it goes to the clear spot nearest the node of the work being read (clear of
       // every node and year label), and turns nose and lamp straight at the middle of that work
@@ -1387,11 +1394,14 @@ site.use(cfg => {
       sub.style.setProperty('--beamw', Math.hypot(dx, dy) + card.height * .6 + 'px');
       sub.style.setProperty('--beamh', Math.max(card.width, card.height) * .8 + 'px');
     }
-    const shown = on && folding !== 'light';
+    const shown = on && !['light', 'focus'].includes(folding);
     const box = ct.getBoundingClientRect(), edge = innerHeight * .92;
     works.forEach((w, i) => {
       const u = shown ? Math.min(1, Math.max(0, (edge - w.li.getBoundingClientRect().top) / (innerHeight * (['fade', 'grow'].includes(folding) ? .5 : .3)))) : 1;
       for (const el of [w.li, nodes[i], curves[i]]) el.style.setProperty('--u', u.toFixed(3));
+      // focus: how far the work is from the middle of the screen, 0 there to 1 at the top or bottom edge
+      const r = w.li.getBoundingClientRect(), f = on && folding === 'focus' ? Math.min(1, Math.abs(r.top + r.height / 2 - innerHeight / 2) / (innerHeight * .5)) : 0;
+      for (const el of [w.li, nodes[i], curves[i]]) el.style.setProperty('--f', (f * f).toFixed(3));
     });
     const reach = edge - box.top, grown = shown && !['fade', 'grow'].includes(folding) ? Math.min(1, Math.max(0, reach / geo.height)) : 1;
     wrap.style.setProperty('--reach', on ? Math.max(0, reach) + 'px' : '100%');
@@ -1464,7 +1474,7 @@ site.use(cfg => {
       group('Header bar', [['None', 'none'], ['Thin', 'thin'], ['Thick', 'thick'], ['Full width', 'band']], cfg.accent_bars.header, v => site.set({ accent_bars: { header: v } })),
       group('Section bars', [['None', 'none'], ['Short', 'short'], ['Full', 'full']], cfg.accent_bars.sections, v => site.set({ accent_bars: { sections: v } })),
       group('Spine', [['Kelp', 'kelp'], ['Straight', 'straight']], cfg.timeline.spine, v => site.set({ timeline: { spine: v } })),
-      group('Unfold', [['Fold', 'fold'], ['Scroll', 'scroll'], ['Submarine', 'light'], ['Fade', 'fade'], ['Grow', 'grow'], ['Off', 'off']], { true: 'fold', false: 'off' }[cfg.timeline.unfold] || cfg.timeline.unfold, v => site.set({ timeline: { unfold: v } })),
+      group('Unfold', [['Fold', 'fold'], ['Scroll', 'scroll'], ['Submarine', 'light'], ['Fade', 'fade'], ['Grow', 'grow'], ['Focus', 'focus'], ['Off', 'off']], { true: 'fold', false: 'off' }[cfg.timeline.unfold] || cfg.timeline.unfold, v => site.set({ timeline: { unfold: v } })),
       group('Card marks', [['None', 'dot'], ['Numbers', 'number'], ['Icons', 'icon']], cfg.timeline.marks, v => site.set({ timeline: { marks: v } })),
       group('Example citations', [['On', true], ['Off', false]], cfg.citation_map.demo, v => site.set({ citation_map: { demo: v } })),
     );
