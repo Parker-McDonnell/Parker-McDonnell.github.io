@@ -81,6 +81,7 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 :root[data-arrange="on"] .critter.perch { pointer-events: auto; }
 .arrange-bar { position: fixed; left: 50%; bottom: .75rem; transform: translateX(-50%); z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .8rem; box-sizing: border-box; width: max-content; max-width: calc(100vw - 32px); padding: .45rem .8rem; background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 6px 24px rgba(0, 0, 0, .12); font-size: .75rem; color: var(--mute); }
 .arrange-bar button, .arrange-open { font: inherit; font-size: .75rem; color: var(--shu); background: none; border: 1px solid var(--rule); border-radius: 4px; padding: .3rem .7rem; cursor: pointer; }
+.arrange-bar button:disabled { opacity: .35; cursor: default; }
 .arrange-open { justify-self: start; }
 .arrange-bar .said { color: var(--shu); }
 /* sailboats crossing the swell now and then, rocking as they go */
@@ -917,7 +918,7 @@ site.use(cfg => {
   });
 
   // Placements: the file first, then the Artifact's store or this browser on top
-  let store = null;
+  let store = null, undone = null, backups = {};
   const merge = more => { for (const [k, v] of Object.entries(more || {})) placements[k] = { ...placements[k], ...v }; };
   fetch('placements.yml').then(r => r.ok ? r.text() : '').then(t => { if (t && window.jsyaml) { merge(jsyaml.load(t)); resettle(); } }).catch(() => {});
   (async () => {
@@ -925,6 +926,8 @@ site.use(cfg => {
     if (db) {
       const user = await claude.use('user');
       store = db.collection('placements');
+      undone = db.collection('placements-undone');
+      undone.onSnapshot(snap => { backups = {}; for (const d of snap.docs) backups[d.id] = { ...d.data().items }; offerBack(); }, () => {});
       store.onSnapshot(snap => {
         if (arranging) return; // this editor's own moves are already on screen
         for (const d of snap.docs) placements[d.id] = { ...d.data().items };
@@ -933,6 +936,7 @@ site.use(cfg => {
       if (await user?.canEdit()) offerArrange();
     } else if (!window.claude) {
       try { merge(JSON.parse(localStorage.getItem('placements') || '{}')); } catch {}
+      try { backups = JSON.parse(localStorage.getItem('placements-undone') || '{}'); } catch {}
       resettle();
       offerArrange();
     }
@@ -956,11 +960,12 @@ site.use(cfg => {
       bar = document.createElement('div');
       bar.className = 'arrange-bar';
       bar.innerHTML = '<span class="where"></span><span class="said" aria-live="polite"></span>' +
-        '<button data-act="reset">Undo this page</button>' + (store ? '' : '<button data-act="file">Download placements.yml</button>') + '<button data-act="done">Done</button>';
+        '<button data-act="reset">Undo this page</button><button data-act="back">Bring back</button>' + (store ? '' : '<button data-act="file">Download placements.yml</button>') + '<button data-act="done">Done</button>';
       bar.onclick = e => {
         const act = e.target.dataset.act;
         if (act === 'done') arrange(false);
-        if (act === 'reset') { const f = frame(); for (const k of [f.key, f.floorKey, f.perchKey]) { delete placements[k]; save(k); } settle(); }
+        if (act === 'reset') undo(e.target);
+        if (act === 'back') bringBack();
         if (act === 'file') download();
       };
       document.body.append(bar);
@@ -969,8 +974,43 @@ site.use(cfg => {
     // room below the page for the bar, so the sea floor can be scrolled up above it
     document.body.style.paddingBottom = on ? bar.offsetHeight + 40 + 'px' : '';
     if (!on) select(null);
+    offerBack();
     tell();
     settle();
+  }
+  // Undo this page asks first: the first click arms it for a few seconds, the second undoes. What it removes is kept,
+  // and Bring back puts it back (the last undo of each page and screen size)
+  let armed = 0, note = ''; // note: said in place of "Saved" once the undo or bring-back is saved
+  const pageKeys = () => { const f = frame(); return [f.key, f.floorKey, f.perchKey]; };
+  function undo(button) {
+    if (!armed) {
+      button.textContent = 'Undo this page? Click again';
+      armed = setTimeout(() => { armed = 0; button.textContent = 'Undo this page'; }, 4000);
+      return;
+    }
+    clearTimeout(armed); armed = 0;
+    button.textContent = 'Undo this page';
+    const kept = pageKeys().filter(k => placements[k] && Object.keys(placements[k]).length);
+    if (!kept.length) return tell('Nothing placed on this page yet');
+    for (const k of kept) { backups[k] = placements[k]; keepBackup(k); delete placements[k]; save(k); }
+    settle();
+    offerBack();
+    note = 'Undone: Bring back restores it';
+  }
+  function bringBack() {
+    const ks = pageKeys().filter(k => backups[k]);
+    if (!ks.length) return tell('Nothing to bring back');
+    for (const k of ks) { placements[k] = { ...backups[k] }; save(k); }
+    resettle();
+    note = 'Brought back';
+  }
+  function keepBackup(k) {
+    if (undone) undone.doc(k).set({ items: backups[k] }).catch(e => tell(`Undo not kept (${e.code || e.message})`));
+    else try { localStorage.setItem('placements-undone', JSON.stringify(backups)); } catch {}
+  }
+  function offerBack() {
+    const b = bar?.querySelector('[data-act="back"]');
+    if (b) b.disabled = !pageKeys().some(k => backups[k]);
   }
   function tell(said = '') {
     if (!bar) return;
@@ -1043,7 +1083,8 @@ site.use(cfg => {
           else await store.doc(k).delete();
         }
         else localStorage.setItem('placements', JSON.stringify(placements));
-        tell('Saved');
+        tell(note || 'Saved');
+        note = '';
       } catch (e) { tell(`Not saved (${e.code || e.message})`); }
     }, 400);
   }
@@ -1446,18 +1487,17 @@ site.use(cfg => {
       const dx = Math.abs(card.left + card.width / 2 - home.left - x), dy = card.top + card.height / 2 - home.top - y;
       sub.classList.toggle('small', narrow.matches);
       // before the reader reaches the timeline the sub is diving: it starts just under the surface in the open water on
-      // the right, and comes down with the scroll, reaching its spot by the first work as that work reaches the reading
-      // line (45% down the screen); its lamp is dimmed and points the way it is going
+      // the right, and sinks straight down the right side with the scroll, level, gliding across to its spot by the
+      // first work in the last stretch, as that work reaches the reading line (45% down the screen); its lamp is dimmed
       const line = innerHeight * .45, left = home.top + y - line;
       const dive = n === 0 && left > 0 ? Math.min(1, scrollY / (scrollY + left)) : 1;
       sub.classList.toggle('dive', dive < 1);
       if (dive < 1) {
-        const ease = dive * dive * (3 - 2 * dive), startX = innerWidth * (narrow.matches ? .8 : .86), startY = Math.min(150, line);
+        const g = Math.max(0, (dive - .8) / .2), ease = g * g * (3 - 2 * g), startX = innerWidth * .8, startY = Math.min(150, line);
         const vx = startX + (home.left + x - startX) * ease, vy = startY + (line - startY) * dive;
         Object.assign(sub.style, { left: vx - home.left + 'px', top: vy - home.top + 'px' });
         sub.classList.add('west');
-        // nose down the way it travels: steeper at the start, levelling out as it arrives
-        sub.style.setProperty('--tilt', 32 - 24 * ease + 'deg');
+        sub.style.setProperty('--tilt', '0deg');
         sub.style.setProperty('--beamw', '7rem');
         sub.style.setProperty('--beamh', '60px');
       } else {
