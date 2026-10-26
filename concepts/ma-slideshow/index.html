@@ -51,11 +51,11 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 /* a fish's tail flicks now and then, turning in and out of the page; a crab's claws wave */
 .tail { transform-box: fill-box; transform-origin: 0 50%; animation: flick 7s ease-in-out infinite; animation-delay: var(--d, 0s); }
 @keyframes flick { 0%, 72%, 100% { transform: scaleX(1); } 76% { transform: scaleX(.25); } 80% { transform: scaleX(1); } 84% { transform: scaleX(.35); } 88% { transform: scaleX(1); } }
-.claw { transform-box: view-box; animation: wave 4.5s ease-in-out infinite; }
+.claw { transform-box: view-box; animation: wave 9s ease-in-out infinite; }
 .claw.left { transform-origin: 20px 17px; }
-.claw.right { transform-origin: 40px 17px; animation-name: wave-r; animation-delay: -1.2s; }
-@keyframes wave { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(16deg); } 50% { transform: rotate(-4deg); } 75% { transform: rotate(12deg); } }
-@keyframes wave-r { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-16deg); } 50% { transform: rotate(4deg); } 75% { transform: rotate(-12deg); } }
+.claw.right { transform-origin: 40px 17px; animation-name: wave-r; animation-delay: -2.5s; }
+@keyframes wave { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(32deg); } }
+@keyframes wave-r { 0%, 100% { transform: rotate(6deg); } 50% { transform: rotate(-32deg); } }
 .floor .critter { bottom: 1.6rem; }
 /* a drawing that can be placed (Arrange, in the footer): the box is moved, sized and turned; the drawing moves inside it */
 .critter { position: absolute; pointer-events: none; }
@@ -210,7 +210,7 @@ button:hover { color: var(--shu); }
 .ct-lines g { opacity: calc(.2 * var(--u, 1)); transition: opacity .4s ease; }
 .ct-lines g.on { opacity: calc(.8 * var(--u, 1)); }
 .ct-lines path { fill: none; stroke: var(--shu); stroke-width: 1; }
-.ct-lines circle { fill: var(--shu); }
+.ct-lines circle { display: none; }
 .ct-node { position: absolute; left: var(--spine); width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 1px solid var(--ink); background: var(--paper); transform: translate(-50%, -50%) scale(var(--u, 1)); pointer-events: auto; transition: transform .3s ease, background .3s ease, border-color .3s ease; }
 .ct-node::before { content: ""; position: absolute; inset: -8px; }
 .ct-node:hover, .ct-node:focus-visible, .ct-node.on { background: var(--shu); border-color: var(--shu); transform: translate(-50%, -50%) scale(1.4); outline: none; }
@@ -1336,6 +1336,12 @@ site.use(cfg => {
     unfold();
   }
 
+  // where an element sits in the timeline's own frame, from the layout alone (transforms don't move it)
+  function offsetIn(el) {
+    let x = feed.offsetLeft - ct.offsetLeft, y = feed.offsetTop - ct.offsetTop;
+    for (; el && el !== feed; el = el.offsetParent) { x += el.offsetLeft; y += el.offsetTop; }
+    return { x, y };
+  }
   function draw() {
     // the stalk, from a holdfast at the bottom to its tip above the newest work, with a leaf every so often on
     // alternating sides, kept clear of the works' nodes
@@ -1357,9 +1363,12 @@ site.use(cfg => {
     lanesG.innerHTML = lines;
     const box = ct.getBoundingClientRect();
     works.forEach((w, i) => {
-      const n = nodes[i].getBoundingClientRect(), a = w.li.querySelector('a').getBoundingClientRect(), left = w.li.classList.contains('l');
+      // the curve runs from the node into the edge of the work's picture frame, level with its middle, so it joins the
+      // frame as part of it. Measured from the layout, not the screen, so a card caught mid-animation doesn't throw it off
+      const n = nodes[i].getBoundingClientRect(), left = w.li.classList.contains('l');
+      const pic = w.li.querySelector('.plate') || w.li.querySelector('a'), at = offsetIn(pic);
       const sx = n.left + n.width / 2 - box.left + (left ? -8 : 8), sy = n.top + n.height / 2 - box.top;
-      const ex = (left ? a.right + 8 : a.left - 8) - box.left, ey = a.top + a.height / 2 - box.top, mx = (sx + ex) / 2;
+      const ex = left ? at.x + pic.offsetWidth : at.x, ey = at.y + pic.offsetHeight / 2, mx = (sx + ex) / 2;
       curves[i].firstChild.setAttribute('d', `M${sx} ${sy} C${mx} ${sy} ${mx} ${ey} ${ex} ${ey}`);
       curves[i].lastChild.setAttribute('cx', ex);
       curves[i].lastChild.setAttribute('cy', ey);
