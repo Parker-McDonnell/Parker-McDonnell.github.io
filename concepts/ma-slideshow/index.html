@@ -95,6 +95,9 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 .beat { transform-box: view-box; transform-origin: 30px 8px; animation: beat 3.2s cubic-bezier(.2, .7, .3, 1) infinite; animation-delay: var(--d, 0s); }
 .beat { animation-duration: calc(3.2s * var(--pace, 1)); }
 @keyframes beat { 0%, 100% { transform: translateY(0) scale(1, 1); } 20% { transform: translateY(-5px) scale(.84, 1.08); } }
+/* its tentacles ripple: each length sways from the end of the one above (--a: how far; set by the drawing) */
+.wave { transform-box: view-box; animation: wave var(--wd, 3s) ease-in-out infinite alternate; }
+@keyframes wave { from { transform: rotate(calc(-1 * var(--a, 6deg))); } to { transform: rotate(var(--a, 6deg)); } }
 /* the explorer: patrols the floor slowly, stopping at each end to look around, its lamp sweeping down over the creatures */
 :root[data-ocean="on"] .floor { container-type: inline-size; }
 .explorer { position: absolute; bottom: 6.6rem; left: 3%; width: 54px; height: 29px; color: var(--line); will-change: translate; animation: patrol 150s ease-in-out infinite; }
@@ -699,11 +702,20 @@ site.use(cfg => {
     for (const a of [45, 135, 225, 315]) s += `<path transform="rotate(${a})" d="M-2.2 -3.4 A2.4 2.4 0 1 1 2.2 -3.4"/>`;
     s += '</g>';
     // tentacles that vary, as real ones do: uneven spacing, length, curl and drift. The "random" numbers are fixed
-    // (a hash of each tentacle's number), so every jellyfish and every visit looks the same
-    const rnd = k => { const v = Math.sin(k * 12.9898) * 43758.5453; return v - Math.floor(v); };
+    // (a hash of each tentacle's number), so every jellyfish and every visit looks the same. Each ripples in the
+    // current (Parker, 2026-10-26): it is three short lengths, each swaying from the end of the one above it, a little
+    // later and a little further, so a wave runs down it to the tip (.wave)
+    const rnd = k => { const v = Math.sin(k * 12.9898) * 43758.5453; return v - Math.floor(v); }, f = n => n.toFixed(2);
     for (let x = 6, k = 1; x <= 54; x += 2.2 + rnd(k) * 1.6, k++) {
-      const curl = (rnd(k + 7) - .5) * 3.4, h = 2 + rnd(k + 13) * 2.6, drift = (rnd(k + 21) - .5) * 1.8, f = n => n.toFixed(2);
-      s += `<path stroke-width=".7" d="M${f(x)} ${f(21 + (x - 30) ** 2 / 900)} q${f(curl)} ${f(h / 2)} ${f(drift)} ${f(h)} t${f(drift)} ${f(h)}"/>`;
+      const curl = (rnd(k + 7) - .5) * 2.4, len = (4.5 + rnd(k + 13) * 4.5) / 3, drift = (rnd(k + 21) - .5) * .6;
+      const top = 21 + (x - 30) ** 2 / 900, dur = 2.6 + rnd(k + 29) * 1.4, off = -rnd(k + 37) * dur;
+      let t = '';
+      for (let j = 2; j >= 0; j--) {
+        const jx = x + drift * j, jy = top + len * j, c = j % 2 ? -curl : curl;
+        t = `<g class="wave" style="transform-origin:${f(jx)}px ${f(jy)}px;animation-delay:${f(off - j * .35)}s;--a:${4 + j * 3}deg">` +
+          `<path stroke-width=".7" d="M${f(jx)} ${f(jy)} q${f(c)} ${f(len / 2)} ${f(drift)} ${f(len)}"/>${t}</g>`;
+      }
+      s += `<g style="--wd:${f(dur)}s">${t}</g>`;
     }
     return `<g class="beat">${s}</g>`;
   };
@@ -1414,8 +1426,10 @@ site.use(cfg => {
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize), one = narrow.matches;
     works.forEach((w, i) => { const r = one || i % 2 === 1; w.li.classList.toggle('r', r); w.li.classList.toggle('l', !r); });
     const gap = rem, tallest = Math.max(...works.map(w => w.li.offsetHeight));
-    // an even step from each work to the next: on alternating sides two steps must clear a card, on a phone one step
-    const step = one ? tallest + 1.5 * gap : Math.max(tallest / 2 + gap, 5.5 * rem), pad = 2.5 * rem + step * .5;
+    // an even step from each work to the next: on alternating sides two steps must clear a card, on a phone one step.
+    // It is also how far the reader scrolls from one work to the next, so it is kept to two or so turns of a mouse
+    // wheel (one turn is about 100px): closer, and a quick turn or two carries the sub past a work (Parker, 2026-10-26)
+    const step = one ? tallest + 1.5 * gap : Math.max(tallest * .8 + gap, 11 * rem), pad = 2.5 * rem + step * .5;
     const ys = works.map((w, i) => pad + i * step);
     // the kelp stalk sways gently, and each work's node sits on it
     const spineX = one ? .9 * rem : ct.clientWidth / 2;
@@ -1501,7 +1515,7 @@ site.use(cfg => {
   let held = null, aim = null, chasing = 0, pace = .1;
   function chase(x, y, quick) {
     if (x === null) { cancelAnimationFrame(chasing); chasing = 0; held = null; return; }
-    pace = quick ? .2 : .1;
+    pace = quick ? .25 : .1;
     aim = [x, y];
     held ||= [x, y];
     if (chasing) return;
@@ -1549,9 +1563,9 @@ site.use(cfg => {
       // before the reader reaches the timeline the sub is diving: it starts in the open water just right of the headline,
       // facing it with its lamp on it; as the reader scrolls toward the slideshow it sinks down the right side behind the
       // slideshow and comes out below it, where it waits (in the gap above "Selected work") until the first work comes
-      // up, then glides across to its spot by that work, arriving as the work comes 65% of the way down the screen. It
+      // up, then glides across to its spot by that work, arriving as the work comes halfway down the screen. It
       // eases after the scroll rather than moving with it. Positions here are on the page, so it moves with the page.
-      const line = innerHeight * .65, ctTop = home.top + scrollY, spot = ctTop + y;
+      const line = innerHeight * .5, ctTop = home.top + scrollY, spot = ctTop + y;
       const handover = spot - line, diving = n === 0 && scrollY < handover;
       sub.classList.toggle('dive', diving);
       if (diving) {
@@ -1559,12 +1573,13 @@ site.use(cfg => {
         const show = document.querySelector('.show')?.getBoundingClientRect(), head = document.getElementById('works')?.getBoundingClientRect();
         const below = show && head ? (show.bottom + head.top) / 2 + scrollY : startY;
         // down behind the slideshow, evenly with the scroll, arriving below it as that spot comes halfway down the screen
-        // (or a little before the handover, if that comes first)
-        const landed = Math.max(1, Math.min(below - innerHeight * .5, handover - innerHeight * .2)), sink = clamp(scrollY / landed);
-        // then straight on to the first work, no pause: it sets off at the speed it sank and slows as it arrives
+        // (or a third of a screen before the handover, if that comes first, so the move across has room)
+        const landed = Math.max(1, Math.min(below - innerHeight * .5, handover - innerHeight * .35)), sink = clamp(scrollY / landed);
+        // then straight on to the first work, no pause: it goes on down at the speed it sank and slows as it arrives,
+        // and eases across, gathering speed and slowing again, so it doesn't dash sideways
         const from = landed, cross = clamp((scrollY - from) / Math.max(1, handover - from));
         const py = startY + (below - startY) * sink, px = startX;
-        const glide = 1 - (1 - cross) ** 2, vx = px + (home.left + x - px) * glide, pageY = py + (spot - py) * glide;
+        const glide = 1 - (1 - cross) ** 2, vx = px + (home.left + x - px) * smooth(cross), pageY = py + (spot - py) * glide;
         chase(vx - home.left, pageY - ctTop);
         sub.classList.add('west');
         sub.style.setProperty('--tilt', '0deg');

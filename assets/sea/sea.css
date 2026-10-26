@@ -90,6 +90,9 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 .beat { transform-box: view-box; transform-origin: 30px 8px; animation: beat 3.2s cubic-bezier(.2, .7, .3, 1) infinite; animation-delay: var(--d, 0s); }
 .beat { animation-duration: calc(3.2s * var(--pace, 1)); }
 @keyframes beat { 0%, 100% { transform: translateY(0) scale(1, 1); } 20% { transform: translateY(-5px) scale(.84, 1.08); } }
+/* its tentacles ripple: each length sways from the end of the one above (--a: how far; set by the drawing) */
+.wave { transform-box: view-box; animation: wave var(--wd, 3s) ease-in-out infinite alternate; }
+@keyframes wave { from { transform: rotate(calc(-1 * var(--a, 6deg))); } to { transform: rotate(var(--a, 6deg)); } }
 /* the explorer: patrols the floor slowly, stopping at each end to look around, its lamp sweeping down over the creatures */
 :root[data-ocean="on"] .floor { container-type: inline-size; }
 .explorer { position: absolute; bottom: 6.6rem; left: 3%; width: 54px; height: 29px; color: var(--line); will-change: translate; animation: patrol 150s ease-in-out infinite; }
