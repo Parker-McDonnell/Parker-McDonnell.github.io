@@ -1338,7 +1338,7 @@ site.use(cfg => {
   sub.className = 'sub';
   sub.innerHTML = '<svg class="beam" viewBox="0 0 400 160" preserveAspectRatio="none"><defs><linearGradient id="beamFade">' +
     '<stop offset="0" style="stop-color:var(--beam)"/><stop offset="1" style="stop-color:var(--beam);stop-opacity:0"/></linearGradient></defs>' +
-    '<path d="M0 74 L400 0 L400 160 L0 86 Z"/></svg>' +
+    '<path d="M0 80 L400 0 L400 160 Z"/></svg>' +
     '<svg class="hull" viewBox="0 0 60 32"><path d="M8 20 Q8 12 20 12 L44 12 Q54 12 54 20 Q54 28 44 28 L20 28 Q8 28 8 20 Z"/>' +
     '<path d="M24 12 L26 5 L36 5 L38 12 M31 5 V1 h4 M8 20 l-5 -5 v10 z"/><circle cx="25" cy="20" r="2.2"/><circle cx="34" cy="20" r="2.2"/><circle cx="43" cy="20" r="2.2"/></svg>';
   wrap.append(sub);
@@ -1468,7 +1468,7 @@ site.use(cfg => {
     const last = [...r.getClientRects()].pop() || h1.getBoundingClientRect();
     const all = h1.getBoundingClientRect();
     // and what its lamp must cover: from the headline's left edge, the headline's height
-    return [Math.min(innerWidth - 60, last.right + Math.max(110, innerWidth * .15)), all.top + all.height / 2 + scrollY, all.left, all.height];
+    return [Math.min(innerWidth - 60, last.right + Math.max(170, innerWidth * .22)), all.top + all.height / 2 + scrollY, all.left, all.height];
   }
   // the diving sub eases toward where it should be, a little behind the scroll; chase(null) stops it
   let held = null, aim = null, chasing = 0;
@@ -1526,7 +1526,7 @@ site.use(cfg => {
         sub.style.setProperty('--tilt', '0deg');
         // the lamp first floods the headline (its length and spread measured on screen, so undone by the sub's scale),
         // then narrows to a short glow ahead of it as it sinks
-        const big = sub.classList.contains('small') ? .8 : 1.15, reach = Math.max(0, vx - textL) * 1.5 / big, spread = textH * 2 / big;
+        const big = sub.classList.contains('small') ? .8 : 1.15, reach = Math.max(0, vx - textL) * 1.5 / big, spread = textH * 3.2 / big;
         sub.style.setProperty('--beamw', reach + (112 - reach) * k + 'px');
         sub.style.setProperty('--beamh', spread + (60 - spread) * k + 'px');
       } else {
