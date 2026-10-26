@@ -262,10 +262,10 @@ button:hover { color: var(--shu); }
 .works.light .sub { display: block; position: absolute; width: 60px; height: 32px; z-index: 3; pointer-events: none; color: var(--line);
   transform: translate(-50%, -50%) rotate(var(--tilt, 0deg)); transition: top .9s ease, left .9s ease, transform .9s ease; }
 .works.light .sub.west { transform: translate(-50%, -50%) scaleX(-1) rotate(var(--tilt, 0deg)); }
-.works.light .sub { scale: 1.15; }
+.works.light .sub { scale: 1.3; }
 .works.light .sub.dive { transition: none; }
 .works.light .sub.dive .beam { opacity: .85; }
-.works.light .sub.small { scale: .8; }
+.works.light .sub.small { scale: .9; }
 .sub .hull { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.2;
   stroke-linecap: round; stroke-linejoin: round; animation: hover 6s ease-in-out infinite; }
 .sub .hull path:first-child { fill: var(--paper); }
@@ -1525,27 +1525,28 @@ site.use(cfg => {
       // before the reader reaches the timeline the sub is diving: it starts in the open water just right of the headline,
       // facing it with its lamp on it; as the reader scrolls toward the slideshow it sinks down the right side behind the
       // slideshow and comes out below it, where it waits (in the gap above "Selected work") until the first work comes
-      // up, then glides across to its spot by that work as it reaches the reading line (45% down the screen). It eases
-      // after the scroll rather than moving with it. Positions here are on the page, so it moves with the page.
-      const line = innerHeight * .45, ctTop = home.top + scrollY, spot = ctTop + y;
+      // up, then glides across to its spot by that work, arriving as the work comes 65% of the way down the screen. It
+      // eases after the scroll rather than moving with it. Positions here are on the page, so it moves with the page.
+      const line = innerHeight * .65, ctTop = home.top + scrollY, spot = ctTop + y;
       const handover = spot - line, diving = n === 0 && scrollY < handover;
       sub.classList.toggle('dive', diving);
       if (diving) {
         const [startX, startY, textL, textH] = besideHeadline(), smooth = t => t * t * (3 - 2 * t), clamp = t => Math.min(1, Math.max(0, t));
         const show = document.querySelector('.show')?.getBoundingClientRect(), head = document.getElementById('works')?.getBoundingClientRect();
         const below = show && head ? (show.bottom + head.top) / 2 + scrollY : startY;
-        // down behind the slideshow, arriving below it as that spot comes 70% of the way down the screen
-        const sink = clamp(scrollY / Math.max(1, below - innerHeight * .7));
+        // down behind the slideshow, evenly with the scroll, arriving below it as that spot comes halfway down the screen
+        // (or a little before the handover, if that comes first)
+        const landed = Math.max(1, Math.min(below - innerHeight * .5, handover - innerHeight * .2)), sink = clamp(scrollY / landed);
         // then across to the kelp line over the last stretch before the handover
-        const from = Math.max(below - innerHeight * .7, handover - innerHeight * .35), cross = clamp((scrollY - from) / Math.max(1, handover - from));
-        const py = startY + (below - startY) * smooth(sink), px = startX;
+        const from = Math.max(landed, handover - innerHeight * .35), cross = clamp((scrollY - from) / Math.max(1, handover - from));
+        const py = startY + (below - startY) * sink, px = startX;
         const vx = px + (home.left + x - px) * smooth(cross), pageY = py + (spot - py) * smooth(cross);
         chase(vx - home.left, pageY - ctTop);
         sub.classList.add('west');
         sub.style.setProperty('--tilt', '0deg');
         // the lamp floods the headline at first (its length and spread measured on screen, so undone by the sub's
         // scale), and as it sinks it narrows but still reaches all the way to the left edge of the page
-        const k = smooth(sink), big = sub.classList.contains('small') ? .8 : 1.15, spread = textH * 3.2 / big;
+        const k = smooth(sink), big = sub.classList.contains('small') ? .9 : 1.3, spread = textH * 3.2 / big;
         sub.style.setProperty('--beamw', vx * 1.3 / big + 'px');
         sub.style.setProperty('--beamh', spread + (90 - spread) * k + 'px');
       } else {
