@@ -236,7 +236,9 @@ button:hover { color: var(--shu); }
 }
 [hidden] { display: none !important; }
 /* the spine as a kelp stalk (theme.yml, timeline.spine: kelp) replaces the straight line */
-.ct-lines .lanes path { fill: none; stroke: var(--mute); stroke-width: 1.25; opacity: .55; }
+/* the stalk is drawn in the text colour (white on a dark page) so it is easy to follow, and is never faded with the curves */
+.ct-lines g.lanes { opacity: 1 !important; }
+.ct-lines .lanes path { fill: none; stroke: var(--ink); stroke-width: 1.25; opacity: .45; }
 .works.stem .ct::before { display: none; }
 /* unfolding (theme.yml, timeline.unfold). Fold: each card is hinged on its top edge and folds down open as it comes up
    the screen, an origami crease across its middle flattening as it opens. */
@@ -283,7 +285,7 @@ button:hover { color: var(--shu); }
 .works.grow .ct-lines .lanes path.leaf { transition: opacity 1.6s ease; }
 /* Focus: a vignette. The work in the middle of the screen is sharp and solid; the further a work is from the middle,
    the more it fades and blurs, its node and line with it (--f: 0 in the middle, 1 at the screen's edge) */
-.works.focus .feed li > a { opacity: calc(1 - .85 * var(--f, 0)); filter: blur(calc(var(--f, 0) * 5px)); }
+.works.focus .feed li > a { opacity: calc(1 - .8 * var(--f, 0)); filter: blur(calc(var(--f, 0) * 2.5px)); }
 .works.focus .ct-node { opacity: calc(1 - .75 * var(--f, 0)); }
 .works.focus .ct-lines g { opacity: calc(.2 * (1 - var(--f, 0))); }
 .works.focus .ct-lines g.on { opacity: calc(.8 * (1 - var(--f, 0))); }
@@ -300,8 +302,8 @@ button:hover { color: var(--shu); }
 .works.scroll .roll::before { content: ""; position: absolute; left: 1rem; right: 1rem; bottom: 100%; height: 2.5rem; background: linear-gradient(transparent, rgba(0, 0, 0, .05)); }
 .works.scroll .roll.done { opacity: 0; }
 .works.unfold .ct-lines .lanes path.leaf { transition: opacity .8s ease; }
-.ct-lines .lanes path.stem { stroke-width: 1.4; opacity: .6; }
-.ct-lines .lanes path.leaf { stroke-width: 1; opacity: .45; }
+.ct-lines .lanes path.stem { stroke-width: 1.5; opacity: .5; }
+.ct-lines .lanes path.leaf { stroke-width: 1.1; opacity: .38; }
 /* work pages */
 .facts { display: grid; grid-template-columns: 7rem 1fr; gap: .5rem 1.5rem; margin: 0; font-size: .9rem; }
 .facts dt { font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--mute); padding-top: .2rem; }
@@ -580,7 +582,7 @@ sigshep</div>
 const site = (() => {
   const defaults = {
     slideshow: { seconds_per_slide: 6, autoplay: true, resume_after_touch_seconds: 4 },
-    timeline: { spine: 'kelp', space_per_year: '16rem', marks: 'icon', unfold: 'fold' },
+    timeline: { spine: 'kelp', marks: 'icon', unfold: 'fold' },
     citation_map: { demo: true },
     ocean: { enabled: true, motion: true, light_shafts: true, blocks: 'soft', line_color: 'muted' },
     qr: { site_url: '' },
@@ -1265,9 +1267,9 @@ site.use(cfg => {
   document.fonts.ready.then(draw);
 })();
 
-// Timeline: the work list is the timeline. Each work sits at its date on a fixed scale (timeline.space_per_year), so a
-// quiet year leaves a gap and a busy one crowds; a card is pushed down only as far as it must be to clear the one
-// above it on the same side, and a curve joins it to the node at its exact date on the spine. The spine is a kelp
+// Timeline: the work list is the timeline. The works sit in order, newest first, evenly spaced down the spine on
+// alternating sides (what matters is the order and the year, not the true gaps between dates: Parker, 2026-10-25); a
+// year label marks where each year begins, and a curve joins each work to its node on the spine. The spine is a kelp
 // stalk or a straight line (timeline.spine). As the reader scrolls, the work nearest the middle of the screen is
 // marked; a node scrolls to its work. Cards carry an icon or a number (timeline.marks); numbers count from the
 // oldest work, like a reference list, so adding a new work never renumbers the others.
@@ -1282,7 +1284,7 @@ site.use(cfg => {
     return { li, n: items.length - i, d: y + (m - .5) / 12, date: `${MONTHS[m - 1]} ${y}`, k: li.dataset.kind, t: li.querySelector('.t').textContent };
   });
   const y0 = Math.floor(Math.min(...works.map(w => w.d))), y1 = Math.ceil(Math.max(...works.map(w => w.d)) + .01);
-  let perYear = 16, stem = true, folding = 'fold', active = -1, geo = null;
+  let stem = true, folding = 'fold', active = -1, geo = null;
 
   const roll = document.createElement('div');
   roll.className = 'roll';
@@ -1324,7 +1326,6 @@ site.use(cfg => {
 
   function render(cfg) {
     const style = cfg.timeline?.marks || 'icon';
-    perYear = parseFloat(cfg.timeline?.space_per_year) || 16;
     stem = cfg.timeline?.spine !== 'straight';
     const u = cfg.timeline?.unfold;
     folding = u === false || u === 'off' ? 'off' : ['scroll', 'light', 'fade', 'grow', 'focus'].includes(u) ? u : 'fold';
@@ -1342,31 +1343,28 @@ site.use(cfg => {
     if (!feed.clientWidth) return;
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize), one = narrow.matches;
     works.forEach((w, i) => { const r = one || i % 2 === 1; w.li.classList.toggle('r', r); w.li.classList.toggle('l', !r); });
-    const pad = 2.5 * rem, gap = rem;
-    // one column on a phone: stretch the scale until the stacked works fit it, so each date stays beside its work
-    const stacked = works.reduce((sum, w) => sum + w.li.offsetHeight + gap, 0);
-    const S = one ? Math.max(perYear * rem * .6, stacked / (y1 - y0)) : perYear * rem;
-    const at = d => pad + (y1 - d) * S;
+    const gap = rem, tallest = Math.max(...works.map(w => w.li.offsetHeight));
+    // an even step from each work to the next: on alternating sides two steps must clear a card, on a phone one step
+    const step = one ? tallest + 1.5 * gap : Math.max(tallest / 2 + gap, 5.5 * rem), pad = 2.5 * rem + step * .5;
+    const ys = works.map((w, i) => pad + i * step);
     // the kelp stalk sways gently, and each work's node sits on it
     const spineX = one ? .9 * rem : ct.clientWidth / 2;
     const wob = y => stem ? 7 * Math.sin(y / 240 * 2 * Math.PI) : 0;
-    const below = { l: 0, r: 0 };
-    let prev = -Infinity, end = 0, lastY = -Infinity;
     works.forEach((w, i) => {
-      const side = w.li.classList.contains('l') ? 'l' : 'r', h = w.li.offsetHeight;
-      const top = Math.max(at(w.d) - h / 2, below[side] + gap, prev + (one ? 0 : 2 * gap), 0);
-      w.li.style.top = top + 'px';
-      below[side] = top + h; prev = top; end = Math.max(end, top + h);
-      // two works on one date: the second node sits just below the first
-      const y = Math.max(at(w.d), lastY + 14);
-      lastY = y;
-      nodes[i].style.top = y + 'px';
-      nodes[i].style.left = stem ? spineX + wob(y) + 'px' : '';
+      w.li.style.top = Math.max(0, ys[i] - w.li.offsetHeight / 2) + 'px';
+      nodes[i].style.top = ys[i] + 'px';
+      nodes[i].style.left = stem ? spineX + wob(ys[i]) + 'px' : '';
     });
-    const height = Math.max(end, at(y0)) + pad;
+    // a year's label sits halfway between the last work of the year before and its own first work (above the first
+    // work for the newest year); a year with no work has no label
+    years.forEach(([yr, el]) => {
+      const i = works.findIndex(w => Math.floor(w.d) === yr);
+      el.hidden = i < 0;
+      if (i >= 0) el.style.top = (i ? (ys[i - 1] + ys[i]) / 2 : ys[0] - step * .5) + 'px';
+    });
+    const height = ys[ys.length - 1] + tallest / 2 + 2.5 * rem;
     feed.style.height = height + 'px';
-    years.forEach(([yr, s]) => s.style.top = at(yr + 1) + 'px');
-    geo = { height, spineX, wob, tops: works.map(w => at(w.d)) };
+    geo = { height, spineX, wob, tops: ys };
     draw();
     unfold();
   }
@@ -1460,9 +1458,10 @@ site.use(cfg => {
     works.forEach((w, i) => {
       const u = shown ? Math.min(1, Math.max(0, (edge - w.li.getBoundingClientRect().top) / (innerHeight * (['fade', 'grow'].includes(folding) ? .5 : .3)))) : 1;
       for (const el of [w.li, nodes[i], curves[i]]) el.style.setProperty('--u', u.toFixed(3));
-      // focus: how far the work is from the middle of the screen, 0 there to 1 at the top or bottom edge
-      const r = w.li.getBoundingClientRect(), f = on && folding === 'focus' ? Math.min(1, Math.abs(r.top + r.height / 2 - innerHeight / 2) / (innerHeight * .5)) : 0;
-      for (const el of [w.li, nodes[i], curves[i]]) el.style.setProperty('--f', (f * f).toFixed(3));
+      // focus: sharp within the middle 40% of the screen, softening from there to the top or bottom edge (0 to 1)
+      const r = w.li.getBoundingClientRect(), off = Math.abs(r.top + r.height / 2 - innerHeight / 2) / innerHeight;
+      const f = on && folding === 'focus' ? Math.min(1, Math.max(0, (off - .2) / .3)) : 0;
+      for (const el of [w.li, nodes[i], curves[i]]) el.style.setProperty('--f', f.toFixed(3));
     });
     const reach = edge - box.top, grown = shown && !['fade', 'grow'].includes(folding) ? Math.min(1, Math.max(0, reach / geo.height)) : 1;
     wrap.style.setProperty('--reach', on ? Math.max(0, reach) + 'px' : '100%');

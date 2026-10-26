@@ -61,10 +61,10 @@ slideshow:
   autoplay: true                      # false: only moves when swiped or the arrows are pressed
   resume_after_touch_seconds: 4       # after a swipe, wait this long before moving on again
 
-# "Selected work" is a timeline: works placed by date along a spine down the middle, on alternating sides
+# "Selected work" is a timeline: works in order, evenly spaced down a spine in the middle, on alternating sides,
+# with a label where each year begins
 timeline:
   spine: kelp                         # kelp (a swaying stalk with leaves, rising from a holdfast) or straight
-  space_per_year: 16rem               # the height one year takes, so gaps in time show as gaps on the page
   marks: icon                         # in each card: icon (one per kind of work), number (like a reference list) or dot (none)
   unfold: fold                        # as the reader scrolls: fold (each card folds down open, with an origami crease), scroll (unrolls like a paper scroll), light (a submarine lights one work at a time), fade (works and kelp leaves fade in), grow (node, then line, then card, like a leaf), focus (sharp in the middle of the screen, fading and blurring above and below) or off
 
