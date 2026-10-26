@@ -138,7 +138,7 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --rim: rgba(255, 255, 255, .22); } }
 :root[data-theme="dark"] { --rim: rgba(255, 255, 255, .22); }
 :root[data-ocean="on"][data-blocks="soft"] :is(.view p:not(.feed p, .intro p), .eyebrow, .page-title, .byline, .lede, .view:not([data-page="home"]) h2,
-  .facts, .findings, .links, .related a, .caption, .mentions) {
+  .facts, .findings, .links, .related a, .mentions) {
   background: var(--veil); box-shadow: 0 0 16px 10px var(--veil); border-radius: 10px;
   -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .wrap { max-width: var(--col); margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 6rem; }
