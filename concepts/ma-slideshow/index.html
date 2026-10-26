@@ -1795,11 +1795,12 @@ function shadows(lamp, live) {
       } else {
       chase(x, y, true);
       if (past) {
-        // resting on the footer's line, facing the foot of the stalk, lamp low
+        // resting on the footer's line, facing the foot of the stalk, its lamp reaching past the stalk (Parker,
+        // 2026-10-26: further than the short glow it had)
         sub.classList.add('west');
         sub.style.setProperty('--tilt', '0deg');
-        sub.style.setProperty('--beamw', '80px');
-        sub.style.setProperty('--beamh', '50px');
+        sub.style.setProperty('--beamw', '240px');
+        sub.style.setProperty('--beamh', '90px');
       } else {
       sub.classList.toggle('west', west);
       sub.style.setProperty('--tilt', Math.atan2(dy, dx) * 180 / Math.PI + 'deg');
