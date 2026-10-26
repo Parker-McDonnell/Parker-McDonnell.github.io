@@ -661,7 +661,13 @@ site.use(cfg => {
     let s = '<path d="M4 20 Q6 5 30 4 Q54 5 56 20 Q30 25 4 20 Z"/><g transform="translate(30 10.5) scale(1 .6)" stroke-width=".8">';
     for (const a of [45, 135, 225, 315]) s += `<path transform="rotate(${a})" d="M-2.2 -3.4 A2.4 2.4 0 1 1 2.2 -3.4"/>`;
     s += '</g>';
-    for (let x = 6; x <= 54; x += 3) s += `<path stroke-width=".7" d="M${x} ${21 + (x - 30) ** 2 / 900} q1.4 1.8 0 3.6 t0 3.6"/>`;
+    // tentacles that vary, as real ones do: uneven spacing, length, curl and drift. The "random" numbers are fixed
+    // (a hash of each tentacle's number), so every jellyfish and every visit looks the same
+    const rnd = k => { const v = Math.sin(k * 12.9898) * 43758.5453; return v - Math.floor(v); };
+    for (let x = 6, k = 1; x <= 54; x += 2.2 + rnd(k) * 1.6, k++) {
+      const curl = (rnd(k + 7) - .5) * 3.4, h = 2 + rnd(k + 13) * 2.6, drift = (rnd(k + 21) - .5) * 1.8, f = n => n.toFixed(2);
+      s += `<path stroke-width=".7" d="M${f(x)} ${f(21 + (x - 30) ** 2 / 900)} q${f(curl)} ${f(h / 2)} ${f(drift)} ${f(h)} t${f(drift)} ${f(h)}"/>`;
+    }
     return `<g class="beat">${s}</g>`;
   };
   // a fish; its tail is drawn apart so it can flick now and then (.tail)
@@ -1369,7 +1375,9 @@ site.use(cfg => {
       const pic = w.li.querySelector('.plate') || w.li.querySelector('a'), at = offsetIn(pic);
       const sx = n.left + n.width / 2 - box.left + (left ? -8 : 8), sy = n.top + n.height / 2 - box.top;
       const ex = left ? at.x + pic.offsetWidth : at.x, ey = at.y + pic.offsetHeight / 2, mx = (sx + ex) / 2;
-      curves[i].firstChild.setAttribute('d', `M${sx} ${sy} C${mx} ${sy} ${mx} ${ey} ${ex} ${ey}`);
+      // it arches up on its way, like a leaf's stalk, even when the node and the frame are level
+      const dx = ex - sx, bow = 10 + Math.abs(dx) * .12;
+      curves[i].firstChild.setAttribute('d', `M${sx} ${sy} C${sx + dx * .35} ${sy - bow} ${sx + dx * .7} ${ey - bow * .5} ${ex} ${ey}`);
       curves[i].lastChild.setAttribute('cx', ex);
       curves[i].lastChild.setAttribute('cy', ey);
     });
