@@ -720,7 +720,40 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
 // Bubbles: now and then one or two small bubbles leave the top of a submarine's periscope and drift up, wobbling,
 // until they fade (Parker, 2026-10-26). They are left in the water, in the sub's parent, so they rise from where it was
 // rather than travelling with it. live() says whether the sub is out; a sub taken off the page stops making them.
+// Its propeller leaves a wake: one smooth line tracing the path it has just swum, redrawn every frame, palest and
+// widest furthest back, gone after a second and a half (Parker, 2026-10-26: a continuous trail, not pieces or bubbles).
 function bubbles(sub, live) {
+  const LIFE = 1500, trail = [];
+  let svg = null;
+  const wake = now => {
+    if (!sub.isConnected) { svg?.remove(); return; }
+    requestAnimationFrame(wake);
+    const home = sub.offsetParent;
+    if (document.hidden || !home || !live()) { trail.length = 0; if (svg) svg.innerHTML = ''; return; }
+    if (svg?.parentElement !== home) {
+      svg?.remove();
+      svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'wakes');
+      home.append(svg);
+    }
+    // the propeller: 27px behind the middle of the hull, turned and mirrored as the sub is
+    const box = sub.getBoundingClientRect(), at = home.getBoundingClientRect(), cs = getComputedStyle(sub);
+    const m = new DOMMatrix(cs.transform === 'none' ? undefined : cs.transform), k = parseFloat(cs.scale) || 1, px = -27 * k, py = 2 * k;
+    const x = box.left + box.width / 2 - at.left + m.a * px + m.c * py, y = box.top + box.height / 2 - at.top + m.b * px + m.d * py;
+    const head = trail[trail.length - 1];
+    if (!head || Math.hypot(x - head.x, y - head.y) > .4) trail.push({ x, y, t: now });
+    while (trail.length && now - trail[0].t > LIFE) trail.shift();
+    // each short step of the line is drawn by itself, so it can grow paler and wider with its age; square-cut ends, so
+    // neighbouring steps never overlap into beads
+    let s = '';
+    for (let i = 1; i < trail.length; i++) {
+      const a = trail[i - 1], b = trail[i], age = Math.min(1, (now - b.t) / LIFE);
+      s += `<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" ` +
+        `stroke-opacity="${((1 - age) ** 1.6).toFixed(3)}" stroke-width="${(1.2 + 4 * age).toFixed(2)}"/>`;
+    }
+    svg.innerHTML = s;
+  };
+  requestAnimationFrame(wake);
   const tick = () => {
     if (!sub.isConnected) return;
     setTimeout(tick, 400 + Math.random() * 700);
