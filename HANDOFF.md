@@ -122,6 +122,15 @@ everything is.
 - **Building:** no Ruby here, so `.github/workflows/build-check.yml` builds every push to `redesign` without publishing
   and keeps `_site` as a download. `deploy.yml` (al-folio's) publishes `main` to `gh-pages`; when going live, set
   GitHub Pages to serve from `gh-pages`.
+- **Checked 2026-10-25** on the built site (build-check run 40265738915, downloaded with
+  `gh run download <run> -n site -D <folder>` and served with `python -m http.server`): home (sea, sub from the headline,
+  slideshow of 4, timeline of 9 with numbers), the paper's page (crimson accent, citation map of 9, 3 related, schema.org
+  and Open Graph present), about, 404, a 375 px phone width with no sideways scroll, no console errors.
+- **Starter leftovers removed:** the `books` archive in `jekyll-archives` (the first build failed on it) and al-folio's
+  example `external_sources`, which pulled other people's blog posts into a `/blog/` section. al-folio's `posts`
+  archive is still configured but makes nothing while there are no posts.
+- **Not yet:** going live (Parker's OK, then GitHub Pages set to serve from `gh-pages`), real content, the paper's
+  figure licence, and the sub on the work and about pages (asked Parker 2026-10-25, no answer yet).
 
 ## Next steps
 
