@@ -720,21 +720,32 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
 // Bubbles: now and then one or two small bubbles leave the top of a submarine's periscope and drift up, wobbling,
 // until they fade (Parker, 2026-10-26). They are left in the water, in the sub's parent, so they rise from where it was
 // rather than travelling with it. live() says whether the sub is out; a sub taken off the page stops making them.
-// It leaves a wake, like water shed off its back: a soft, smooth trail tracing the path it has just swum, redrawn every
-// frame, brightest just behind it, then spreading, drifting a little and slowly fading, gone after three seconds
-// (Parker, 2026-10-26: a continuous trail, not pieces or bubbles, wide and steady, fading slowly). It follows the
-// middle of the hull, which glides, not the propeller, which swings as the sub turns; the trail is laid under the
-// hull, so it comes out from behind it.
+// It leaves a wake, like water shed off its back: one soft ribbon along the path it has just swum, redrawn every
+// frame, narrow and brightest at the sub and widening and fading smoothly toward its tail, which drifts a little as
+// it spreads; gone after three seconds (Parker, 2026-10-26: a continuous trail, wide and steady, fading slowly; a
+// spline rather than a zig zag; a gradient from tip to tail rather than overlapping pieces). It follows the middle of
+// the hull, which glides, not the propeller, which swings as the sub turns; the ribbon is laid under the hull, so it
+// comes out from behind it.
 function bubbles(sub, live) {
-  const LIFE = 3000, LAYERS = 6, trail = [];
-  let svg = null;
-  // a smooth curve through the points: straight to the first, then bends through the midpoints between them
-  const curve = pts => {
-    let d = `M${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
-    for (let i = 1; i < pts.length - 1; i++)
-      d += ` Q${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)} ${((pts[i].x + pts[i + 1].x) / 2).toFixed(1)} ${((pts[i].y + pts[i + 1].y) / 2).toFixed(1)}`;
-    const z = pts[pts.length - 1];
-    return d + ` L${z.x.toFixed(1)} ${z.y.toFixed(1)}`;
+  const LIFE = 3000, trail = [];
+  let svg = null, prev = null, moved = -Infinity;
+  const lerp = (a, b, f) => ({ x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, t: a.t + (b.t - a.t) * f });
+  // the path as a spline. The sub swims in straight runs from work to work, so its path zigzags: each point is first
+  // averaged with its neighbours (three either side), which draws every corner out into a wide bend, then each corner
+  // left is cut a quarter of the way in from both sides, twice, which smooths it into a curve. The ends stay put
+  const spline = raw => {
+    let pts = raw.map((p, i) => {
+      if (i === 0 || i === raw.length - 1) return p;
+      const k = Math.min(3, i, raw.length - 1 - i), near = raw.slice(i - k, i + k + 1);
+      return { x: near.reduce((v, q) => v + q.x, 0) / near.length, y: near.reduce((v, q) => v + q.y, 0) / near.length, t: p.t };
+    });
+    for (let n = 0; n < 2; n++) {
+      const out = [pts[0]];
+      for (let i = 0; i < pts.length - 1; i++) out.push(lerp(pts[i], pts[i + 1], .25), lerp(pts[i], pts[i + 1], .75));
+      out.push(pts[pts.length - 1]);
+      pts = out;
+    }
+    return pts;
   };
   const wake = now => {
     if (!sub.isConnected) { svg?.remove(); return; }
@@ -749,26 +760,36 @@ function bubbles(sub, live) {
     }
     const box = sub.getBoundingClientRect(), at = home.getBoundingClientRect();
     const here = { x: box.left + box.width / 2 - at.left, y: box.top + box.height / 2 - at.top, t: now, ph: now / 350 };
+    // a point every 14px of travel, far enough apart for the spline to round the corners off
     const last = trail[trail.length - 1];
-    if (!last || Math.hypot(here.x - last.x, here.y - last.y) > 2) trail.push(here);
+    if (!last || Math.hypot(here.x - last.x, here.y - last.y) > 14) trail.push(here);
+    if (prev && Math.hypot(here.x - prev.x, here.y - prev.y) > .3) moved = now;
+    prev = here;
     while (trail.length && now - trail[0].t > LIFE) trail.shift();
-    // as the water ages it drifts: each point wanders a little, more the older it is, and rises a touch, so the far end
-    // loosens and spreads like a real wake rather than staying a rigid band. Neighbours wander together (their phase is
-    // the time they were laid), so the trail meanders gently instead of going lumpy
+    // as the water ages it drifts: each point wanders a little, more the older it is, and rises a touch, so the tail
+    // loosens like a real wake rather than staying a rigid band. Neighbours wander together (their phase is the time
+    // they were laid), so it meanders gently instead of going lumpy
     const drift = trail.map(p => {
       const age = (now - p.t) / LIFE, w = 6 * age;
       return { x: p.x + Math.sin(now / 900 + p.ph) * w, y: p.y + Math.cos(now / 1100 + p.ph) * w - 8 * age, t: p.t };
     });
-    // drawn as a few curves laid over each other, each a single stroke (so it never beads): the whole trail widest and
-    // faintest, then shorter, narrower ones along its newer part, so it is brightest and narrowest just behind the sub
+    const pts = spline([...drift, here]);
+    // the ribbon: at each point of the spline, edges either side of it, half as far apart as the wake is wide there;
+    // between one point and the next, one four-sided piece whose shading is the age there, sharing its edges with its
+    // neighbours, so nothing overlaps and the shade runs on smoothly from tip to tail
+    const edge = pts.map((p, i) => {
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+      const age = Math.min(1, (now - p.t) / LIFE), half = 2 + 11 * age, nx = -(b.y - a.y) / len * half, ny = (b.x - a.x) / len * half;
+      return { l: `${(p.x + nx).toFixed(1)},${(p.y + ny).toFixed(1)}`, r: `${(p.x - nx).toFixed(1)},${(p.y - ny).toFixed(1)}`, age };
+    });
     let s = '';
-    for (let j = LAYERS; j >= 1; j--) {
-      const f = j / LAYERS, pts = [...drift.filter(p => now - p.t <= LIFE * f), here];
-      if (pts.length > 2) s += `<path d="${curve(pts)}" stroke-width="${(5 + 22 * f).toFixed(1)}"/>`;
+    for (let i = 0; i < edge.length - 1; i++) {
+      const a = edge[i], b = edge[i + 1], o = (1 - (a.age + b.age) / 2) ** 1.4;
+      if (o > .01) s += `<polygon points="${a.l} ${b.l} ${b.r} ${a.r}" fill-opacity="${(o * .5).toFixed(3)}"/>`;
     }
     svg.innerHTML = s;
     // once the sub stops, the whole wake fades slowly where it lies rather than shrinking back into it
-    const still = trail.length ? (now - trail[trail.length - 1].t) / LIFE : 1;
+    const still = (now - moved) / LIFE;
     svg.style.opacity = Math.max(0, 1 - Math.max(0, still - .1) * 1.4).toFixed(3);
   };
   requestAnimationFrame(wake);
