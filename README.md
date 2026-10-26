@@ -22,6 +22,6 @@ The page shell and layouts are in `_layouts/` (they override al-folio's own); th
 - **`main`** is the live site. `.github/workflows/deploy.yml` builds it and publishes it to the `gh-pages` branch; GitHub Pages must serve from `gh-pages`. Nothing goes to `main` without Parker's OK.
 - The 2024 site is kept on the `old-jekyll-site` branch.
 
-To build on your own computer you need Ruby 3.3 and Bundler: `bundle install`, then `bundle exec jekyll serve`.
+**To preview** without installing anything: `python bin/preview.py` downloads the site GitHub last built from `redesign` and serves it at http://127.0.0.1:8000 (needs the GitHub CLI, signed in). To build on your own computer instead you need Ruby 3.3 and Bundler: `bundle install`, then `bundle exec jekyll serve`, which also rebuilds as you edit.
 
 `HANDOFF.md` has the design decisions and what's still to do.

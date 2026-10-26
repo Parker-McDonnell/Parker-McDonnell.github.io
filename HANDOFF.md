@@ -130,11 +130,18 @@ everything is.
   example `external_sources`, which pulled other people's blog posts into a `/blog/` section. al-folio's `posts`
   archive is still configured but makes nothing while there are no posts.
 - **Not yet:** going live (Parker's OK, then GitHub Pages set to serve from `gh-pages`), real content, the paper's
-  figure licence, and the sub on the work and about pages (asked Parker 2026-10-25, no answer yet).
+  figure licence.
+- **The sub on every page** (Parker: "add the submarine to the work and about pages, lighting each section in turn
+  as I scroll", 2026-10-25): on a page without the timeline it swims down the right margin (just inside the column
+  when there's no room) and lights the section being read; the rest dims to 35%. A section is the page's head, its
+  picture, its summary, or a heading with what follows it. `page_sub` in `_data/theme.yml`; its beam has its own
+  gradient (`#pageBeam`), since one in a hidden page isn't drawn. Checked on the built site (run 40266121581).
+- **Preview:** `python bin/preview.py` downloads the latest successful build of `redesign` and serves it at
+  http://127.0.0.1:8000 (needs `gh`), so no Ruby is needed here.
 
 ## Next steps
 
 1. ~~Fix and verify the page switching~~ Done 2026-10-25; the Artifact is linked in the table above.
 2. Keep refining the concept with Parker ("jam" on it); there's no rush to go live. Open choices: which header bar is the default (thin now, or full width), and the robot outlines to add to the ocean.
-3. ~~Build the real site on al-folio~~ Version 1 is on `redesign` (above). Still to do: the sub on the other pages, lighting each section in turn as the reader scrolls (Parker's idea, 2026-10-25); the citing papers from Crossref or OpenAlex at build time; links to Scholar and ORCID once Parker gives them; real content.
+3. ~~Build the real site on al-folio~~ Version 1 is on `redesign` (above). Still to do: the citing papers from Crossref or OpenAlex at build time; links to Scholar and ORCID once Parker gives them; real content.
 4. Only with Parker's OK: merge to `main` to go live.
