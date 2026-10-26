@@ -44,9 +44,10 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 .rays .glint { fill: color-mix(in oklab, var(--shu) 35%, transparent); stroke: none; opacity: 0; animation: twinkle 5.2s ease-in-out infinite; }
 @keyframes twinkle { 0%, 70%, 100% { opacity: 0; } 78% { opacity: .9; } 86% { opacity: .15; } 90% { opacity: .6; } }
 /* a fish's tail flicks now and then, turning in and out of the page; a crab's claws wave */
-.tail { transform-box: fill-box; transform-origin: 0 50%; animation: flick 7s ease-in-out infinite;
-  animation-duration: calc(7s * var(--pace, 1)); animation-delay: calc(var(--d, 0s) + var(--o, 0s)); }
-@keyframes flick { 0%, 72%, 100% { transform: scaleX(1); } 76% { transform: scaleX(.25); } 80% { transform: scaleX(1); } 84% { transform: scaleX(.35); } 88% { transform: scaleX(1); } }
+/* a gentle flick, slow and shallow (Parker, 2026-10-26: less pronounced and slower) */
+.tail { transform-box: fill-box; transform-origin: 0 50%; animation: flick 11s ease-in-out infinite;
+  animation-duration: calc(11s * var(--pace, 1)); animation-delay: calc(var(--d, 0s) + var(--o, 0s)); }
+@keyframes flick { 0%, 66%, 100% { transform: scaleX(1); } 73% { transform: scaleX(.65); } 80% { transform: scaleX(1); } 87% { transform: scaleX(.75); } 94% { transform: scaleX(1); } }
 .claw { transform-box: view-box; animation: wave 9s ease-in-out infinite; }
 .claw.left { transform-origin: 20px 17px; }
 .claw.right { transform-origin: 40px 17px; animation-name: wave-r; animation-delay: -2.5s; }
@@ -312,7 +313,12 @@ button:hover { color: var(--shu); }
 /* the page sub shines from the right margin, a little above: shadows fall to the left and down */
 .view.lit > :not(.unlit):not(.sub) { text-shadow: -2px 1px 3px var(--shade); }
 .view.lit > :not(.unlit).plate, .view.lit > :not(.unlit) .plate { box-shadow: -6px 3px 10px var(--shade); }
-.critter { filter: var(--cast, none); transition: filter .4s ease; }
+/* every creature also casts a faint shadow from the sun, above and to the right, so none sits flat on the page; a lamp's
+   shadow takes its place while the lamp is on it (Parker, 2026-10-26) */
+:root { --sun: drop-shadow(-3px 5px 3px rgba(0, 0, 0, .22)); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --sun: drop-shadow(-3px 5px 3px rgba(0, 0, 0, .75)); } }
+:root[data-theme="dark"] { --sun: drop-shadow(-3px 5px 3px rgba(0, 0, 0, .75)); }
+.critter { filter: var(--cast, var(--sun)); transition: filter .4s ease, opacity .4s ease; }
 /* Fade: each work fades in slowly as it comes up the screen, rising a little; the stalk's leaves fade in as it's passed */
 .works.fade .feed li > a { opacity: var(--u, 1); transform: translateY(calc((1 - var(--u, 1)) * 16px)); }
 .works.fade .ct-lines .lanes path.leaf { transition: opacity 1.6s ease; }
@@ -412,4 +418,17 @@ footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule
 .grp button { font-size: .75rem; display: flex; align-items: center; gap: .35rem; }
 .grp button[style]::before { content: ""; width: 9px; height: 9px; border-radius: 1px; background: var(--sw); }
 .grp button[aria-pressed="true"] { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--shu); }
+/* Portal: a link to another page sends the submarine into it, a ring opens where it goes in, and the page fades to the
+   paper and back in on the new page (Parker, 2026-10-26). The real sub hides while a stand-in makes the trip */
+.portal-sub { position: fixed; left: 0; top: 0; width: 60px; height: 32px; z-index: 21; pointer-events: none; color: var(--line); }
+.portal-sub svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor;
+  stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+.portal-sub path:first-child { fill: var(--paper); }
+.portal-ring { position: fixed; z-index: 21; pointer-events: none; border: 1px solid var(--shu); border-radius: 50%; opacity: 0; }
+.veil { position: fixed; inset: 0; z-index: 20; background: var(--paper); opacity: 0; pointer-events: none; }
+:root.portal .sub { visibility: hidden; }
+/* on the site, where each page is its own address, the browser's own page transition fades the veiled page into the
+   new one */
+@view-transition { navigation: auto; }
+::view-transition-group(root) { animation-duration: .6s; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } .frames { scroll-behavior: auto } .bar { display: none } }

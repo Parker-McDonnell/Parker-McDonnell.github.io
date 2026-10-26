@@ -158,6 +158,16 @@ everything is.
   account can't update it: publish a fresh Artifact from `concepts/ma-slideshow/index.html` with `theme.yml` sent as a
   `text/plain` file. Its placements store (the Arrange layout) stays with the old Artifact; the site's copy is
   `_data/placements.yml` (last copied 2026-10-25).
+- **Concept Artifact on the second account** (2026-10-26): https://claude.ai/artifact/JbnACFHtqiAeVi99kWtRo4, published
+  from `concepts/ma-slideshow/index.html` with `theme.yml` and, as its `placements.yml`, the site's
+  `_data/placements.yml` (both `text/plain`), so Arrange starts from the site's layout. Capabilities `db` and `user`.
+  Its store holds only the pages Parker re-arranges there: merge it over `_data/placements.yml`, don't replace the file.
+- **Added 2026-10-26 on the second account** (Parker's asks): every creature casts a faint sun shadow (down and left,
+  `--sun`); a creature in a sub's lamp comes up to near full strength with a firmer, longer shadow (the lamp shadows had
+  been too faint to see, and a name clash stopped them once while changing this); fish tails flick slower and
+  shallower (11 s, to 65%); **portal**: a link to another page sends the sub to it, it shrinks into the link's picture
+  as a ring opens, the page fades to the paper and back in on the new page (on the site, cross-document
+  `@view-transition` fades the veiled page into the next).
 - **Site:** `redesign` at the commit that adds this section; every push is built by build-check and the builds pass.
   Nothing is on `main`.
 - **Done 2026-10-26** (all Parker's asks): works a timeline step apart that is two wheel turns, so the sub stops at

@@ -822,7 +822,13 @@ function bubbles(sub, live) {
 // whether the lamp is lit; a lamp taken off the page stops, and clears the shadows it cast.
 function shadows(lamp, live) {
   const lit = new Set();
-  const clear = el => { el.style.removeProperty('--cast'); lit.delete(el); };
+  // a lit creature also comes up out of the haze toward full strength, so it and its shadow show (Parker, 2026-10-26:
+  // at their faded strength the shadows read as flat); its own faintness is kept to go back to
+  const clear = el => {
+    el.style.removeProperty('--cast');
+    if ('haze' in el.dataset) { el.style.opacity = el.dataset.haze; delete el.dataset.haze; }
+    lit.delete(el);
+  };
   let n = 0;
   const look = () => {
     if (!lamp.isConnected) { [...lit].forEach(clear); return; }
@@ -840,10 +846,14 @@ function shadows(lamp, live) {
       const c = { x: r.left + r.width / 2, y: r.top + r.height / 2 }, s1 = side(o, a, c), s2 = side(a, b, c), s3 = side(b, o, c);
       const inside = (s1 >= 0 && s2 >= 0 && s3 >= 0) || (s1 <= 0 && s2 <= 0 && s3 <= 0);
       if (!inside || el.classList.contains('gone')) { if (lit.has(el)) clear(el); continue; }
-      // away from the lamp, up to 6px, and stronger the nearer it is
+      // away from the lamp, up to 10px, and stronger the nearer it is: a firm shadow close behind the lines and a
+      // soft one further off, so a drawing of thin lines still reads as standing off the page
       const dx = c.x - o.x, dy = c.y - o.y, far = Math.hypot(dx, dy) || 1, near = Math.max(0, 1 - far / reach);
-      const k = 2 + 4 * near;
-      el.style.setProperty('--cast', `drop-shadow(${(dx / far * k).toFixed(1)}px ${(dy / far * k).toFixed(1)}px 2px rgb(0 0 0 / ${(.25 + .45 * near).toFixed(2)}))`);
+      const k = 4 + 6 * near, ux = dx / far, uy = dy / far, dark = .45 + .4 * near;
+      el.style.setProperty('--cast', `drop-shadow(${(ux * k * .5).toFixed(1)}px ${(uy * k * .5).toFixed(1)}px 1px rgb(0 0 0 / ${dark.toFixed(2)})) ` +
+        `drop-shadow(${(ux * k).toFixed(1)}px ${(uy * k).toFixed(1)}px 4px rgb(0 0 0 / ${(dark * .6).toFixed(2)}))`);
+      if (!('haze' in el.dataset)) el.dataset.haze = el.style.opacity;
+      el.style.opacity = Math.min(1, (parseFloat(el.dataset.haze) || .5) + .3 + .2 * near).toFixed(2);
       lit.add(el);
     }
   };
@@ -1269,6 +1279,83 @@ function shadows(lamp, live) {
   addEventListener('resize', update);
   addEventListener('hashchange', setup);
   document.fonts.ready.then(update);
+})();
+
+// Portal: a click on a link to another page of the site sends the submarine into it (Parker, 2026-10-26). A stand-in
+// for the sub on screen (or one coming in from the right edge, if none is) swims to the link's picture, or the link
+// itself, along a gentle arc, nose first, and shrinks into it as a ring opens there; the page fades to the paper, the
+// new page opens, and the paper fades away. Links within a page (#works), to other sites, or opened in a new tab or
+// window are left alone, and so is every link while arranging, with the sea still, or for viewers who ask for less
+// motion.
+(() => {
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+  const veil = document.createElement('div');
+  veil.className = 'veil';
+  document.body.append(veil);
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  // an animation, and a timer as well, so the next step never waits on a page the browser has stopped drawing
+  const run = (el, frames, opts) => Promise.race([el.animate(frames, { fill: 'forwards', ...opts }).finished, wait(opts.duration + (opts.delay || 0) + 80)]);
+  let busy = false;
+  document.addEventListener('click', e => {
+    const a = e.target.closest?.('a[href]');
+    if (!a || busy || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target || a.hasAttribute('download')) return;
+    const root = document.documentElement;
+    if (still.matches || root.dataset.oceanMotion === 'off' || root.dataset.ocean === 'off' || root.dataset.arrange === 'on') return;
+    const url = new URL(a.href, location.href), here = new URL(location.href);
+    if (a.getAttribute('href') === '#' || url.origin !== here.origin || url.href === here.href) return;
+    // within one address only another page counts (#paper here), not a place on this one (#works)
+    if (url.pathname === here.pathname && url.search === here.search && !document.querySelector(`.view[data-page="${url.hash.slice(1)}"]`)) return;
+    e.preventDefault();
+    go(a, url.href);
+  });
+  async function go(a, href) {
+    busy = true;
+    const root = document.documentElement;
+    const real = [...document.querySelectorAll('.sub:not(.lamp)')].find(s => {
+      const r = s.getBoundingClientRect();
+      return r.width && r.bottom > 0 && r.top < innerHeight && getComputedStyle(s).display !== 'none';
+    });
+    const goal = (a.querySelector('.plate') || a).getBoundingClientRect(), gx = goal.left + goal.width / 2, gy = goal.top + goal.height / 2;
+    const from = real?.getBoundingClientRect(), k = from ? from.width / 60 : (innerWidth < 720 ? .9 : 1.3);
+    const sx = from ? from.left + from.width / 2 : innerWidth + 40, sy = from ? from.top + from.height / 2 : gy;
+    const twin = document.createElement('div');
+    twin.className = 'portal-sub';
+    twin.innerHTML = (document.querySelector('.sub .hull, .explorer .hull')?.outerHTML || '').replace(/class="hull"/, '');
+    document.body.append(twin);
+    root.classList.add('portal');
+    // nose first: the drawing faces right, so going left it is mirrored, and it tilts to point along its way
+    const dx = gx - sx, dy = gy - sy, flip = dx < 0 ? -1 : 1;
+    const tilt = Math.max(-60, Math.min(60, Math.atan2(dy, Math.abs(dx) || 1) * 180 / Math.PI)) * flip;
+    const at = (x, y, s) => `translate(${x - 30}px, ${y - 16}px) rotate(${tilt}deg) scale(${flip * s}, ${s})`;
+    const far = Math.hypot(dx, dy), trip = Math.min(1100, 450 + far * .6), lift = Math.min(80, far * .2);
+    const ring = document.createElement('i'), d = Math.max(36, Math.min(goal.width, goal.height) * .7);
+    ring.className = 'portal-ring';
+    Object.assign(ring.style, { left: gx - d / 2 + 'px', top: gy - d / 2 + 'px', width: d + 'px', height: d + 'px' });
+    document.body.append(ring);
+    run(ring, [{ opacity: 0, transform: 'scale(.2)' }, { opacity: .9, transform: 'scale(.5)', offset: .3 }, { opacity: 0, transform: 'scale(1.4)' }],
+      { duration: 900, delay: trip * .7, easing: 'ease-out' });
+    await run(twin, [
+      { transform: at(sx, sy, k), opacity: 1 },
+      { transform: at(sx + dx * .55, sy + dy * .55 - lift, k), opacity: 1, offset: .55 },
+      { transform: at(gx - dx * .08, gy - dy * .08, k * .8), opacity: 1, offset: .8 },
+      { transform: at(gx, gy, k * .1), opacity: 0 },
+    ], { duration: trip, easing: 'cubic-bezier(.45, 0, .55, 1)' });
+    await run(veil, [{ opacity: 0 }, { opacity: 1 }], { duration: 420, easing: 'ease-in' });
+    twin.remove();
+    ring.remove();
+    root.classList.remove('portal');
+    const away = new URL(href).pathname !== location.pathname || new URL(href).search !== location.search;
+    location.href = href;
+    // another address loads in this one's place, behind the paper; a page of this one (#paper) opens here, so the
+    // paper fades away again
+    if (away) return;
+    await wait(60);
+    await run(veil, [{ opacity: 1 }, { opacity: 0 }], { duration: 600, easing: 'ease-out' });
+    veil.getAnimations().forEach(x => x.cancel());
+    busy = false;
+  }
+  // back to a page the browser kept as it was (with the paper drawn over it): lift the paper
+  addEventListener('pageshow', e => { if (e.persisted) { veil.getAnimations().forEach(x => x.cancel()); busy = false; } });
 })();
 
 // Playground: footer buttons that try the options from theme.yml for this visit only (nothing is remembered,
