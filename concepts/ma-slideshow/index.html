@@ -306,9 +306,18 @@ button:hover { color: var(--shu); }
 :root[data-theme="dark"] { --wake: #eaf1f7; }
 .wakes { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: -1; pointer-events: none;
   fill: var(--wake); stroke: none; filter: blur(2px); }
-/* shadows cast by the lamp, away from the submarine (--sx, --sy: the way the light travels) */
-.works.light .feed li.on > a { text-shadow: var(--sx, 0) var(--sy, 0) 3px rgba(0, 0, 0, .2); }
-.works.light .feed li.on .plate { box-shadow: calc(var(--sx, 0px) * 3) calc(var(--sy, 0px) * 3) 10px rgba(0, 0, 0, .2); }
+/* shadows cast by the lamp, away from the submarine (--sx, --sy: the way the light travels), on the lit work, the lit
+   section of a page, and the creatures in the beam (--cast, set by the page). Darker on the dark page, where a light
+   shadow would not show */
+:root { --shade: rgba(0, 0, 0, .22); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --shade: rgba(0, 0, 0, .7); } }
+:root[data-theme="dark"] { --shade: rgba(0, 0, 0, .7); }
+.works.light .feed li.on > a { text-shadow: var(--sx, 0) var(--sy, 0) 3px var(--shade); }
+.works.light .feed li.on .plate { box-shadow: calc(var(--sx, 0px) * 3) calc(var(--sy, 0px) * 3) 10px var(--shade); }
+/* the page sub shines from the right margin, a little above: shadows fall to the left and down */
+.view.lit > :not(.unlit):not(.sub) { text-shadow: -2px 1px 3px var(--shade); }
+.view.lit > :not(.unlit).plate, .view.lit > :not(.unlit) .plate { box-shadow: -6px 3px 10px var(--shade); }
+.critter { filter: var(--cast, none); transition: filter .4s ease; }
 /* Fade: each work fades in slowly as it comes up the screen, rising a little; the stalk's leaves fade in as it's passed */
 .works.fade .feed li > a { opacity: var(--u, 1); transform: translateY(calc((1 - var(--u, 1)) * 16px)); }
 .works.fade .ct-lines .lanes path.leaf { transition: opacity 1.6s ease; }
@@ -1460,6 +1469,40 @@ function bubbles(sub, live) {
   setTimeout(tick, 1500);
 }
 
+// Shadows: the creatures a submarine's lamp falls on cast a soft shadow away from it, darker the nearer they are to
+// the lamp (Parker, 2026-10-26). The beam is a triangle drawn in the lamp's own frame; its corners are carried onto
+// the screen as the sub turns, flips and moves, and every creature whose middle lies inside it is shaded. live() says
+// whether the lamp is lit; a lamp taken off the page stops, and clears the shadows it cast.
+function shadows(lamp, live) {
+  const lit = new Set();
+  const clear = el => { el.style.removeProperty('--cast'); lit.delete(el); };
+  let n = 0;
+  const look = () => {
+    if (!lamp.isConnected) { [...lit].forEach(clear); return; }
+    requestAnimationFrame(look);
+    if (n++ % 2) return; // every other frame is plenty
+    const path = lamp.querySelector('.beam path'), m = path?.getScreenCTM();
+    if (document.hidden || !m || !live() || !lamp.offsetParent) { [...lit].forEach(clear); return; }
+    // the beam's tip (at the lamp) and the two far corners, on the screen
+    const [o, a, b] = [[0, 80], [400, 0], [400, 160]].map(([x, y]) => ({ x: m.a * x + m.c * y + m.e, y: m.b * x + m.d * y + m.f }));
+    const reach = Math.hypot((a.x + b.x) / 2 - o.x, (a.y + b.y) / 2 - o.y) || 1;
+    const side = (p, q, r) => (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x);
+    for (const el of document.querySelectorAll('.critter')) {
+      const r = el.getBoundingClientRect();
+      if (!r.width || r.bottom < 0 || r.top > innerHeight) { if (lit.has(el)) clear(el); continue; }
+      const c = { x: r.left + r.width / 2, y: r.top + r.height / 2 }, s1 = side(o, a, c), s2 = side(a, b, c), s3 = side(b, o, c);
+      const inside = (s1 >= 0 && s2 >= 0 && s3 >= 0) || (s1 <= 0 && s2 <= 0 && s3 <= 0);
+      if (!inside || el.classList.contains('gone')) { if (lit.has(el)) clear(el); continue; }
+      // away from the lamp, up to 6px, and stronger the nearer it is
+      const dx = c.x - o.x, dy = c.y - o.y, far = Math.hypot(dx, dy) || 1, near = Math.max(0, 1 - far / reach);
+      const k = 2 + 4 * near;
+      el.style.setProperty('--cast', `drop-shadow(${(dx / far * k).toFixed(1)}px ${(dy / far * k).toFixed(1)}px 2px rgb(0 0 0 / ${(.25 + .45 * near).toFixed(2)}))`);
+      lit.add(el);
+    }
+  };
+  requestAnimationFrame(look);
+}
+
 // Timeline: the work list is the timeline. The works sit in order, newest first, evenly spaced down the spine on
 // alternating sides (what matters is the order and the year, not the true gaps between dates: Parker, 2026-10-25); a
 // year label marks where each year begins, and a curve joins each work to its node on the spine. The spine is a kelp
@@ -1500,6 +1543,7 @@ function bubbles(sub, live) {
   new MutationObserver(() => { lamp.className = sub.className + ' lamp'; lamp.style.cssText = sub.style.cssText; })
     .observe(sub, { attributes: true, attributeFilter: ['class', 'style'] });
   bubbles(sub, () => wrap.classList.contains('light'));
+  shadows(lamp, () => wrap.classList.contains('light'));
   const lanesG = document.createElementNS(NS, 'g');
   lanesG.setAttribute('class', 'lanes');
   ctSvg.append(lanesG);
@@ -1668,7 +1712,8 @@ function bubbles(sub, live) {
       // the submarine swims beside the kelp, across the stalk from the work being read and level with its node (on a
       // phone it rides the line, at the clear spot nearest the node, clear of every node and year label), and turns
       // nose and lamp straight at the middle of that work
-      // past the timeline (its foot above the reading line) it waits at the foot of the kelp
+      // past the timeline (its foot above the reading line) it comes to rest on the line above the footer, a little
+      // to the right of the foot of the kelp, facing it (Parker, 2026-10-26)
       const past = ct.getBoundingClientRect().top + geo.height < innerHeight * .45;
       const n = past ? works.length - 1 : Math.max(active, 0), west = works[n].li.classList.contains('l'), gap = narrow.matches ? 16 : 22;
       // what it keeps clear of, and by how much: nodes, and the year labels (which are taller)
@@ -1683,8 +1728,9 @@ function bubbles(sub, live) {
       // beside the kelp: across the stalk from the work, level with its node, clear of the stalk and the leaves
       const beside = !narrow.matches;
       if (beside) y = at;
-      if (past) y = geo.height - 1.5 * gap;
-      const x = geo.spineX + geo.wob(y) + (past ? (beside ? 70 : 40) : beside ? (west ? 1 : -1) * 92 : 0);
+      // the hull's keel (12px below its middle, scaled with it) on the footer's top line
+      if (past) y = document.querySelector('footer').getBoundingClientRect().top - ct.getBoundingClientRect().top - (narrow.matches ? 11 : 16);
+      const x = geo.spineX + geo.wob(y) + (past ? (beside ? 130 : 40) : beside ? (west ? 1 : -1) * 92 : 0);
       const home = ct.getBoundingClientRect(), card = works[n].li.querySelector('a').getBoundingClientRect();
       const dx = Math.abs(card.left + card.width / 2 - home.left - x), dy = card.top + card.height / 2 - home.top - y;
       sub.classList.toggle('small', narrow.matches);
@@ -1719,7 +1765,7 @@ function bubbles(sub, live) {
       } else {
       chase(x, y, true);
       if (past) {
-        // waiting at the foot of the stalk, facing it, lamp low
+        // resting on the footer's line, facing the foot of the stalk, lamp low
         sub.classList.add('west');
         sub.style.setProperty('--tilt', '0deg');
         sub.style.setProperty('--beamw', '80px');
@@ -1834,6 +1880,7 @@ function bubbles(sub, live) {
     parts = [body, lamp];
     view.classList.add('lit');
     bubbles(body, () => on);
+    shadows(lamp, () => on);
     update();
   }
   function update() {

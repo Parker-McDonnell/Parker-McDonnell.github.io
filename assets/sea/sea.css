@@ -301,9 +301,18 @@ button:hover { color: var(--shu); }
 :root[data-theme="dark"] { --wake: #eaf1f7; }
 .wakes { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: -1; pointer-events: none;
   fill: var(--wake); stroke: none; filter: blur(2px); }
-/* shadows cast by the lamp, away from the submarine (--sx, --sy: the way the light travels) */
-.works.light .feed li.on > a { text-shadow: var(--sx, 0) var(--sy, 0) 3px rgba(0, 0, 0, .2); }
-.works.light .feed li.on .plate { box-shadow: calc(var(--sx, 0px) * 3) calc(var(--sy, 0px) * 3) 10px rgba(0, 0, 0, .2); }
+/* shadows cast by the lamp, away from the submarine (--sx, --sy: the way the light travels), on the lit work, the lit
+   section of a page, and the creatures in the beam (--cast, set by the page). Darker on the dark page, where a light
+   shadow would not show */
+:root { --shade: rgba(0, 0, 0, .22); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --shade: rgba(0, 0, 0, .7); } }
+:root[data-theme="dark"] { --shade: rgba(0, 0, 0, .7); }
+.works.light .feed li.on > a { text-shadow: var(--sx, 0) var(--sy, 0) 3px var(--shade); }
+.works.light .feed li.on .plate { box-shadow: calc(var(--sx, 0px) * 3) calc(var(--sy, 0px) * 3) 10px var(--shade); }
+/* the page sub shines from the right margin, a little above: shadows fall to the left and down */
+.view.lit > :not(.unlit):not(.sub) { text-shadow: -2px 1px 3px var(--shade); }
+.view.lit > :not(.unlit).plate, .view.lit > :not(.unlit) .plate { box-shadow: -6px 3px 10px var(--shade); }
+.critter { filter: var(--cast, none); transition: filter .4s ease; }
 /* Fade: each work fades in slowly as it comes up the screen, rising a little; the stalk's leaves fade in as it's passed */
 .works.fade .feed li > a { opacity: var(--u, 1); transform: translateY(calc((1 - var(--u, 1)) * 16px)); }
 .works.fade .ct-lines .lanes path.leaf { transition: opacity 1.6s ease; }
