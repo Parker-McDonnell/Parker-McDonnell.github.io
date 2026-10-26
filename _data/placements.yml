@@ -1,4 +1,4 @@
-# Where the sea creatures sit, placed by hand. Parker arranged these in the concept (2026-10-25); they were copied
+# Where the sea creatures sit, placed by hand. Parker arranged these in the concept (2026-10-25, again 2026-10-26); they were copied
 # from its store. To change them: open any page with ?arrange at the end of its address, arrange the drawings, then
 # "Download placements.yml" and save it over this file. Keyed by page~screen (wide or narrow), then drawing.
 # Written as JSON, which YAML reads as it is.
@@ -40,11 +40,18 @@
    "x": 0.8907
   },
   "floor-12+mvonlby1": {
-   "b": 51,
+   "b": 49,
    "hide": false,
    "r": 0,
    "w": 44,
-   "x": 0.356
+   "x": 0.3532
+  },
+  "floor-12+mvpdypoe": {
+   "b": 459,
+   "hide": false,
+   "r": 0,
+   "w": 44,
+   "x": 0.507
   },
   "floor-13": {
    "b": 11,
@@ -120,11 +127,35 @@
  "home~wide": {
   "sea-0": {
    "a": "header",
-   "dy": 101,
+   "dy": 85,
+   "hide": true,
+   "r": 0,
+   "w": 72,
+   "x": 0.424
+  },
+  "sea-1": {
+   "a": "header",
+   "dy": 80,
+   "hide": true,
+   "r": 0,
+   "w": 18,
+   "x": 0.3344
+  },
+  "sea-10": {
+   "a": "work:2026-03:Tool",
+   "dy": 0,
    "hide": false,
    "r": 0,
-   "w": 48,
-   "x": 0.419
+   "w": 120,
+   "x": 0.6802
+  },
+  "sea-10+mvpe18bq": {
+   "a": "work:2024-08:Method",
+   "dy": 151,
+   "hide": false,
+   "r": 0,
+   "w": 120,
+   "x": 0.7777
   },
   "sea-11": {
    "a": "work:2025-10:Talk",
@@ -134,13 +165,62 @@
    "w": 57,
    "x": 0.2898
   },
+  "sea-11+mvpdzght": {
+   "a": "work:2025-04:Tool",
+   "dy": 43,
+   "hide": false,
+   "r": 35,
+   "w": 85,
+   "x": 0.8615
+  },
+  "sea-11+mvpdzjlp": {
+   "a": "work:2025-04:Tool",
+   "dy": 73,
+   "hide": false,
+   "r": 76,
+   "w": 60,
+   "x": 0.7734
+  },
+  "sea-11+mvpdzomj": {
+   "a": "work:2025-04:Tool",
+   "dy": 126,
+   "hide": false,
+   "r": 19,
+   "w": 60,
+   "x": 0.8757
+  },
   "sea-12": {
    "a": "work:2024-08:Method",
-   "dy": 56,
+   "dy": 72,
    "hide": false,
    "r": 0,
    "w": 87,
-   "x": 0.0895
+   "x": 0.0589
+  },
+  "sea-12+mvpdz4rj": {
+   "a": "work:2023-11:Talk",
+   "dy": 114,
+   "hide": false,
+   "r": 0,
+   "w": 87,
+   "x": 0.6428
+  },
+  "sea-12+mvpdz81o": {
+   "a": "work:2023-11:Poster",
+   "dy": 64,
+   "hide": false,
+   "m": true,
+   "r": 0,
+   "w": 87,
+   "x": 0.12
+  },
+  "sea-12+mvpdzywx": {
+   "a": "work:2025-10:Talk",
+   "dy": 67,
+   "hide": false,
+   "r": 0,
+   "w": 87,
+   "x": 0.0803
   },
   "sea-13": {
    "a": "work:2024-08:Method",
@@ -152,19 +232,36 @@
   },
   "sea-14": {
    "a": "work:2023-05:Paper",
-   "dy": 78,
+   "dy": 24,
    "hide": false,
+   "m": true,
    "r": 0,
-   "w": 129,
-   "x": 0.642
+   "w": 186,
+   "x": 0.7663
   },
   "sea-15": {
    "a": "work:2023-05:Paper",
-   "dy": 185,
+   "dy": 212,
    "hide": false,
-   "r": 35,
-   "w": 123,
-   "x": 0.1563
+   "r": -1,
+   "w": 104,
+   "x": 0.1683
+  },
+  "sea-15+mvpep1sx": {
+   "a": "work:2023-05:Paper",
+   "dy": 149,
+   "hide": false,
+   "r": -39,
+   "w": 56,
+   "x": 0.3061
+  },
+  "sea-15+mvpepcmw": {
+   "a": "work:2023-05:Paper",
+   "dy": 154,
+   "hide": false,
+   "r": 24,
+   "w": 68,
+   "x": 0.0746
   },
   "sea-16": {
    "a": "footer",
@@ -176,67 +273,109 @@
   },
   "sea-16+mvonmkhk": {
    "a": "footer",
-   "dy": 162,
+   "dy": 174,
    "hide": false,
    "r": 0,
    "w": 85,
-   "x": 0.7912
+   "x": 0.8374
   },
   "sea-16+mvonmlx8": {
    "a": "footer",
-   "dy": 81,
+   "dy": 75,
    "hide": false,
    "r": 0,
    "w": 85,
-   "x": 0.7841
+   "x": 0.8146
+  },
+  "sea-16+mvpdxpz6": {
+   "a": "footer",
+   "dy": 532,
+   "hide": false,
+   "r": 0,
+   "w": 69,
+   "x": 0.5263
+  },
+  "sea-16+mvpdxt7n": {
+   "a": "footer",
+   "dy": 490,
+   "hide": false,
+   "m": true,
+   "r": 0,
+   "w": 69,
+   "x": 0.6726
+  },
+  "sea-16+mvpdxwxh": {
+   "a": "footer",
+   "dy": 545,
+   "hide": false,
+   "m": true,
+   "r": 0,
+   "w": 69,
+   "x": 0.8061
   },
   "sea-2": {
    "a": "header",
-   "dy": 86,
-   "hide": false,
+   "dy": 83,
+   "hide": true,
    "r": 0,
    "w": 23,
-   "x": 0.5497
+   "x": 0.62
   },
   "sea-3": {
    "a": "header",
    "dy": 83,
-   "hide": false,
+   "hide": true,
    "r": 0,
    "w": 83,
-   "x": 0.652
+   "x": 0.6811
   },
   "sea-4": {
    "a": "header",
-   "dy": 175,
+   "dy": 189,
    "hide": false,
    "r": -22,
-   "w": 101,
-   "x": 0.679
+   "w": 113,
+   "x": 0.6783
   },
   "sea-5": {
    "a": "h1:Soft robots that swim the way sea animal",
-   "dy": 230,
+   "dy": 192,
    "hide": false,
-   "r": 0,
-   "w": 104,
-   "x": 0.5895
+   "r": -28,
+   "w": 120,
+   "x": 0.6442
   },
   "sea-6": {
    "a": "h1:Soft robots that swim the way sea animal",
-   "dy": 225,
+   "dy": 222,
    "hide": false,
    "r": 35,
    "w": 101,
-   "x": 0.294
+   "x": 0.3061
+  },
+  "sea-8": {
+   "a": "slideshow",
+   "dy": 539,
+   "hide": false,
+   "r": 0,
+   "w": 20,
+   "x": 0.3899
+  },
+  "sea-8+mvpe08uv": {
+   "a": "slideshow",
+   "dy": 546,
+   "hide": false,
+   "r": 0,
+   "w": 20,
+   "x": 0.6499
   },
   "sea-9": {
-   "a": "slideshow",
-   "dy": 559,
+   "a": "work:2026-10:Paper",
+   "dy": 78,
    "hide": false,
    "r": 0,
    "w": 122,
-   "x": 0.5256
+   "x": 0.745
   },
   "sea-9+mvonnj0a": {
    "a": "slideshow",
@@ -248,11 +387,19 @@
   },
   "sea-9+mvop6vhy": {
    "a": "slideshow",
-   "dy": 533,
+   "dy": 559,
    "hide": false,
    "r": 0,
    "w": 83,
-   "x": 0.321
+   "x": 0.468
+  },
+  "sea-9+mvpe15as": {
+   "a": "work:2026-10:Dataset",
+   "dy": 72,
+   "hide": false,
+   "r": 0,
+   "w": 122,
+   "x": 0.0149
   }
  },
  "perch~wide": {
@@ -260,8 +407,8 @@
    "hide": false,
    "r": 0,
    "w": 67,
-   "x": 0.7869,
-   "y": -40
+   "x": 0.8423,
+   "y": -41
   }
  }
 }

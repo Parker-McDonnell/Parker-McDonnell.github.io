@@ -4,7 +4,12 @@ import sys
 from pathlib import Path
 
 src, dst = Path(sys.argv[1]), Path(sys.argv[2])
+# the store holds only the page~screen layouts arranged in that Artifact, so each replaces its own in the file and
+# the rest of the file is kept (the file is JSON under a comment header)
 out = {}
+if dst.exists():
+    text = dst.read_text(encoding="utf-8")
+    out = json.loads(text[text.index("{"):])
 for f in sorted(src.glob("*.json")):
     doc = json.loads(f.read_text(encoding="utf-8"))
     key = f.stem.replace("@", "~")
@@ -16,4 +21,4 @@ head = ("# Where the sea creatures sit, placed by hand. Parker arranged these in
         "# \"Download placements.yml\" and save it over this file. Keyed by page~screen (wide or narrow), then drawing.\n"
         "# Written as JSON, which YAML reads as it is.\n")
 dst.write_text(head + json.dumps(out, indent=1, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
-print({k: len(v) for k, v in out.items()})
+print("from the store:", sorted(f.stem.replace("@", "~") for f in src.glob("*.json")), {k: len(v) for k, v in out.items()})

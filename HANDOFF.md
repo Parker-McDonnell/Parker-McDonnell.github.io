@@ -181,8 +181,10 @@ everything is.
   `python bin/concept_theme.py concepts/ma-slideshow/theme.yml _data/theme.yml` if `theme.yml` changed, then
   `node --check assets/sea/sea.js`. `bin/placements_from_store.py <folder of store JSON> _data/placements.yml` turns
   the Artifact's placements (read with ArtifactData into JSON files) into the site's file.
-- **Left to do:** Parker re-arranging the creatures (the top of the page is too busy; his earlier try was lost in a
-  test pane on 2026-10-26, and nothing new is in the store), then copying them to `_data/placements.yml`; the
+- **Re-arranged 2026-10-26:** Parker re-arranged the creatures in the second account's Artifact (home, floor and
+  perch, wide screens) and they were merged into `_data/placements.yml` (`bin/placements_from_store.py` now merges
+  over the file rather than replacing it).
+- **Left to do:** the
   "starfish I can't move" report (the robot drawing dragged fine in testing; ask which one); real content; the
   paper's figure licence; Scholar and ORCID links; citing papers at build time; going live, only with Parker's OK.
 - **Testing note:** the in-app browser pane, when hidden, runs no animation frames: override `requestAnimationFrame`
