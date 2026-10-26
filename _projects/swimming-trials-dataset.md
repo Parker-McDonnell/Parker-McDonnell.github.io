@@ -5,7 +5,7 @@ placeholder: true
 kind: Dataset
 title: Swimming trials of the feather star robot
 short_title: Swimming trials
-date: 2026-10-09
+date: 2026-10-08
 blurb: Video and tracked positions (placeholder).
 plate_label: Data
 related: [feather-star-robot]
