@@ -53,6 +53,7 @@ site.use(cfg => {
     if (f.base_size) root['--base'] = f.base_size;
   }
   if (cfg.layout?.column_width) root['--col'] = cfg.layout.column_width;
+  document.documentElement.dataset.align = cfg.layout?.align === 'left' ? 'left' : 'centre';
   document.documentElement.dataset.headerBar = cfg.accent_bars?.header || 'none';
   document.documentElement.dataset.sectionBar = cfg.accent_bars?.sections || 'none';
   if (cfg.slideshow?.seconds_per_slide) root['--slide'] = cfg.slideshow.seconds_per_slide + 's';
@@ -720,81 +721,7 @@ if (location.hash === '#works') addEventListener('load', () => document.getEleme
 // Bubbles: now and then one or two small bubbles leave the top of a submarine's periscope and drift up, wobbling,
 // until they fade (Parker, 2026-10-26). They are left in the water, in the sub's parent, so they rise from where it was
 // rather than travelling with it. live() says whether the sub is out; a sub taken off the page stops making them.
-// It leaves a wake, like water shed off its back: one soft ribbon along the path it has just swum, redrawn every
-// frame, narrow and brightest at the sub and widening and fading smoothly toward its tail, which drifts a little as
-// it spreads; gone after three seconds (Parker, 2026-10-26: a continuous trail, wide and steady, fading slowly; a
-// spline rather than a zig zag; a gradient from tip to tail rather than overlapping pieces). It follows the middle of
-// the hull, which glides, not the propeller, which swings as the sub turns; the ribbon is laid under the hull, so it
-// comes out from behind it.
 function bubbles(sub, live) {
-  const LIFE = 3000, trail = [];
-  let svg = null, prev = null, moved = -Infinity;
-  const lerp = (a, b, f) => ({ x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, t: a.t + (b.t - a.t) * f });
-  // the path as a spline. The sub swims in straight runs from work to work, so its path zigzags. Each point is
-  // smoothed once, as it is laid, by averaging it with the three laid before it, which draws every corner out into a
-  // bend; then each corner left is cut a quarter of the way in from both sides, twice, which rounds it into a curve.
-  // Nothing already laid is ever smoothed again, so the shape holds still while it fades (it used to be re-smoothed
-  // every frame, and bent back toward a straight line as its tail went: Parker, 2026-10-26). The end at the sub stays
-  // put; the tail end is cut like the rest, so it doesn't jump as its last point goes
-  const spline = raw => {
-    let pts = raw;
-    for (let n = 0; n < 2; n++) {
-      const out = [];
-      for (let i = 0; i < pts.length - 1; i++) out.push(lerp(pts[i], pts[i + 1], .25), lerp(pts[i], pts[i + 1], .75));
-      out.push(pts[pts.length - 1]);
-      pts = out;
-    }
-    return pts;
-  };
-  const wake = now => {
-    if (!sub.isConnected) { svg?.remove(); return; }
-    requestAnimationFrame(wake);
-    const home = sub.offsetParent;
-    if (document.hidden || !home || !live()) { trail.length = 0; if (svg) svg.innerHTML = ''; return; }
-    if (svg?.parentElement !== home) {
-      svg?.remove();
-      svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svg.setAttribute('class', 'wakes');
-      home.insertBefore(svg, sub);
-    }
-    const box = sub.getBoundingClientRect(), at = home.getBoundingClientRect();
-    const here = { x: box.left + box.width / 2 - at.left, y: box.top + box.height / 2 - at.top, t: now, ph: now / 350 };
-    // a point every 14px of travel, far enough apart for the spline to round the corners off, smoothed as it is laid
-    const last = trail[trail.length - 1];
-    if (!last || Math.hypot(here.x - last.x, here.y - last.y) > 14) {
-      const near = [...trail.slice(-3), here];
-      trail.push({ ...here, sx: near.reduce((v, q) => v + q.x, 0) / near.length, sy: near.reduce((v, q) => v + q.y, 0) / near.length });
-    }
-    if (prev && Math.hypot(here.x - prev.x, here.y - prev.y) > .3) moved = now;
-    prev = here;
-    while (trail.length && now - trail[0].t > LIFE) trail.shift();
-    // as the water ages it drifts: each point wanders a little, more the older it is, and rises a touch, so the tail
-    // loosens like a real wake rather than staying a rigid band. Neighbours wander together (their phase is the time
-    // they were laid), so it meanders gently instead of going lumpy
-    const drift = trail.map(p => {
-      const age = (now - p.t) / LIFE, w = 6 * age;
-      return { x: p.sx + Math.sin(now / 900 + p.ph) * w, y: p.sy + Math.cos(now / 1100 + p.ph) * w - 8 * age, t: p.t };
-    });
-    const pts = drift.length ? spline([...drift, here]) : [];
-    // the ribbon: at each point of the spline, edges either side of it, half as far apart as the wake is wide there;
-    // between one point and the next, one four-sided piece whose shading is the age there, sharing its edges with its
-    // neighbours, so nothing overlaps and the shade runs on smoothly from tip to tail
-    const edge = pts.map((p, i) => {
-      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)], len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
-      const age = Math.min(1, (now - p.t) / LIFE), half = 2 + 11 * age, nx = -(b.y - a.y) / len * half, ny = (b.x - a.x) / len * half;
-      return { l: `${(p.x + nx).toFixed(1)},${(p.y + ny).toFixed(1)}`, r: `${(p.x - nx).toFixed(1)},${(p.y - ny).toFixed(1)}`, age };
-    });
-    let s = '';
-    for (let i = 0; i < edge.length - 1; i++) {
-      const a = edge[i], b = edge[i + 1], o = (1 - (a.age + b.age) / 2) ** 1.4;
-      if (o > .01) s += `<polygon points="${a.l} ${b.l} ${b.r} ${a.r}" fill-opacity="${(o * .5).toFixed(3)}"/>`;
-    }
-    svg.innerHTML = s;
-    // once the sub stops, the whole wake fades slowly where it lies rather than shrinking back into it
-    const still = (now - moved) / LIFE;
-    svg.style.opacity = Math.max(0, 1 - Math.max(0, still - .1) * 1.4).toFixed(3);
-  };
-  requestAnimationFrame(wake);
   const tick = () => {
     if (!sub.isConnected) return;
     setTimeout(tick, 400 + Math.random() * 700);
@@ -1074,7 +1001,10 @@ function shadows(lamp, live) {
       // past the timeline (its foot above the reading line) it comes to rest on the line above the footer, a little
       // to the right of the foot of the kelp, facing it (Parker, 2026-10-26)
       const past = ct.getBoundingClientRect().top + geo.height < innerHeight * .45;
-      const n = past ? works.length - 1 : Math.max(active, 0), west = works[n].li.classList.contains('l'), gap = narrow.matches ? 16 : 22;
+      // with the column to the left (layout.align: left) the sub keeps to a lane in the open water on the right, near
+      // the scroll bar, and only goes up and down it, level with the work being read, facing left to light it
+      const lane = document.documentElement.dataset.align === 'left' && !narrow.matches && innerWidth - ct.getBoundingClientRect().right > 120;
+      const n = past ? works.length - 1 : Math.max(active, 0), west = lane || works[n].li.classList.contains('l'), gap = narrow.matches ? 16 : 22;
       // what it keeps clear of, and by how much: nodes, and the year labels (which are taller)
       const taken = [...nodes.map(b => [parseFloat(b.style.top), gap]), ...years.map(([, el]) => [parseFloat(el.style.top), gap + 14])].filter(([v]) => !isNaN(v));
       // the nearest clear spot to its node, below it if that is as near as above
@@ -1090,8 +1020,10 @@ function shadows(lamp, live) {
       // the hull's keel (12px below its middle, scaled with it) on the footer's top line, touching it at the bottom of
       // its gentle bob
       if (past) y = document.querySelector('footer').getBoundingClientRect().top - ct.getBoundingClientRect().top - (narrow.matches ? 8 : 12);
-      const x = geo.spineX + geo.wob(y) + (past ? (beside ? 130 : 40) : beside ? (west ? 1 : -1) * 92 : 0);
-      const home = ct.getBoundingClientRect(), card = works[n].li.querySelector('a').getBoundingClientRect();
+      const home = ct.getBoundingClientRect();
+      const x = lane ? innerWidth - Math.min(90, (innerWidth - home.right) / 2) - home.left
+        : geo.spineX + geo.wob(y) + (past ? (beside ? 130 : 40) : beside ? (west ? 1 : -1) * 92 : 0);
+      const card = works[n].li.querySelector('a').getBoundingClientRect();
       const dx = Math.abs(card.left + card.width / 2 - home.left - x), dy = card.top + card.height / 2 - home.top - y;
       sub.classList.toggle('small', narrow.matches);
       // before the reader reaches the timeline the sub is diving: it starts in the open water just right of the headline,
@@ -1112,7 +1044,8 @@ function shadows(lamp, live) {
         // then straight on to the first work, no pause: it goes on down at the speed it sank and slows as it arrives,
         // and eases across, gathering speed and slowing again, so it doesn't dash sideways
         const from = landed, cross = clamp((scrollY - from) / Math.max(1, handover - from));
-        const py = startY + (below - startY) * sink, px = startX;
+        // in the lane it dives straight down it, from level with the headline
+        const py = startY + (below - startY) * sink, px = lane ? home.left + x : startX;
         const glide = 1 - (1 - cross) ** 2, vx = px + (home.left + x - px) * smooth(cross), pageY = py + (spot - py) * glide;
         chase(vx - home.left, pageY - ctTop);
         sub.classList.add('west');
@@ -1120,7 +1053,7 @@ function shadows(lamp, live) {
         // the lamp floods the headline at first (its length and spread measured on screen, so undone by the sub's
         // scale) and keeps that shape, reaching to the left edge of the page, all the way down to the first work
         const big = sub.classList.contains('small') ? .9 : 1.3, spread = textH * 3.2 / big;
-        sub.style.setProperty('--beamw', startX * 1.3 / big + 'px');
+        sub.style.setProperty('--beamw', px * 1.3 / big + 'px');
         sub.style.setProperty('--beamh', spread + 'px');
       } else {
       chase(x, y, true);
@@ -1394,6 +1327,7 @@ function shadows(lamp, live) {
       group('Spine', [['Kelp', 'kelp'], ['Straight', 'straight']], cfg.timeline.spine, v => site.set({ timeline: { spine: v } })),
       group('Unfold', [['Fold', 'fold'], ['Scroll', 'scroll'], ['Submarine', 'light'], ['Fade', 'fade'], ['Grow', 'grow'], ['Focus', 'focus'], ['Off', 'off']], { true: 'light', false: 'off' }[cfg.timeline.unfold] || cfg.timeline.unfold, v => site.set({ timeline: { unfold: v } })),
       group('Page sub', [['On', true], ['Off', false]], cfg.page_sub !== false, v => site.set({ page_sub: v })),
+      group('Layout', [['Centre', 'centre'], ['Left', 'left']], cfg.layout?.align === 'left' ? 'left' : 'centre', v => site.set({ layout: { align: v } })),
       group('Card marks', [['None', 'dot'], ['Numbers', 'number'], ['Icons', 'icon']], cfg.timeline.marks, v => site.set({ timeline: { marks: v } })),
       group('Example citations', [['On', true], ['Off', false]], cfg.citation_map.demo, v => site.set({ citation_map: { demo: v } })),
     );

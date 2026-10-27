@@ -41,6 +41,8 @@ palettes:
 
 layout:
   column_width: 44rem                 # width of the reading column; 44rem is about 700 pixels
+  align: centre                       # centre, or left: the column keeps to the left and the timeline's sub swims straight
+                                      # up and down the open water on the right (a trial, 2026-10-26)
 
 ocean:                                # scrolling down the page sinks through the water to the sea floor
   enabled: true                       # the deepening shade, the creatures in the page and the sea floor
