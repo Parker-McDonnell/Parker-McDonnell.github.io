@@ -92,7 +92,7 @@ Parker: "the site is looking awesome". Then:
 - **Timeline lines join the pictures** (Parker, 2026-10-25: "like it is part of it"): each curve runs from its node into the spine-side edge of the work's picture frame, level with its middle, with no end dot, and arches up on its way like a leaf's stalk even when node and frame are level (Parker: curved, organic, never straight). Measured from the layout, not the screen, so cards caught mid-animation no longer throw the lines off (that was why they missed).
 - **More life** (Parker, 2026-10-25): fish tails flick now and then, as if turning in and out of the page (`.tail`); crab claws wave wide and slow (`.claw`); glints twinkle in the sun rays, and each ray shimmers at its own pace. The introduction has no soft ground, so the rays fall across it.
 - **Explorer submarine on the sea floor** (Parker, 2026-10-25): on every page a submarine patrols just above the sand, slowly (150 s for a round trip), stopping at each end to look around, its lamp sweeping down over the creatures (`.explorer`).
-- **Each creature keeps its own time** (Parker, 2026-10-25): a pace between 0.75 and 1.35 fixed by its name (`--pace`) slows or quickens its pulse and tail flicks; the fish in a school flick out of step; an Arrange copy gets its own pace and start, never its original's.
+- **Each creature keeps its own time** (Parker, 2026-10-25): a pace between 0.75 and 1.35 fixed by its name (the CSS custom property `pace`) slows or quickens its pulse and tail flicks; the fish in a school flick out of step; an Arrange copy gets its own pace and start, never its original's.
 - **Jellyfish tentacles vary** (Parker: "too uniform"): uneven spacing, length, curl and drift, from fixed pseudo-random numbers so they look the same on every visit.
 - **Jellyfish pulse** (Parker, 2026-10-25): the bell squeezes in fast and the jellyfish lurches forward along its slant, then relaxes slowly, each on its own rhythm (`.beat`).
 - **Perched drawings can be arranged too:** the crab on the footer line and the bubbles by the slideshow (placements under `perch~wide` / `perch~narrow`, across and down from the piece they sit on).
@@ -184,7 +184,15 @@ everything is.
 - **Re-arranged 2026-10-26:** Parker re-arranged the creatures in the second account's Artifact (home, floor and
   perch, wide screens) and they were merged into `_data/placements.yml` (`bin/placements_from_store.py` now merges
   over the file rather than replacing it).
-- **Left to do:** the
+- **Later on 2026-10-26:** the wake ribbon is gone (Parker: "we can get rid of the trail behind the sub"; it is in the
+  git history before `28883aa` if wanted again). A trial layout (Parker: put everything to the left so the sub can
+  simply move up and down the right side): `layout.align: left` in `theme.yml` (footer button "Layout") keeps the
+  column to the left, and on screens with room the timeline sub keeps to a lane in the open water on the right, near
+  the scroll bar, only moving up and down, facing left at the work it lights; it dives straight down that lane from
+  level with the headline and rests on the footer line in it. It doesn't weave round the kelp there. The default is
+  still `centre`. Trial Artifact (second account, no store, so no Arrange): https://claude.ai/artifact/DzWfBwLa9DMBUMMz6XXwzV,
+  published from a copy of the concept with `align: left` in its `theme.yml`.
+- **Left to do:** Parker's verdict on the left layout (make it the default, or keep centred); the
   "starfish I can't move" report (the robot drawing dragged fine in testing; ask which one); real content; the
   paper's figure licence; Scholar and ORCID links; citing papers at build time; going live, only with Parker's OK.
 - **Testing note:** the in-app browser pane, when hidden, runs no animation frames: override `requestAnimationFrame`
