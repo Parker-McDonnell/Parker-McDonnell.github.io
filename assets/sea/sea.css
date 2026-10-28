@@ -324,7 +324,7 @@ button:hover { color: var(--shu); }
 .ground .walker.back svg { scale: -1 1; }
 @keyframes crawl { from { translate: -160px 0; } to { translate: calc(100cqw + 20px) 0; } }
 @keyframes step { to { translate: 0 -.8px; } }
-/* fireflies: each loops slowly round its own patch of the lane (14 to 24 s) and blinks every 5 to 10 s */
+/* fireflies: each hovers in its own place in the lane, wobbling, and blinks every 6 to 10 s */
 :root[data-world="land"][data-ocean="on"] .flies { display: block; position: fixed; inset: 0; pointer-events: none; color: var(--line); }
 .flies.none { visibility: hidden; }
 .fly { position: absolute; left: var(--x); width: 34px; height: 22px; animation: flit var(--t) ease-in-out var(--d) infinite; }
@@ -333,7 +333,8 @@ button:hover { color: var(--shu); }
 .fly .lantern { fill: currentColor; fill-opacity: .5; stroke: none; }
 .fly .lantern.on, .fly .glow { opacity: 0; animation: blink var(--b) ease-in-out var(--bd) infinite; }
 .fly .lantern.on { fill: var(--glow); fill-opacity: 1; }
-@keyframes flit { 0%, 100% { translate: 0 0; } 25% { translate: var(--dx) -26px; } 50% { translate: calc(-.4 * var(--dx)) 22px; } 75% { translate: calc(-1 * var(--dx)) -8px; } }
+/* each hovers in its place, wobbling a little (Parker, 2026-10-28: "stationary (with a little wobble)") */
+@keyframes flit { 0%, 100% { translate: 0 0; rotate: 0deg; } 25% { translate: 2px -3px; rotate: -3deg; } 50% { translate: -1px 2px; rotate: 1deg; } 75% { translate: -2px -1px; rotate: 2deg; } }
 @keyframes blink { 0%, 76%, 100% { opacity: 0; } 84% { opacity: 1; } 90% { opacity: .55; } }
 /* still: each walker stands at its own place on the ground */
 :root[data-ocean-motion="off"] :is(.fly, .fly .glow, .fly .lantern.on, .walker, .walker svg, .grow) { animation: none; }

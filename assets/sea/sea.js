@@ -663,8 +663,8 @@ const LAND = (() => {
   // the walkers: [drawing, width in px, seconds to cross, delay, walks left, where it stands when still]
   const WALK = [['ant', 40, 80, -10, 0, '22%'], ['beetle', 48, 120, -70, 1, '44%'], ['roach', 92, 65, -30, 0, '57%'],
     ['robot', 70, 100, -45, 1, '78%'], ['spider', 46, 140, -100, 0, '67%']];
-  // the fireflies: [how far down the screen, seconds for one loop, its delay, seconds between blinks, its delay]
-  const FLIGHTS = [[.14, 18, -3, 7, -1], [.33, 22, -11, 9, -6], [.52, 15, -6, 6, -3], [.7, 20, -14, 8, -7], [.86, 24, -2, 10, -4]];
+  // the fireflies: [how far down the screen, seconds for one wobble, its delay, seconds between blinks, its delay]
+  const FLIGHTS = [[.14, 4.2, -1, 7, -1], [.33, 5.1, -3, 9, -6], [.52, 3.6, -2, 6, -3], [.7, 4.7, -4, 8, -7], [.86, 5.6, -1, 10, -4]];
   const fade = near => `opacity:${(.35 + .55 * near).toFixed(2)}`;
 
   const ground = document.createElement('div');
@@ -692,9 +692,7 @@ const LAND = (() => {
     const text = w.getBoundingClientRect().right - (parseFloat(getComputedStyle(w).paddingRight) || 0);
     const gap = document.documentElement.clientWidth - text;
     flies.classList.toggle('none', gap < 70);
-    flies.style.setProperty('--x', text + gap / 2 - 17 + 'px');
-    flies.style.setProperty('--dx', Math.max(8, Math.min(40, gap / 2 - 30)) + 'px');
-  };
+    flies.style.setProperty('--x', text + gap / 2 - 17 + 'px');  };
   addEventListener('resize', place);
 
   const scene = (cfg, view) => cfg.labs?.[view?.dataset.lab]?.scene || 'sea';

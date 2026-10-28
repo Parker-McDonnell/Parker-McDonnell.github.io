@@ -329,7 +329,7 @@ button:hover { color: var(--shu); }
 .ground .walker.back svg { scale: -1 1; }
 @keyframes crawl { from { translate: -160px 0; } to { translate: calc(100cqw + 20px) 0; } }
 @keyframes step { to { translate: 0 -.8px; } }
-/* fireflies: each loops slowly round its own patch of the lane (14 to 24 s) and blinks every 5 to 10 s */
+/* fireflies: each hovers in its own place in the lane, wobbling, and blinks every 6 to 10 s */
 :root[data-world="land"][data-ocean="on"] .flies { display: block; position: fixed; inset: 0; pointer-events: none; color: var(--line); }
 .flies.none { visibility: hidden; }
 .fly { position: absolute; left: var(--x); width: 34px; height: 22px; animation: flit var(--t) ease-in-out var(--d) infinite; }
@@ -338,7 +338,8 @@ button:hover { color: var(--shu); }
 .fly .lantern { fill: currentColor; fill-opacity: .5; stroke: none; }
 .fly .lantern.on, .fly .glow { opacity: 0; animation: blink var(--b) ease-in-out var(--bd) infinite; }
 .fly .lantern.on { fill: var(--glow); fill-opacity: 1; }
-@keyframes flit { 0%, 100% { translate: 0 0; } 25% { translate: var(--dx) -26px; } 50% { translate: calc(-.4 * var(--dx)) 22px; } 75% { translate: calc(-1 * var(--dx)) -8px; } }
+/* each hovers in its place, wobbling a little (Parker, 2026-10-28: "stationary (with a little wobble)") */
+@keyframes flit { 0%, 100% { translate: 0 0; rotate: 0deg; } 25% { translate: 2px -3px; rotate: -3deg; } 50% { translate: -1px 2px; rotate: 1deg; } 75% { translate: -2px -1px; rotate: 2deg; } }
 @keyframes blink { 0%, 76%, 100% { opacity: 0; } 84% { opacity: 1; } 90% { opacity: .55; } }
 /* still: each walker stands at its own place on the ground */
 :root[data-ocean-motion="off"] :is(.fly, .fly .glow, .fly .lantern.on, .walker, .walker svg, .grow) { animation: none; }
@@ -1381,8 +1382,8 @@ const LAND = (() => {
   // the walkers: [drawing, width in px, seconds to cross, delay, walks left, where it stands when still]
   const WALK = [['ant', 40, 80, -10, 0, '22%'], ['beetle', 48, 120, -70, 1, '44%'], ['roach', 92, 65, -30, 0, '57%'],
     ['robot', 70, 100, -45, 1, '78%'], ['spider', 46, 140, -100, 0, '67%']];
-  // the fireflies: [how far down the screen, seconds for one loop, its delay, seconds between blinks, its delay]
-  const FLIGHTS = [[.14, 18, -3, 7, -1], [.33, 22, -11, 9, -6], [.52, 15, -6, 6, -3], [.7, 20, -14, 8, -7], [.86, 24, -2, 10, -4]];
+  // the fireflies: [how far down the screen, seconds for one wobble, its delay, seconds between blinks, its delay]
+  const FLIGHTS = [[.14, 4.2, -1, 7, -1], [.33, 5.1, -3, 9, -6], [.52, 3.6, -2, 6, -3], [.7, 4.7, -4, 8, -7], [.86, 5.6, -1, 10, -4]];
   const fade = near => `opacity:${(.35 + .55 * near).toFixed(2)}`;
 
   const ground = document.createElement('div');
@@ -1410,9 +1411,7 @@ const LAND = (() => {
     const text = w.getBoundingClientRect().right - (parseFloat(getComputedStyle(w).paddingRight) || 0);
     const gap = document.documentElement.clientWidth - text;
     flies.classList.toggle('none', gap < 70);
-    flies.style.setProperty('--x', text + gap / 2 - 17 + 'px');
-    flies.style.setProperty('--dx', Math.max(8, Math.min(40, gap / 2 - 30)) + 'px');
-  };
+    flies.style.setProperty('--x', text + gap / 2 - 17 + 'px');  };
   addEventListener('resize', place);
 
   const scene = (cfg, view) => cfg.labs?.[view?.dataset.lab]?.scene || 'sea';
