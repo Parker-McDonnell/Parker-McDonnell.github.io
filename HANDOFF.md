@@ -10,7 +10,7 @@ Parker asked for "simple and sleek", like a "high class art gallery", using a kn
 
 - **Never push to `main`.** That publishes the live site, and Parker must approve it first. All work goes on `redesign`.
 - The old site is saved on the `old-jekyll-site` branch, which is pushed.
-- Don't use any journal figure until its licence is checked (see below).
+- Paper figures may be used as they are, each with a visible citation (Parker, 2026-10-28: "We can freely use all paper figures as is as long as we cite them").
 - Keywords Parker uses: (discuss) means talk only, (write up) means draft without committing, (go) means commit and push. With no keyword, go ahead as usual.
 
 ## What's here (`concepts/`)
@@ -41,7 +41,7 @@ One file holds all five pages (home, paper, talk, tool, about), and `#home`, `#p
 ## Still waiting on Parker
 
 1. ~~Final yes on al-folio as the template.~~ Parker chose al-folio on 2026-10-25 ("Build version 1 on the al-folio template, carrying this design into it").
-2. **The paper's figure licence.** Science Advances publishes some articles as CC BY and some as CC BY-NC, and Crossref listed none for this one. Check the article page before putting up any figure.
+2. ~~The paper's figure licence.~~ Settled 2026-10-28: figures may be used as they are, each with a visible citation.
 3. Real content: summary, key findings, talk details, bio, portrait, email, ORCID, Scholar link, CV, and his list of works. Everything apart from the paper's details is placeholder.
 4. ~~Whether to keep the vertical name in the margin.~~ Removed 2026-10-25: the vertical timeline now uses that margin.
 
@@ -129,8 +129,7 @@ everything is.
 - **Starter leftovers removed:** the `books` archive in `jekyll-archives` (the first build failed on it) and al-folio's
   example `external_sources`, which pulled other people's blog posts into a `/blog/` section. al-folio's `posts`
   archive is still configured but makes nothing while there are no posts.
-- **Not yet:** going live (Parker's OK, then GitHub Pages set to serve from `gh-pages`), real content, the paper's
-  figure licence.
+- **Not yet:** going live (Parker's OK, then GitHub Pages set to serve from `gh-pages`), real content.
 - **The sub on every page** (Parker: "add the submarine to the work and about pages, lighting each section in turn
   as I scroll", 2026-10-25): on a page without the timeline it swims down the right margin (just inside the column
   when there's no room) and lights the section being read; the rest dims to 35%. A section is the page's head, its
@@ -218,8 +217,7 @@ everything is.
   in place of `requestAnimationFrame` from the first line, and dispatch `scroll` yourself. Port 8765 may be another
   session's; pick your own.
 - **Left to do:** the
-  "starfish I can't move" report (the robot drawing dragged fine in testing; ask which one); real content; the
-  paper's figure licence; Scholar and ORCID links; citing papers at build time; going live, only with Parker's OK.
+  "starfish I can't move" report (the robot drawing dragged fine in testing; ask which one); real content; Scholar and ORCID links; citing papers at build time; going live, only with Parker's OK.
 - **Testing note:** the in-app browser pane, when hidden, runs no animation frames: override `requestAnimationFrame`
   with a timer before the page's loops start, or test with a stand-in. Never clear `localStorage` on a page Parker
   may be arranging in.
