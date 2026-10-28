@@ -1095,14 +1095,18 @@ function shadows(lamp, live) {
   // the sub eases toward where it should be, a little behind the scroll (pace: the share of the way it goes each frame,
   // quicker along the timeline, where it must keep up with each work in turn); chase(null) stops it
   let held = null, aim = null, chasing = 0, pace = .1;
-  function chase(x, y, quick) {
+  // (cap: the most it moves in a frame, so a long way back is a swim, not a jump)
+  let cap = Infinity;
+  function chase(x, y, quick, most = Infinity) {
     if (x === null) { cancelAnimationFrame(chasing); chasing = 0; held = null; return; }
     pace = quick ? .25 : .1;
+    cap = most;
     aim = [x, y];
     held ||= [x, y];
     if (chasing) return;
     const step = () => {
-      held = held.map((v, i) => v + (aim[i] - v) * pace);
+      const mx = (aim[0] - held[0]) * pace, my = (aim[1] - held[1]) * pace, s = Math.min(1, cap / (Math.hypot(mx, my) || 1));
+      held = [held[0] + mx * s, held[1] + my * s];
       Object.assign(sub.style, { left: held[0] + 'px', top: held[1] + 'px' });
       // it weaves round the kelp (Parker, 2026-10-26): clear of the stalk on its left, it comes in front of the page,
       // so it crosses to the right in front of the stalk; clear on the right, it goes back behind, so it crosses back
@@ -1142,7 +1146,15 @@ function shadows(lamp, live) {
     };
     roaming = requestAnimationFrame(step);
   }
-  function stay() { cancelAnimationFrame(roaming); roaming = 0; sub.style.removeProperty('--sweep'); }
+  // stops the wandering; true if it was wandering
+  let returning = false;
+  function stay() {
+    const was = !!roaming;
+    cancelAnimationFrame(roaming);
+    roaming = 0;
+    sub.style.removeProperty('--sweep');
+    return was;
+  }
   function unfold() {
     if (!geo) return;
     const on = folding !== 'off' && !still.matches && document.documentElement.dataset.oceanMotion !== 'off';
@@ -1197,7 +1209,7 @@ function shadows(lamp, live) {
       const handover = spot - line, diving = n === 0 && scrollY < handover;
       sub.classList.toggle('dive', diving);
       if (diving) {
-        stay();
+        if (stay()) returning = true;
         const [startX, startY, textL, textH] = besideHeadline(), smooth = t => t * t * (3 - 2 * t), clamp = t => Math.min(1, Math.max(0, t));
         const show = document.querySelector('.show')?.getBoundingClientRect(), head = document.getElementById('works')?.getBoundingClientRect();
         const below = show && head ? (show.bottom + head.top) / 2 + scrollY : startY;
@@ -1210,7 +1222,8 @@ function shadows(lamp, live) {
         // in the lane it dives straight down it, from level with the headline
         const py = startY + (below - startY) * sink, px = lane ? home.left + x : startX;
         const glide = 1 - (1 - cross) ** 2, vx = px + (home.left + x - px) * smooth(cross), pageY = py + (spot - py) * glide;
-        chase(vx - home.left, pageY - ctTop);
+        if (Math.hypot(vx - home.left - (held?.[0] ?? 0), pageY - ctTop - (held?.[1] ?? 0)) < 40) returning = false;
+        chase(vx - home.left, pageY - ctTop, false, returning ? 10 : Infinity);
         sub.classList.add('west');
         sub.style.setProperty('--tilt', '0deg');
         // the lamp floods the headline at first (its length and spread measured on screen, so undone by the sub's
@@ -1223,8 +1236,11 @@ function shadows(lamp, live) {
         // over the creatures, in place of the explorer; scrolled back up, it hurries back (Parker, 2026-10-28)
         wander();
       } else {
-      stay();
-      chase(x, y, true);
+      // back from the sea floor it swims up to the work at an easy pace, about 600 px a second, catching up rather
+      // than jumping there (Parker, 2026-10-28)
+      if (stay()) returning = true;
+      if (Math.hypot(x - (held?.[0] ?? x), y - (held?.[1] ?? y)) < 40) returning = false;
+      chase(x, y, true, returning ? 10 : Infinity);
       if (past) {
         // resting on the footer's line, facing the foot of the stalk, its lamp reaching past the stalk (Parker,
         // 2026-10-26: further than the short glow it had)
@@ -1423,15 +1439,19 @@ function shadows(lamp, live) {
     const from = real?.getBoundingClientRect(), k = from ? from.width / 60 : (innerWidth < 720 ? .9 : 1.3);
     const sx = from ? from.left + from.width / 2 : innerWidth + 40, sy = from ? from.top + from.height / 2 : gy;
     const twin = document.createElement('div');
-    twin.className = 'portal-sub';
-    twin.innerHTML = (document.querySelector('.sub .hull, .explorer .hull')?.outerHTML || '').replace(/class="hull"/, '');
+    // the guide on screen goes itself: the sub, or on a land page the firefly
+    const fly = !!real?.classList.contains('fly-guide');
+    twin.className = fly ? 'portal-sub fly' : 'portal-sub';
+    twin.innerHTML = ((real || document).querySelector(real ? '.hull' : '.sub .hull, .explorer .hull')?.outerHTML || '').replace(/class="hull"/, '');
     document.body.append(twin);
     root.classList.add('portal');
-    // nose first: the drawing faces right, so going left it is mirrored, and it tilts to point along its way
-    const dx = gx - sx, dy = gy - sy, flip = dx < 0 ? -1 : 1;
+    // nose first: the sub faces right (the firefly left), so going the other way it is mirrored, and it tilts to point
+    // along its way
+    const dx = gx - sx, dy = gy - sy, flip = dx < 0 ? -1 : 1, face = fly ? -1 : 1;
     const tilt = Math.max(-60, Math.min(60, Math.atan2(dy, Math.abs(dx) || 1) * 180 / Math.PI)) * flip;
-    const at = (x, y, s) => `translate(${x - 30}px, ${y - 16}px) rotate(${tilt}deg) scale(${flip * s}, ${s})`;
-    const far = Math.hypot(dx, dy), trip = Math.min(1100, 450 + far * .6), lift = Math.min(80, far * .2);
+    const at = (x, y, s) => `translate(${x - 30}px, ${y - 16}px) rotate(${tilt}deg) scale(${flip * face * s}, ${s})`;
+    // an unhurried swim, so the reader sees it go (Parker, 2026-10-28: "a bit slower"; it was 450 ms plus .6 ms a pixel)
+    const far = Math.hypot(dx, dy), trip = Math.min(1800, 750 + far * .9), lift = Math.min(80, far * .2);
     const ring = document.createElement('i'), d = Math.max(36, Math.min(goal.width, goal.height) * .7);
     ring.className = 'portal-ring';
     Object.assign(ring.style, { left: gx - d / 2 + 'px', top: gy - d / 2 + 'px', width: d + 'px', height: d + 'px' });

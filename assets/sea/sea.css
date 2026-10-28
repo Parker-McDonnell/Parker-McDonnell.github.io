@@ -467,6 +467,8 @@ footer { margin-top: 6rem; padding-top: 1.5rem; border-top: 1px solid var(--rule
 .portal-sub svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor;
   stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
 .portal-sub path:first-child { fill: var(--paper); }
+.portal-sub.fly path:first-child { fill: none; }
+.portal-sub.fly .lantern { fill: var(--glow); fill-opacity: .7; stroke: none; }
 .portal-ring { position: fixed; z-index: 21; pointer-events: none; border: 1px solid var(--shu); border-radius: 50%; opacity: 0; }
 .veil { position: fixed; inset: 0; z-index: 20; background: var(--paper); opacity: 0; pointer-events: none; }
 :root.portal .sub { visibility: hidden; }
