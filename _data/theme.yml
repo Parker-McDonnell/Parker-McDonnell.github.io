@@ -47,6 +47,12 @@ layout:
                                       # left at every width and the timeline's sub slides straight up and down a clear
                                       # lane on the right, beside the scroll bar
 
+labs:                                 # the lab a work was done in (lab: in its file in _projects/) picks the scene its
+                                      # page stands in and its palette; a lab not listed here, or no lab, is the sea
+                                      # (Parker, 2026-10-28). A future lab is one more line, with a scene drawn for it.
+  # the Jayaram Lab, the insect-scale robots: grass, plants, insects and fireflies, in crimson
+  jayaram: { scene: land, palette: Journal Crimson }
+
 ocean:                                # scrolling down the page sinks through the water to the sea floor
   enabled: true                       # the deepening shade, the creatures in the page and the sea floor
   motion: true                        # very slow drifting; always still for viewers who ask their device for less motion

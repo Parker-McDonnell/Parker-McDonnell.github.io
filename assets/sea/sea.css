@@ -295,7 +295,50 @@ button:hover { color: var(--shu); }
 .view.lit > .sub.small { scale: .9; }
 .view.lit > .sub.lamp { z-index: 3; }
 .view.lit > .sub .beam { fill: url(#pageBeam); }
+/* on land the guide is a firefly, its tail to the page, and its light the firefly's own colour */
+.view.lit > .sub.fly-guide .hull path:first-child { fill: none; }
+.view.lit > .sub.fly-guide .lantern { fill: var(--glow); fill-opacity: .7; stroke: none; }
+.view.lit > .sub.lamp.fly-guide { --beam: color-mix(in oklab, var(--glow) 26%, transparent); }
 .view.lit > * { transition: opacity .6s ease; }
+
+/* Land (theme.yml labs:): a work done in a lab whose scene is land stands on the ground, not in the sea: grass, plants
+   and rocks along the foot of the page with insects and the insect-scale robot walking slowly over it, and fireflies in
+   the open lane beside the column, blinking now and then; they never cross the words (Parker, 2026-10-28). The drawings
+   are SlideKit's (slidekit/furniture.py), drawn in this sea's line style for the comps slides. */
+:root { --glow: #b9cf2c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --glow: #e0ef6c; } }
+:root[data-theme="dark"] { --glow: #e0ef6c; }
+.ground, .flies { display: none; }
+:root[data-world="land"] :is(.sea, .floor, .critter) { display: none !important; }
+:root[data-world="land"][data-ocean="on"] body { background: linear-gradient(var(--paper) 0, var(--paper) 40%, color-mix(in oklab, var(--paper), var(--ink) 5%) 100%); }
+:root[data-world="land"][data-ocean="on"] .ground { display: block; position: relative; height: 11rem; margin-top: -2rem; overflow: hidden; pointer-events: none; color: var(--line); container-type: inline-size; }
+.ground svg { position: absolute; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
+.ground .soil { left: 0; bottom: 2.4rem; width: 100%; height: 2rem; }
+.ground .grow { bottom: 3.25rem; transform-origin: 50% 100%; }
+.ground .grow.nod { animation: nod 9s ease-in-out infinite alternate; }
+@keyframes nod { from { rotate: -2deg; } to { rotate: 2deg; } }
+/* each walker crosses the whole ground slowly, leaving at one side and coming back in at the other */
+.ground .walker { position: absolute; left: 0; bottom: 3.25rem; animation: crawl var(--t) linear var(--d) infinite; }
+.ground .walker.back { animation-direction: reverse; }
+.ground .walker svg { position: static; display: block; width: 100%; height: 100%; animation: step .8s ease-in-out infinite alternate; }
+.ground .walker.back svg { scale: -1 1; }
+@keyframes crawl { from { translate: -160px 0; } to { translate: calc(100cqw + 20px) 0; } }
+@keyframes step { to { translate: 0 -.8px; } }
+/* fireflies: each loops slowly round its own patch of the lane (14 to 24 s) and blinks every 5 to 10 s */
+:root[data-world="land"][data-ocean="on"] .flies { display: block; position: fixed; inset: 0; pointer-events: none; color: var(--line); }
+.flies.none { visibility: hidden; }
+.fly { position: absolute; left: var(--x); width: 34px; height: 22px; animation: flit var(--t) ease-in-out var(--d) infinite; }
+.fly svg { width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.fly.back svg { scale: -1 1; }
+.fly .lantern { fill: currentColor; fill-opacity: .5; stroke: none; }
+.fly .lantern.on, .fly .glow { opacity: 0; animation: blink var(--b) ease-in-out var(--bd) infinite; }
+.fly .lantern.on { fill: var(--glow); fill-opacity: 1; }
+@keyframes flit { 0%, 100% { translate: 0 0; } 25% { translate: var(--dx) -26px; } 50% { translate: calc(-.4 * var(--dx)) 22px; } 75% { translate: calc(-1 * var(--dx)) -8px; } }
+@keyframes blink { 0%, 76%, 100% { opacity: 0; } 84% { opacity: 1; } 90% { opacity: .55; } }
+/* still: each walker stands at its own place on the ground */
+:root[data-ocean-motion="off"] :is(.fly, .fly .glow, .fly .lantern.on, .walker, .walker svg, .grow) { animation: none; }
+:root[data-ocean-motion="off"] .walker { left: var(--at); }
+@media (prefers-reduced-motion: reduce) { :is(.fly, .fly .glow, .fly .lantern.on, .walker, .walker svg, .grow) { animation: none; } .walker { left: var(--at); } }
 .view.lit > .unlit { opacity: .35; }
 /* bubbles from a submarine's periscope: they rise, wobbling a little, and fade (--rise, --dx: set as each is made) */
 .bub { position: absolute; z-index: -1; box-sizing: border-box; border: 1px solid var(--line); border-radius: 50%; pointer-events: none;

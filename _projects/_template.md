@@ -8,6 +8,8 @@ short_title: A short title  # for the slideshow and related links; leave out to 
 date: 2026-10-09            # when it came out; the timeline is in this order, newest first
 venue: Science Advances     # optional
 venue_key: SciAdv           # optional: the journal's accent colour, from _data/venues.yml
+lab: xu                     # where it was done; a lab listed under labs: in _data/theme.yml sets the page's scene
+                            # and palette (jayaram: land, in crimson); any other lab, or none, is the sea
 byline: "Authors · journal, volume, page"   # optional; Markdown allowed
 blurb: One line for the timeline card.
 featured: false             # true puts it in the home page slideshow

@@ -18,7 +18,7 @@ layout: default
     :root[data-theme="dark"] body { --shu: {{ venue.color_dark | default: venue.color }}; }
   </style>
 {%- endif %}
-<article class="view" data-page="{{ slug }}">
+<article class="view" data-page="{{ slug }}"{% if page.lab %} data-lab="{{ page.lab }}"{% endif %}>
   <p class="eyebrow">{{ page.kind }}{% if page.venue %} · {{ page.venue }}{% endif %} · {{ page.date | date: '%B %Y' }}</p>
   <h1 class="page-title">{{ page.title }}</h1>
   {% if page.byline %}<p class="byline">{{ page.byline | markdownify | remove: '<p>' | remove: '</p>' | strip }}</p>{% endif %}

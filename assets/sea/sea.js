@@ -594,6 +594,138 @@ site.use(cfg => {
   });
 })();
 
+// Land: a page whose work was done in a lab with scene: land (theme.yml labs:, matched to the page's data-lab) stands on
+// the ground instead of in the sea, in that lab's palette (Parker, 2026-10-28). The drawings are SlideKit's
+// (slidekit/furniture.py: the insects from the side, the insect-scale robot, the plants and the firefly in flight), its
+// path data copied unchanged; ring() and leaf() are its circle() and _leaf(). The page's guide turns into a firefly too
+// (see the page sub below).
+const LAND = (() => {
+  const ring = (cx, cy, r, ry = r) => {
+    const k = .5523;
+    return `M${cx + r} ${cy} C${cx + r} ${cy + k * ry} ${cx + k * r} ${cy + ry} ${cx} ${cy + ry} ` +
+      `C${cx - k * r} ${cy + ry} ${cx - r} ${cy + k * ry} ${cx - r} ${cy} ` +
+      `C${cx - r} ${cy - k * ry} ${cx - k * r} ${cy - ry} ${cx} ${cy - ry} ` +
+      `C${cx + k * r} ${cy - ry} ${cx + r} ${cy - k * ry} ${cx + r} ${cy} Z`;
+  };
+  // a pointed leaf from its base to its tip, w its width over its length, with a midrib
+  const leaf = (bx, by, tx, ty, w = .36) => {
+    const dx = tx - bx, dy = ty - by, nx = -dy * w, ny = dx * w, f = (...v) => v.map(x => x.toFixed(1)).join(' ');
+    const a = [bx + dx * .3 + nx, by + dy * .3 + ny, bx + dx * .75 + nx * .8, by + dy * .75 + ny * .8];
+    const b = [bx + dx * .75 - nx * .8, by + dy * .75 - ny * .8, bx + dx * .3 - nx, by + dy * .3 - ny];
+    return `M${f(bx, by)} C${f(...a, tx, ty)} C${f(...b, bx, by)} Z M${f(bx, by)} L${f(bx + dx * .8, by + dy * .8)} `;
+  };
+  // [viewBox width, height, path data]; each faces right, its feet on the bottom of its box
+  const ART = {
+    ant: [80, 44, ring(16, 22, 12, 9) + ' ' + ring(31, 22, 2.2) + ' M34 22 C34 15 44 13 50 16 C54 18 54 24 50 26 C44 28 34 28 34 22 Z ' +
+      ring(60, 17, 7, 6) + ' ' + ring(62.5, 15, 1.1) + ' M66 20 L71 22 L66 23 M63 12 L66 3 L75 6 ' +
+      'M50 25 L58 32 L62 44 M45 27 L46 34 L44 44 M39 26 L32 33 L26 44 M48 26 L54 33 L56 40 M42 27 L41 33 L39 40 M37 26 L32 31 L29 38'],
+    roach: [150, 46, 'M12 28 C12 18 38 13 68 15 C84 16 92 21 90 28 C88 32 18 33 12 28 Z M20 21 C42 16 66 16 86 22 ' +
+      'M84 17 C94 15 102 19 103 24 C103 28 98 29.5 91 29 ' + ring(108.5, 25.5, 5.5, 3.4) + ' ' + ring(110.5, 24.6, 1) +
+      ' M113.5 24.5 C126 18 138 14 150 13 M113.5 26.5 C126 23 138 22.5 150 25 M12 27 L3 24 M12 29 L4 31 ' +
+      'M86 31 L95 25 L105 45.5 L108 46 M62 31.5 L55 25.5 L46 45.5 L43 46 M40 31 L28 25 L13 45.5 L10 46 ' +
+      'M97.5 30.1 L99.9 29.1 M100.0 35.2 L102.4 34.2 M102.5 40.4 L104.9 39.4 M52.8 30.5 L50.4 29.5 M50.5 35.5 L48.1 34.5 ' +
+      'M48.2 40.5 L45.9 39.5 M24.2 30.1 L22.1 28.8 M20.5 35.2 L18.3 34.0 M16.8 40.4 L14.6 39.1 ' +
+      'M82 31.6 L91 42.5 M67 32.2 L60 42.5 M49 32.3 L35 42.5'],
+    beetle: [80, 46, 'M14 33 C14 14 34 6 52 10 C62 12 66 22 64 33 Z M20 22 C30 13 44 11 56 14 M64 22 C70 20 74 24 74 31 L64 33 ' +
+      ring(78, 30, 4.2) + ' M80 26 L86 18 ' + ring(86.8, 16.9, 1.6) +
+      ' M56 33 L62 39 L66 46 M44 34 L44 40 L40 46 M28 33 L22 39 L16 46 M52 33 L56 38 M38 34 L37 39 M24 33 L20 37'],
+    spider: [80, 50, ring(22, 28, 10, 9) + ' ' + ring(42, 30, 9, 7) + ' ' + ring(54, 31, 3.5, 3.2) + ' ' + ring(55.5, 29.8, .8) +
+      ' M56 34 L58 37 M46 24 L62 6 L77 50 M44 23 L56 10 L66 50 M40 23 L37 8 L33 50 M38 24 L20 3 L1 50 M45 24 L60 14 L71 44'],
+    robot: [90, 50, 'M16 27 L23 22 L65 22 L72 27 L65 32 L23 32 Z M34 18 L48 18 L48 21 L34 21 Z M35 21 L34 22 M39.5 21 L39.5 22 ' +
+      'M43.5 21 L43.5 22 M47 21 L48 22 M52 19.5 L57 19.5 L57 22 L52 22 Z M61 22 L70 8 M66 24 L80 13 ' +
+      ring(70.8, 6.8, 1.6) + ' ' + ring(81.3, 12.2, 1.6) + ' ' + ring(28, 33.5, 1.5) + ' ' + ring(40, 33.5, 1.5) + ' ' +
+      ring(50, 33.5, 1.5) + ' ' + ring(61, 33.5, 1.5) + ' M62 35 L70 41 L74 50 M51 35 L54 42 L54 50 M39 35 L36 42 L36 50 M27 35 L19 41 L14 50'],
+    sprout: [40, 60, 'M20 60 C20 50 21 40 20 28 M20 42 C12 42 6 36 4 30 C12 30 18 34 20 42 Z M20 34 C28 32 34 26 36 20 C28 20 22 26 20 34 Z ' + ring(20, 25, 3)],
+    plant: [50, 70, 'M25 70 C25 56 24 40 25 20 M25 50 C30 44 34 40 38 34 ' + leaf(25, 64, 9, 57) + leaf(25, 58, 42, 52) + leaf(25, 47, 7, 38) +
+      leaf(31, 43, 46, 40, .3) + leaf(38, 34, 45, 21) + leaf(25, 36, 11, 24) + leaf(25, 28, 38, 18) + leaf(25, 20, 17, 6, .32) + leaf(25, 20, 32, 7, .32)],
+    grass: [40, 50, 'M8 50 Q3 32 10 12 M16 50 Q19 30 13 16 M24 50 Q29 34 33 22 M31 50 Q33 40 38 34'],
+    rocks: [80, 30, 'M3 30 Q1 15 15 10 Q29 4 40 13 Q48 21 46 30 M44 30 Q45 20 55 19 Q66 19 68 30 M66 30 q1 -6 7 -5 q6 1 5 5 M14 18 q6 -4 12 -2'],
+  };
+  // the firefly in flight, from the side, head at the left; its lantern (the last segments) is filled, its light at (59, 28)
+  const FIREFLY = 'M6 27 C6 21 11 18 18 18.5 L20.5 19 L20.5 30.5 C14 31.5 8 31 6 27 Z ' + ring(13, 23.2, 2.4, 1.6) + ' ' + ring(5.4, 28.6, 1.6) +
+    ' M5 26.5 C2.5 22 1.2 17 1.6 11 M7.2 25.4 C6 20 6.6 15 8.6 10 ' +
+    'M20.5 22.6 C29 21 41 21.6 49 23 C55.5 24 59.2 25.8 59.2 28 C59.2 30.2 55.5 31.6 49 32.1 C41 32.8 29 32.2 20.5 30.5 ' +
+    'M30 21.9 C31 25.4 31 29 30 32.3 M36.5 21.8 C37.5 25.4 37.5 29 36.5 32.5 M43 22.2 C44 25.5 44 29 43 32.5 M53.4 24 C54.4 26.4 54.4 29.6 53.4 31.6 ' +
+    'M20.5 20.5 C23.5 13 29.5 7.5 37 5.6 C38 9.5 33 15.5 25 21.4 Z M24 17 C27.5 12.5 31.5 9.6 35.5 8 ' +
+    'M22.5 21.2 C27 14.5 33 10 40.5 8.8 C40 12.6 35 17 27.5 21.6 Z ' +
+    'M26 20.8 C34 9.5 46.5 3 61 2.8 C57 9.5 45.5 16.2 31 21.6 M30 19.6 C38.5 12.4 48 7.4 57.5 5 ' +
+    'M28.5 21.9 C38 15 50 11.6 63 12.6 C56 17.6 44.5 21 32 22.4 M33 21.6 C42 17.6 51 15 59.5 14 ' +
+    'M21.5 30.6 L19.5 35.5 L16.5 38.6 M26.5 31.2 L26.5 36 L24.5 39.4 M31.5 31.8 L33.5 36.4 L33.5 39.4';
+  const LIT = 'M47.5 22.8 C52 23.4 56.5 24.6 58.4 26.2 C59.6 27.4 59.6 28.6 58.4 29.8 C56.5 31.3 52 32 47.5 32.3 C48.8 29.4 48.8 25.8 47.5 22.8 Z';
+  // the guide on a land page: the firefly in the page sub's place (it is a .hull, so it is drawn as the sub is)
+  const FLY = `<svg class="hull" viewBox="0 0 64 40"><path d="${FIREFLY}"/><path class="lantern" d="${LIT}"/></svg>`;
+  const svg = (name, cls = '') => { const [w, h, d] = ART[name]; return `<svg class="${cls}" viewBox="0 0 ${w} ${h}"><path d="${d}"/></svg>`; };
+
+  // the ground: [drawing, left, width in px, nods, nearness]; far ones are smaller and fainter
+  const GROW = [['grass', '2%', 54, 1, .8], ['plant', '8%', 64, 1, .9], ['rocks', '15%', 110, 0, .9], ['sprout', '29%', 32, 1, .5],
+    ['grass', '37%', 34, 1, .4], ['plant', '51%', 44, 1, .5], ['rocks', '62%', 78, 0, .7], ['sprout', '74%', 40, 1, .7],
+    ['grass', '81%', 50, 1, .8], ['plant', '89%', 72, 1, .9], ['rocks', '95%', 50, 0, .6]];
+  // the walkers: [drawing, width in px, seconds to cross, delay, walks left, where it stands when still]
+  const WALK = [['ant', 40, 80, -10, 0, '22%'], ['beetle', 48, 120, -70, 1, '44%'], ['roach', 92, 65, -30, 0, '57%'],
+    ['robot', 70, 100, -45, 1, '78%'], ['spider', 46, 140, -100, 0, '67%']];
+  // the fireflies: [how far down the screen, seconds for one loop, its delay, seconds between blinks, its delay]
+  const FLIGHTS = [[.14, 18, -3, 7, -1], [.33, 22, -11, 9, -6], [.52, 15, -6, 6, -3], [.7, 20, -14, 8, -7], [.86, 24, -2, 10, -4]];
+  const fade = near => `opacity:${(.35 + .55 * near).toFixed(2)}`;
+
+  const ground = document.createElement('div');
+  ground.className = 'ground';
+  ground.setAttribute('aria-hidden', 'true');
+  ground.innerHTML =
+    '<svg class="soil" viewBox="0 0 1600 40" preserveAspectRatio="none"><path vector-effect="non-scaling-stroke" d="M0 20 Q200 16 400 19 T800 18 T1200 21 T1600 18"/></svg>' +
+    WALK.map(([n, w, t, d, back, at]) => `<div class="walker${back ? ' back' : ''}" style="width:${w}px;height:${w * ART[n][1] / ART[n][0]}px;--t:${t}s;--d:${d}s;--at:${at}">${svg(n)}</div>`).join('') +
+    GROW.map(([n, left, w, nod, near]) => svg(n, 'grow' + (nod ? ' nod' : '')).replace('<svg ', `<svg style="left:${left};width:${w}px;height:${w * ART[n][1] / ART[n][0]}px;animation-delay:${-w % 9}s;${fade(near)}" `)).join('');
+  document.getElementById('floor').after(ground);
+
+  const flies = document.createElement('div');
+  flies.className = 'flies';
+  flies.setAttribute('aria-hidden', 'true');
+  flies.innerHTML = '<svg width="0" height="0" style="position:absolute"><defs><radialGradient id="flyGlow">' +
+    '<stop offset="0" style="stop-color:var(--glow);stop-opacity:.85"/><stop offset="1" style="stop-color:var(--glow);stop-opacity:0"/></radialGradient></defs></svg>' +
+    FLIGHTS.map(([y, t, d, b, bd], i) => `<div class="fly${i % 2 ? ' back' : ''}" style="top:${y * 100}%;--t:${t}s;--d:${d}s;--b:${b}s;--bd:${bd}s">` +
+      `<svg viewBox="0 0 64 40"><circle class="glow" cx="58" cy="28" r="18" fill="url(#flyGlow)" stroke="none"/><path d="${FIREFLY}"/>` +
+      `<path class="lantern" d="${LIT}"/><path class="lantern on" d="${LIT}"/></svg></div>`).join('');
+  document.body.append(flies);
+  // they keep to the open lane right of the words, and stay away when it is too narrow for them
+  const place = () => {
+    const w = document.querySelector('.wrap');
+    if (!w) return;
+    const text = w.getBoundingClientRect().right - (parseFloat(getComputedStyle(w).paddingRight) || 0);
+    const gap = document.documentElement.clientWidth - text;
+    flies.classList.toggle('none', gap < 70);
+    flies.style.setProperty('--x', text + gap / 2 - 17 + 'px');
+    flies.style.setProperty('--dx', Math.max(8, Math.min(40, gap / 2 - 30)) + 'px');
+  };
+  addEventListener('resize', place);
+
+  const scene = (cfg, view) => cfg.labs?.[view?.dataset.lab]?.scene || 'sea';
+  let cfg = {};
+  const tag = document.createElement('style');
+  tag.id = 'land-theme';
+  function set() {
+    const view = document.querySelector('.view:not([hidden])'), lab = view?.dataset.lab;
+    const root = document.documentElement;
+    root.dataset.world = scene(cfg, view);
+    if (cfg.labs?.[lab]) root.dataset.lab = lab; else delete root.dataset.lab;
+    // each lab's palette, over the site's own while one of its pages is open
+    const tokens = t => Object.entries(t ? { '--paper': t.background, '--ink': t.text, '--mute': t.muted, '--rule': t.rule, '--well': t.panel, '--shu': t.accent } : {})
+      .filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join('; ');
+    const rules = [];
+    for (const [name, l] of Object.entries(cfg.labs || {})) {
+      const p = (cfg.palettes || []).find(x => x.name === l.palette), at = `:root[data-lab="${name}"]`;
+      if (!p) continue;
+      rules.push(`${at} { ${tokens(p.light)} }`);
+      if (p.dark) rules.push(`@media (prefers-color-scheme: dark) { ${at}:not([data-theme="light"]) { ${tokens(p.dark)} } }`, `${at}[data-theme="dark"] { ${tokens(p.dark)} }`);
+    }
+    tag.textContent = rules.join('\n');
+    document.head.append(tag);
+    place();
+  }
+  site.use(c => { cfg = c; setTimeout(set); });
+  // after the pages have switched
+  addEventListener('hashchange', () => setTimeout(set));
+  return { FLY, scene };
+})();
+
 // Pages: each work and the about page are pages of their own; a link to #works scrolls to the timeline.
 if (location.hash === '#works') addEventListener('load', () => document.getElementById('works')?.scrollIntoView());
 
@@ -1201,15 +1333,17 @@ function shadows(lamp, live) {
     on = !!view && !view.querySelector('#feed') && cfg.page_sub !== false && cfg.ocean?.enabled !== false && cfg.ocean?.motion !== false && !still.matches;
     if (!on) return;
     groups = sectionsOf(view);
+    // on a land page (its lab's scene, theme.yml labs:) a firefly lights the page instead, its own colour of light
+    const land = LAND.scene(cfg, view) === 'land';
     const body = document.createElement('div'), lamp = document.createElement('div');
-    body.className = 'sub';
-    body.innerHTML = HULL;
-    lamp.className = 'sub lamp';
+    body.className = land ? 'sub fly-guide' : 'sub';
+    body.innerHTML = land ? LAND.FLY : HULL;
+    lamp.className = land ? 'sub lamp fly-guide' : 'sub lamp';
     lamp.innerHTML = BEAM;
     view.append(body, lamp);
     parts = [body, lamp];
     view.classList.add('lit');
-    bubbles(body, () => on);
+    if (!land) bubbles(body, () => on);
     shadows(lamp, () => on);
     update();
   }
