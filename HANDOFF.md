@@ -192,7 +192,13 @@ everything is.
   level with the headline and rests on the footer line in it. It doesn't weave round the kelp there. The default is
   still `centre`. Trial Artifact (second account, no store, so no Arrange): https://claude.ai/artifact/DzWfBwLa9DMBUMMz6XXwzV,
   published from a copy of the concept with `align: left` in its `theme.yml`.
-- **Left to do:** Parker's verdict on the left layout (make it the default, or keep centred); the
+- **Decided 2026-10-28: left is the default.** Parker: squeeze the page so the sub always has a clear vertical path
+  beside the scroll bar and lights the work from that side without zig-zagging. The column now leaves a `--lane`
+  margin on the right at every width, down to a phone (`clamp(72px, 14vw, 180px)`), and the sub keeps to that lane
+  whenever `align: left`. Concept Artifact on the account in use that day (the second account's could not be read from
+  it): https://claude.ai/artifact/4ei4v4S7EyBor4h91a2niW, with `theme.yml` and the site's `placements.yml`, `db` and
+  `user`. Its store is empty until Parker arranges there.
+- **Left to do:** the
   "starfish I can't move" report (the robot drawing dragged fine in testing; ask which one); real content; the
   paper's figure licence; Scholar and ORCID links; citing papers at build time; going live, only with Parker's OK.
 - **Testing note:** the in-app browser pane, when hidden, runs no animation frames: override `requestAnimationFrame`
