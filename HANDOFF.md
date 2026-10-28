@@ -198,6 +198,25 @@ everything is.
   whenever `align: left`. Concept Artifact on the account in use that day (the second account's could not be read from
   it): https://claude.ai/artifact/4ei4v4S7EyBor4h91a2niW, with `theme.yml` and the site's `placements.yml`, `db` and
   `user`. Its store is empty until Parker arranges there.
+- **Also 2026-10-28** (Parker's asks; he liked all of it and wants to keep iterating):
+  - At the bottom of the home page the timeline sub leaves its lane and wanders the sea floor in place of the explorer.
+    Scrolled back up, it swims back at most 10 px a frame instead of jumping.
+  - The portal trip is slower: 750 ms plus .9 ms a pixel, up to 1.8 s.
+  - **Land.** A work's `lab:` in `_projects/` picks its page's scene and palette from `labs:` in `theme.yml`.
+    `jayaram` is land in Journal Crimson; any other lab is the sea.
+  - On land the drawings are creatures like the sea's, built in the `LAND` block of the concept and drawn by the
+    ocean code:
+    - Flyers (`air-`) are scattered through the page and kept per page. Fireflies hover and blink; the moth, bee and
+      dragonfly (drawn for the site in SlideKit's style) drift.
+    - Ground drawings (`ground-`) are kept for all land pages under `ground~wide` and `ground~narrow`. The insects and
+      the robot pace to and fro.
+    - "Arrange the land" works on both.
+  - The page guide and the portal become a firefly on land pages.
+  - The insects, robot, plants and firefly are SlideKit's (`slidekit/furniture.py`). `_projects/insect-robot.md` is a
+    placeholder Jayaram work.
+- **Testing note:** the in-app browser pane, when hidden, fires no scroll events either. Test from a copy with a timer
+  in place of `requestAnimationFrame` from the first line, and dispatch `scroll` yourself. Port 8765 may be another
+  session's; pick your own.
 - **Left to do:** the
   "starfish I can't move" report (the robot drawing dragged fine in testing; ask which one); real content; the
   paper's figure licence; Scholar and ORCID links; citing papers at build time; going live, only with Parker's OK.
