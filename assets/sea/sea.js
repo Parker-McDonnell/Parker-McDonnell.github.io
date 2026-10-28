@@ -984,6 +984,33 @@ function shadows(lamp, live) {
     };
     step();
   }
+  // wandering the sea floor: end to end in 20 s, resting 5 s at each end to look round, starting from the right, where
+  // its lane comes down; the chase eases it after the moving spot, so it swims there from wherever it was
+  const floorInView = () => { const f = document.getElementById('floor').getBoundingClientRect(); return f.height > 0 && f.top < innerHeight * .8; };
+  let roaming = 0, roamFrom = 0;
+  function wander() {
+    if (roaming) return;
+    roamFrom = performance.now();
+    const ease = t => { t = Math.min(1, Math.max(0, t)); return t * t * (3 - 2 * t); };
+    const step = now => {
+      const home = ct.getBoundingClientRect(), f = document.getElementById('floor').getBoundingClientRect();
+      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const u = (now - roamFrom) % 50000 / 50000, k = u < .5 ? ease((u - .1) / .4) : 1 - ease((u - .6) / .4);
+      const left = f.left + f.width * .04 - home.left, right = f.right - f.width * .06 - home.left;
+      // level with where the explorer swam, just above the sand
+      chase(right - k * (right - left), f.bottom - home.top - 6.6 * rem - 15);
+      sub.classList.toggle('west', u < .5);
+      // the hull stays level (a tilt set each frame would restart its turning transition, so it never turned round);
+      // only its lamp sweeps down over the sand
+      sub.style.setProperty('--tilt', '0deg');
+      sub.style.setProperty('--sweep', 40 + 10 * Math.sin(now / 1800) + 'deg');
+      sub.style.setProperty('--beamw', '190px');
+      sub.style.setProperty('--beamh', '70px');
+      roaming = requestAnimationFrame(step);
+    };
+    roaming = requestAnimationFrame(step);
+  }
+  function stay() { cancelAnimationFrame(roaming); roaming = 0; sub.style.removeProperty('--sweep'); }
   function unfold() {
     if (!geo) return;
     const on = folding !== 'off' && !still.matches && document.documentElement.dataset.oceanMotion !== 'off';
@@ -1038,6 +1065,7 @@ function shadows(lamp, live) {
       const handover = spot - line, diving = n === 0 && scrollY < handover;
       sub.classList.toggle('dive', diving);
       if (diving) {
+        stay();
         const [startX, startY, textL, textH] = besideHeadline(), smooth = t => t * t * (3 - 2 * t), clamp = t => Math.min(1, Math.max(0, t));
         const show = document.querySelector('.show')?.getBoundingClientRect(), head = document.getElementById('works')?.getBoundingClientRect();
         const below = show && head ? (show.bottom + head.top) / 2 + scrollY : startY;
@@ -1058,7 +1086,12 @@ function shadows(lamp, live) {
         const big = sub.classList.contains('small') ? .9 : 1.3, spread = textH * 3.2 / big;
         sub.style.setProperty('--beamw', px * 1.3 / big + 'px');
         sub.style.setProperty('--beamh', spread + 'px');
+      } else if (lane && past && floorInView()) {
+        // at the bottom, with the sea floor in view, it leaves its lane and wanders the floor, its lamp sweeping down
+        // over the creatures, in place of the explorer; scrolled back up, it hurries back (Parker, 2026-10-28)
+        wander();
       } else {
+      stay();
       chase(x, y, true);
       if (past) {
         // resting on the footer's line, facing the foot of the stalk, its lamp reaching past the stalk (Parker,

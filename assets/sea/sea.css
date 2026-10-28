@@ -106,6 +106,8 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
 .explorer .hull path:first-child { fill: var(--paper); }
 .explorer .lamp { left: 88%; top: 62%; width: 190px; height: 70px; transform-origin: 0 50%; transform: translateY(-50%) rotate(45deg); animation: sweep 11s ease-in-out infinite alternate; }
 .explorer .lamp path { fill: url(#exBeam); stroke: none; }
+/* with the left layout the timeline's own sub comes down and wanders the floor of the home page instead (Parker, 2026-10-28) */
+:root[data-align="left"]:has(.view[data-page="home"]:not([hidden]) .works.light) .explorer { display: none; }
 @keyframes patrol { 0%, 8% { translate: 0 0; } 42%, 58% { translate: calc(91cqw - 54px) 0; } 92%, 100% { translate: 0 0; } }
 @keyframes face { 0%, 49.8% { transform: scaleX(1); } 50%, 99.8% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
 @keyframes sweep { from { transform: translateY(-50%) rotate(34deg); } to { transform: translateY(-50%) rotate(58deg); } }
@@ -281,7 +283,7 @@ button:hover { color: var(--shu); }
 .sub .hull { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.2;
   stroke-linecap: round; stroke-linejoin: round; animation: hover 6s ease-in-out infinite; }
 .sub .hull path:first-child { fill: var(--paper); }
-.sub .beam { position: absolute; left: 90%; top: 50%; width: var(--beamw, 26rem); height: var(--beamh, 170px); transform: translateY(-50%); fill: url(#beamFade); }
+.sub .beam { position: absolute; left: 90%; top: 50%; width: var(--beamw, 26rem); height: var(--beamh, 170px); transform: translateY(-50%) rotate(var(--sweep, 0deg)); transform-origin: 0 50%; fill: url(#beamFade); }
 @keyframes hover { 50% { transform: translateY(-3px); } }
 .works.light .feed li { opacity: .14; transition: opacity .7s ease; }
 .works.light .feed li.on { opacity: 1; }
