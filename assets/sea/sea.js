@@ -1003,7 +1003,8 @@ function shadows(lamp, live) {
       const past = ct.getBoundingClientRect().top + geo.height < innerHeight * .45;
       // with the column to the left (layout.align: left) the sub keeps to a lane in the open water on the right, near
       // the scroll bar, and only goes up and down it, level with the work being read, facing left to light it
-      const lane = document.documentElement.dataset.align === 'left' && !narrow.matches && innerWidth - ct.getBoundingClientRect().right > 120;
+      // (the page keeps that lane clear at every width, so it is always there)
+      const lane = document.documentElement.dataset.align === 'left';
       const n = past ? works.length - 1 : Math.max(active, 0), west = lane || works[n].li.classList.contains('l'), gap = narrow.matches ? 16 : 22;
       // what it keeps clear of, and by how much: nodes, and the year labels (which are taller)
       const taken = [...nodes.map(b => [parseFloat(b.style.top), gap]), ...years.map(([, el]) => [parseFloat(el.style.top), gap + 14])].filter(([v]) => !isNaN(v));
@@ -1015,13 +1016,15 @@ function shadows(lamp, live) {
         if (clear(at - gap - 6 - 8 * k)) { y = at - gap - 6 - 8 * k; break; }
       }
       // beside the kelp: across the stalk from the work, level with its node, clear of the stalk and the leaves
-      const beside = !narrow.matches;
+      const beside = lane || !narrow.matches;
       if (beside) y = at;
       // the hull's keel (12px below its middle, scaled with it) on the footer's top line, touching it at the bottom of
       // its gentle bob
       if (past) y = document.querySelector('footer').getBoundingClientRect().top - ct.getBoundingClientRect().top - (narrow.matches ? 8 : 12);
       const home = ct.getBoundingClientRect();
-      const x = lane ? innerWidth - Math.min(90, (innerWidth - home.right) / 2) - home.left
+      // (clientWidth leaves out the scroll bar, so the sub sits in the water beside it, not under it)
+      const side = document.documentElement.clientWidth;
+      const x = lane ? side - Math.min(90, (side - home.right) / 2) - home.left
         : geo.spineX + geo.wob(y) + (past ? (beside ? 130 : 40) : beside ? (west ? 1 : -1) * 92 : 0);
       const card = works[n].li.querySelector('a').getBoundingClientRect();
       const dx = Math.abs(card.left + card.width / 2 - home.left - x), dy = card.top + card.height / 2 - home.top - y;

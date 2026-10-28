@@ -144,8 +144,10 @@ body { overflow-x: clip; background: var(--paper); color: var(--ink); font: 400 
   background: var(--veil); box-shadow: 0 0 16px 10px var(--veil); border-radius: 10px;
   -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 /* layout.align: left keeps the column to the left of the window, leaving open water on the right, where the timeline's
-   sub swims straight up and down (Parker, 2026-10-26, a trial) */
-:root[data-align="left"] .wrap { margin-left: clamp(0px, 6vw - 16px, 6rem); margin-right: auto; }
+   sub swims straight up and down (Parker, 2026-10-26, a trial). The column is squeezed at every width, down to a
+   phone, so that lane (--lane) is always clear and the sub never has to zig-zag round the kelp (Parker, 2026-10-28) */
+:root[data-align="left"] { --lane: clamp(72px, 14vw, 180px); }
+:root[data-align="left"] .wrap { margin-left: clamp(0px, 6vw - 16px, 6rem); margin-right: var(--lane); }
 .wrap { max-width: var(--col); margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 6rem; }
 a { color: inherit; text-decoration: none; }
 a:hover, a:focus-visible { color: var(--shu); }
